@@ -1,0 +1,554 @@
+body 
+{
+    margin:0 auto;
+    font-family:Arial, Helvetica, sans-serif;    
+    text-align:justify;
+}
+
+#contenedor
+{
+    width:100%;
+    height:auto;
+    display:flex;
+    flex-direction:column;
+}
+
+#subcontenedor
+{
+    position:relative;
+    top:0;
+    left:50%;
+    width:960px;
+    height:auto;
+    margin-left:-480px;    
+}
+
+#movilObjetoOculto 
+{
+    display:relative;
+}
+
+#escritorioObjetoOculto
+{
+    display:none;
+}
+#map { height: 500px; width: 100%; }
+
+/**********************************/
+/* HEADER ************************/
+header
+{
+    width:100%;
+    height:130px;
+    background-color:#005da4; 
+}
+
+#headerImagenUcr
+{
+    position:absolute;
+    top:20px;
+    left:0;
+    style:"padding-left:5px;";
+    width:530px;
+}
+
+
+#headerImagenLis
+{
+    position:absolute;
+    top:20px;
+    left:670px;
+    width:300px;
+}
+/* HEADER ************************/
+/**********************************/
+
+
+nav
+{
+    width:100%;
+    height:50px;
+    background-color:#004071;
+    font-size:18px;
+}
+
+section
+{
+    width:100%;
+    height:auto;
+    background-color:#FFF;
+    min-height:600px;
+}
+
+
+/**********************************/
+/* FOOTER ************************/
+footer
+{
+    width:100%;
+    height:400px;
+    background-color:#2C2E36;
+    border-top:4px solid red;
+}
+
+#escritorioInicioFooterColumna1
+{
+    position:absolute;
+    width:300px;
+    top:30px;
+    left:0;
+    border-right:1px #ede7dd dashed;
+    height:400px;
+}
+
+#escritorioInicioFooterColumna2
+{
+    position:absolute;
+    width:290px;
+    top:30px;
+    left:320px;
+    border-right:1px #ede7dd dashed;
+    height:400px;
+    text-align:left;
+}
+
+#escritorioInicioFooterColumna3
+{
+    position:absolute;
+    width:340px;
+    top:30px;
+    left:620px;
+    height:400px;
+}
+
+#escritorioInicioFooterColumna3Imagen
+{
+    position:absolute;
+    width:160px;
+    top:300px;
+    left:160px;
+}
+
+/* FOOTER ************************/
+/**********************************/
+
+#margen
+{
+    width:100%;
+    height:130px;
+    background-color:#2C2E36;
+}
+
+
+
+
+
+
+
+
+/************************************************************/
+/* Todas las paginas */
+#escritorioPaginasEncabezado 
+{
+    position:relative;
+    top:0;
+    left:0;
+    width:100%;
+    height:100px;
+    background-color:#FFF;
+   
+    
+}
+
+
+
+/************************************************************/
+/* INICIO */
+#multiplataformaInicio
+{
+    position:relative;
+    height:1800px;
+}
+
+
+#multiplataformaInicioIntro
+{
+    position:absolute;
+    top:100px;
+    left:530px;
+    width:430px;
+}
+
+#escritorioInicioCarrusel
+{
+    position:absolute;
+    top:100px;
+    background-color:#004071;
+    width:500px;
+    height:360px; 
+}
+
+#escritorioInicioTarjetas 
+{
+    position:absolute;
+    top:1300px;
+    background-color:#FFF;
+    width:100%;
+    height:500px;
+    display:flex;flex-direction:row;
+    border-top:4px double #DDD;
+    padding-top:10px;
+}
+
+#escritorioInicioEdificios
+{
+    position:absolute;
+    top:550px;
+    background-color:#fff;
+    width:100%;
+    height:750px;
+    border-top:4px double #DDD;
+    padding-top:10px;
+    display: flex;flex-direction: row;
+    justify-content: start;
+    flex-wrap: wrap;
+}
+
+#movilInicioTarjetas
+{
+    display:none;
+}
+/* Inicio */
+/************************************************************/
+
+
+
+
+/************************************************************/
+/* Animación */
+#multiplataformaAnimacionYoutube
+{
+    width:100%;
+    height:400px;
+}
+/* Animación */
+/************************************************************/
+
+
+/************************************************************/
+/* Trazas */
+#multiplataformaTrazas
+{
+    position:relative;
+    height:3800px;
+}
+
+#escritorioTrazasThumbnail
+{
+    position:absolute;
+    top:0;
+    left:0;
+}
+
+#escritorioTrazasTrazas
+{
+    position:absolute;
+    top:0;
+    left:330px;   
+}
+
+#movilTrazasEdificio
+{
+    display:none;
+}
+
+
+.multiplataformaTrazasImagen
+{
+    position:relative;
+}
+
+#multiplataformaTrazasHospitalAlajuela
+{
+    position:relative;
+    width:100%;
+    height:220px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasHospitalHeredia
+{
+    position:relative;
+    width:100%;
+    height:220px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;   
+}
+
+#multiplataformaTrazasINS
+{
+    position:relative;
+    width:100%;
+    height:290px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;    
+}
+
+#multiplataformaTrazasHospitalAnexion
+{
+    position:relative;
+    width:100%;
+    height:240px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasTobogan
+{
+    position:relative;
+    width:100%;
+    height:240px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasColon
+{
+    position:relative;
+    width:100%;
+    height:480px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasMuseo
+{
+    position:relative;
+    width:100%;
+    height:260px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasJenaro
+{
+    position:relative;
+    width:100%;
+    height:290px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasTrauma
+{
+    position:relative;
+    width:100%;
+    height:240px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasBiblica
+{
+    position:relative;
+    width:100%;
+    height:240px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasLaureano  
+{
+    position:relative;
+    width:100%;
+    height:280px;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+/* Trazas */
+/************************************************************/
+
+
+/************************************************************/
+/* Instrumentar */
+#multiplataformaInstrumentar
+{
+    position:relative;
+    height:2300px;
+}
+
+#multiplataformaTexto
+{
+    position:relative;
+    width:100%;
+    height:auto;
+}
+
+#multiplataformaInstrumentarImagen1
+{
+    position:relative;
+    width:591px;
+    height:auto;
+}
+
+#multiplataformaInstrumentarImagen2
+{
+    position:relative;
+    width:650px;
+    height:auto;
+}
+/* Instrumentar */
+/************************************************************/
+
+
+/************************************************************/
+/* Estructuras */
+
+/*Esta etiqueta es para los tag ARTICLE*/
+#multiplataformaEstructuras
+{
+    position:relative;
+    width:100%;
+    height:auto;       
+}
+
+#multiplataformaEstructurasTrazas
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    overflow:hidden;
+}
+
+#movilEstructurasImagenCociente
+{
+    display:none;
+}
+
+#movilEstructurasTextoCociente
+{
+   display:none;
+}
+
+#escritorioEstructurasTabla
+{        
+    position:relative;
+    top:0;
+    left:0;
+    width:100%;     
+}
+
+#multiplataformaEstructurasUbicacion
+{
+    position:relative;
+    width:100%;
+}
+
+#multiplataformaEstructurasTextoGeneral
+{
+    position:relative;
+    width:100%;
+    text-align:justify;
+}
+
+#multiplataformaEstructurasImagenesGeneral
+{
+    position:relative;  
+    max-width:600px;
+}
+
+
+#escritorioEstrucutras24horas
+{
+    position:relative;
+    width:100%;
+    text-align:justify;
+}
+
+#movilEstructuras24horas
+{
+    display:none;    
+}
+
+/* Estructuras */
+/************************************************************/
+
+
+
+
+/************************************************************/
+/* Teatro */
+
+
+#multiplataformaTeatroUbicacion
+{
+    position:relative;
+    width:100%;
+}
+
+#escritorioTeatro24horas
+{
+    position:relative;
+    width:100%;   
+    
+}
+
+#movilTeatro24horas
+{
+    display:none;    
+}
+
+/* Teatro */
+/************************************************************/
+
+/* STUART MODAL PARA IMAGENES */
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+    padding-top: 60px;
+}
+
+.modal-content {
+    margin: 5% auto;
+    display: block;
+    width: 80%;
+    max-width: 700px;
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.close:hover,
+.close:focus {
+    color: #bbb;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Estilos para la imagen */
+.image {
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.image:hover {
+    opacity: 0.7;
+}

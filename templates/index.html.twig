@@ -1,0 +1,301 @@
+{% extends '/base.html.twig' %}
+
+{% block body %}
+
+    <script >
+        let ciudades =[];
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            {% for ciudadp in ciudadesp %}
+                ciudades.push({nombre: '{{ ciudadp.nombre }}',lat: '{{ ciudadp.lat }}',lon: '{{ ciudadp.lon }}' });
+
+            {% endfor %}
+            //alert(ciudades.nombre);
+            {% for dato in datos %}
+                document.getElementById("resultado-{{ loop.index }}").textContent = epicentro({{ dato.latitud }}, {{ dato.longitud }});
+            {% endfor %}
+        });
+        function epicentro(lat,lon){
+
+            var puntoInicial = {
+                lat: lat,
+                lon: lon
+            };
+            let ciudadCercana = calcularCiudadMasCercana(puntoInicial);
+            let direccion = obtenerDireccion(puntoInicial.lat, puntoInicial.lon, ciudadCercana.lat, ciudadCercana.lon);
+            return ciudadCercana.distancia.toFixed(2) + " km " + direccion + " de " + ciudadCercana.nombre;
+        }
+
+
+        // Función para calcular la distancia en km con la fórmula de Haversine
+        function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Radio de la Tierra en km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c; // Distancia en km
+        }
+
+        // Función para determinar la dirección cardinal
+        function obtenerDireccion(lat1, lon1, lat2, lon2) {
+            let direccion = "";
+
+            if (lat2 > lat1) {
+                direccion += "N.";
+            } else if (lat2 < lat1) {
+                direccion += "S.";
+            }
+
+            if (lon2 > lon1) {
+                direccion += "E.";
+            } else if (lon2 < lon1) {
+                direccion += "O.";
+            }
+
+            return direccion || "Mismo punto";
+        }
+
+
+        // Función para encontrar la ciudad más cercana
+        function calcularCiudadMasCercana(punto) {
+
+            let ciudadMasCercana = null;
+            let distanciaMinima = Infinity;
+            ciudades.forEach(ciudad => {
+                let nombre;
+                let distancia = calcularDistanciaHaversine(punto.lat, punto.lon, ciudad.lat, ciudad.lon);
+                if (distancia < distanciaMinima) {
+                    distanciaMinima = distancia;
+                    nombre = ciudad.nombre;
+                    ciudadMasCercana = { ...ciudad, nombre,distancia };
+                }
+            });
+            return ciudadMasCercana;
+        }
+
+        function enviaDatos (id, fecha) {
+            var theForm, newInput1, newInput2;
+            // Start by creating a <form>
+            theForm = document.createElement('form');
+            theForm.action = 'pga/';
+            theForm.method = 'post';
+            // Next create the <input>s in the form and give them names and values
+            newInput1 = document.createElement('input');
+            newInput1.type = 'hidden';
+            newInput1.name = 'id';
+            newInput1.value = id;
+            newInput2 = document.createElement('input');
+            newInput2.type = 'hidden';
+            newInput2.name = 'fecha';
+            newInput2.value = fecha;
+            // Now put everything together...
+            theForm.appendChild(newInput1);
+            theForm.appendChild(newInput2);
+            // ...and it to the DOM...
+            document.getElementById('hidden_form_container').appendChild(theForm);
+            // ...and submit it
+            theForm.submit();
+        }
+        </script>
+
+    <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
+
+
+
+        <div class="row">
+            <br><br><br>
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{ title }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+        </div>
+        <div class="row">
+            <br><br><br><br>
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+
+            <div class="col-4">
+                <div class="bs-example" data-example-id="contextual-table">
+                    <table class="table table-bordered table-hover table-condensed table-striped" id="tabla1" style="font-size: 14px">
+                        <caption>
+                            &uacute;ltimos Sismos Registrados
+                        </caption>
+                        <thead>
+                        <tr>
+                            <th>Fecha y Hora (UTC)</th>
+                            <th>Latitud</th>
+                            <th>Longitud</th>
+                            <th>Magnitud</th>
+                            <th>Epicentro</th>
+                           <!-- <th>Acci&oacute;n</th> -->
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for dato in datos %}
+
+                            <tr class="info" onclick="enviaDatos('{{ dato.publicID }}','{{ dato.hora }}')">
+                                <td>{{ dato.hora }}</td>
+                                <td>{{ dato.latitud }}</td>
+                                <td>{{ dato.longitud }}</td>
+                                <td>{{ dato.magnitud }}</td>
+                                <td id="resultado-{{ loop.index }}">Cargando...</td>
+                               <!-- <td></td> -->
+                              <!--  <td class="nowrap">
+                                    <div class="icon button viewButton" rel="{{ dato.publicID }}">
+                                        <button type="button" onclick="enviaDatos('{{ dato.publicID }}','{{ dato.hora }}')">Informe </button>
+
+                                    </div>
+                                </td> -->
+                            </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-8">Mapa de S&iacute;smos Registrados (&Uacute;ltimos 20)
+                <div class="row">
+                    <div id="map">MAPA</div>
+                </div>
+            </div>
+
+        </div>
+        <div id="hidden_form_container" style="display:none;"></div>
+
+        <div class="row">
+
+            <br><br><br><br><br><br><br><br><br>
+            <div class="col">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col">
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Inicializar el mapa centrado en una posición predeterminada
+            var map = L.map('map').setView([0, 0], 2);
+
+            // Agregar capa de mapa base
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            //matriz con marcadores
+            let marcadores ={};
+
+            let mytabla =$('#tabla1').DataTable({
+                retrieve: true,
+                paging: true,       // Habilita paginación
+                ordering: true,
+                order: [[0, "desc"],],
+                lengthMenu: [20, 40, 60], // Opciones de cantidad de filas por página
+                pageLength: 20,      // Número de filas por defecto
+                language: {
+                    processing: "En curso...",
+                    search: "Buscar:",
+                    paginate: {
+                        first: "Primero",
+                        previous: "Anterior",
+                        next: "Siguiente",
+                        last: "Último"
+                    },
+                },
+                layout: {
+                    topStart: {
+                        buttons: ['csv', 'excel']
+                    }
+                }
+
+            });
+
+            // Lista de puntos en formato Twig
+            var puntos = [
+                {% for dato in datos | slice (0,60) %}
+                { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, datos: "Fecha: {{ dato.hora }} , Magnitud: {{ dato.magnitud }}",
+                    mag: {{ dato.magnitud }}, index: {{ loop.index0 }} }
+                {% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+
+            // Dibujar los puntos en el mapa
+            puntos.forEach(function(punto) {
+                i = 0;
+                let marker = L.circle([punto.lat, punto.lng], {
+                    color: 'blue',
+                    fillColor: '#30f',
+                    fillOpacity: 0,
+                    radius: punto.mag*2000
+                }).addTo(map).bindPopup(punto.datos);
+                marcadores[punto.index] = marker;
+                i++;
+                // Cambiar el color cuando el mouse pasa sobre el círculo
+                marker.on("mouseover", function () {
+                    this.setStyle({ color: "red", weight: 5 }); // Cambia a rojo con mayor grosor
+                });
+
+                // Restaurar el color original cuando el mouse sale
+                marker.on("mouseout", function () {
+                    this.setStyle({ color: "blue", weight: 3 }); // Vuelve a azul
+                });
+            });
+
+
+
+            // Centrar el mapa si hay puntos
+            if (puntos.length > 0) {
+                var bounds = L.latLngBounds(puntos.map(p => [p.lat, p.lng]));
+                map.fitBounds(bounds);
+            }
+
+
+            $('#tabla1 tbody').on('mouseenter', 'tr', function () {
+                let index = mytabla.row(this).index();
+                //alert(mytabla.row(this).index());
+                if (marcadores[index]) {
+                    marcadores[index].setStyle({ color: "red", fillColor: "red" });
+                }
+                $(this).addClass("highlight");
+            });
+
+            $('#tabla1 tbody').on('mouseleave', 'tr', function () {
+                let index = mytabla.row(this).index();
+                if (marcadores[index]) {
+                    marcadores[index].setStyle({ color: "blue", fillColor: "blue"});
+                }
+                $(this).removeClass("highlight");
+            });
+        });
+    </script>
+    <script>
+
+    </script>
+
+
+{% endblock %}

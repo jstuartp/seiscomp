@@ -1,0 +1,98 @@
+/* @autor Esteban Lopez */
+
+html {
+    font-size: 16px;
+}
+
+#header {
+    background-color: #005da4;
+}
+
+#nav {
+    background-color: #004071;
+}
+
+#nav>* {
+    font-size: 16px;
+}
+
+#section {
+    background-color: #FFF;
+	 min-height:400px;
+}
+
+#social {
+    background-color: #FFF;	 
+}
+
+
+#footer {
+    background-color: #2C2E36;
+    border-top: 4px solid red;
+}
+
+#margen {
+    background-color: #2C2E36;
+	 height:200px;
+}
+
+.bg-primary {
+    background-color: #005da4;
+}
+
+.bg-secondary {
+    background-color: #004071;
+}
+
+.movilObjetoOculto {
+    display: none;
+}
+
+.escritorioObjetoOculto {
+    display: none;
+}
+
+
+.recorteImagen24Horas {	
+	position:absolute;
+	top:-9px;
+	left:-78px;
+   clip:rect(9px,300px,220px,78px);
+}
+
+
+/*Estilo Boton para ir arriba*/
+
+#myBtn {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Fixed/sticky position */
+    bottom: 20px;
+    /* Place the button at the bottom of the page */
+    right: 30px;
+    /* Place the button 30px from the right */
+    z-index: 99;
+    /* Make sure it does not overlap */
+    border: none;
+    /* Remove borders */
+    outline: none;
+    /* Remove outline */
+    background-color: red;
+    /* Set a background color */
+    color: white;
+    /* Text color */
+    cursor: pointer;
+    /* Add a mouse pointer on hover */
+    padding: 15px;
+    /* Some padding */
+    border-radius: 10px;
+    /* Rounded corners */
+    font-size: 18px;
+    /* Increase font size */
+}
+
+#myBtn:hover {
+    background-color: #555;
+    /* Add a dark-grey background on hover */
+}

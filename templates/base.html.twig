@@ -3,15 +3,121 @@
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text></svg>">
+        {# Run `composer require symfony/webpack-encore-bundle` to start using Symfony UX #}
         {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
         {% endblock %}
 
         {% block javascripts %}
-            {% block importmap %}{{ importmap('app') }}{% endblock %}
+            {{ encore_entry_script_tags('app') }}
+            <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+            <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+            <link rel="stylesheet" href={{ asset('assets/vendor/fontawesome-free/css/all.min.css')}} />
+            <link rel="stylesheet" href={{ asset('assets/estilo/escritorio.css')}} />
+            <link rel="stylesheet" href={{ asset('assets/vendor/animate.css/animate.min.css')}} />
+            <link rel="stylesheet" href={{ asset('assets/vendor/bootstrap/css/bootstrap.css')}} />
+            <link rel="stylesheet" href={{ asset('assets/vendor/bootstrap-icons/bootstrap-icons.css')}} />
+            <link rel="stylesheet" href={{ asset('assets/vendor/boxicons/css/boxicons.min.css')}} />
+            <link rel="stylesheet" href={{ asset('assets/vendor/glightbox/css/glightbox.min.css')}} />
+            <link rel="stylesheet" href={{ asset('assets/datatables/Buttons-2.2.2/css/buttons.dataTables.css')}} />
+            <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+            <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+            <script type="text/javascript" src=" {{ asset('assets/js/funcionesStuart.js?a=5')}} "></script>
+
+
+
+            <style>
+                #map { height: 900px; width: 100%; }
+            </style>
+
         {% endblock %}
     </head>
     <body>
+        {% block header %}
+            <header bgcolor="#005da4">
+                <div class="row" >
+                    <div class="offset-12 offset-sm-12 col-md-2"></div>
+                    <div class="col-12 col-md-5"><img src= {{ asset('assets/imagenes/firma_ucr.png') }} alt="Universidad de Costa Rica" style="width:100%" class="img-fluid"></div>
+                    <div class="col-12 col-md-3"><img src= {{ asset('assets/imagenes/logo_lis.png')}} alt="Laboratorio de Ingeniería Sísmica" style="width:100%;" class="float-right"></div>
+                    <div class="offset-12 offset-sm-12 col-md-2"></div>
+                </div>
+            </header>
+        {% endblock %}
         {% block body %}{% endblock %}
     </body>
+
+
+        {% block endscrips %}
+            <link rel="stylesheet" type="text/css" href="{{ asset('assets/datatables/datatables.css') }}" />
+            <!-- js para las datatables -->
+            <script type="text/javascript" charset="utf8" src="{{ asset('assets/vendor/bootstrap/js/bootstrap.min.js') }}"  > </script>
+            <script type="text/javascript" charset="utf8" src="{{ asset('assets/datatables/datatables.min.js') }}"  > </script>
+            <script type="text/javascript" charset="utf8" src="{{ asset('assets/datatables/DataTables-1.11.5/js/jquery.dataTables.js') }}"  > </script>
+            <script type="text/javascript" charset="utf8" src="{{ asset('assets/datatables/DataTables-1.11.5/js/dataTables.bootstrap5.js') }}" > </script>
+            <script type="text/javascript" charset="utf8" src="{{ asset('assets/datatables/Buttons-2.2.2/js/buttons.bootstrap5.js') }}" > </script>
+            <script type="text/javascript" charset="utf8" src="{{ asset('assets/datatables/Buttons-2.2.2/js/buttons.dataTables.js') }}" > </script>
+            <script type="text/javascript" charset="utf8" src="{{ asset('assets/datatables/Buttons-2.2.2/js/dataTables.buttons.js') }}" > </script>
+
+            <!--tablas personalisadas -->
+            <script type="text/javascript" src=" {{ asset('assets/js/mytable.js?a=6')}} "></script>
+
+        {% endblock %}
+
+        {% block footer %}
+
+            <div class="row">
+                <div class="col">
+
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+            <footer>
+                <div class="row">
+
+
+                    <div class="col-md-1"></div>
+
+                    <div class="d-none d-md-inline col-md-2 mt-3">
+                        <p class="text-white"><b>Enlaces de interes:</b></p>
+                        <a href="http://www.lis.ucr.ac.cr" target="blank" class="text-muted">www.lis.ucr.ac.cr</a><br />
+                        <a href="http://www.rectoria.ucr.ac.cr/site/" target="blank" class="text-muted">www.rectoria.ucr.ac.cr</a><br />
+                        <a href="http://www.inii.ucr.ac.cr/" target="blank" class="text-muted">www.inii.ucr.ac.cr</a><br />
+                        <a href="http://www.ovsicori.una.ac.cr/" target="blank" class="text-muted">www.ovsicori.una.ac.cr</a><br />
+                        <a href="http://www.rsn.ucr.ac.cr/" target="blank" class="text-muted">www.rsn.ucr.ac.cr</a><br />
+                        <a href="https://www.cne.go.cr/" target="blank" class="text-muted">www.cne.go.cr</a><br />
+                        <a href="http://www.lanamme.ucr.ac.cr/" target="blank" class="text-muted">www.lanamme.ucr.ac.cr</a><br />
+                    </div>
+
+                    <div class="col-md-1"></div>
+
+                    <div class="d-none d-md-inline col-md-3 mt-3">
+                        <p class="text-white"><b>Preguntas frecuentes:</b></p>
+                        <a href="http://www.lis.ucr.ac.cr/10" target="blank" class="text-muted">¿En que se diferencia un sismografo de un acelerografo?</a><br />
+                        <hr><hr>
+                        <a href="http://www.lis.ucr.ac.cr/Nosotros" class="text-muted">Más sobre el LIS</a><br />
+                        <a href="http://www.lis.ucr.ac.cr/Personal" class="text-muted">Funcionarios del LIS</a><br />
+                    </div>
+
+                    <div class="col-md-1"></div>
+
+                    <div class="col-12 col-md-3 text-center text-md-left mt-3">
+                        <?PHP
+                $fecha=date("Y");
+                echo "<p class='text-white'><strong>Laboratorio de Ingeniería Sísmica</strong><br />Instituto de Investigaciones en Ingeniería (INII)<br />Teléfono: 2511-6661<br />© 2009 - $fecha UCR</p>";
+                        ?>
+                        <br />
+                        <img src={{ asset('assets/imagenes/logoUcr.png')}} alt="Logo UCR" style="width:50%;">
+                    </div>
+
+                    <div class="col-md-1"></div>
+
+                </div>
+        </footer>
+                </div>
+            </div>
+
+        {% endblock %}
 </html>

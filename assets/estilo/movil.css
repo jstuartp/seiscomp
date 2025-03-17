@@ -1,0 +1,484 @@
+body 
+{
+    margin:0 auto;
+    font-family:Arial, Helvetica, sans-serif;    
+    text-align:justify;
+}
+
+#contenedor
+{
+    width:100%;
+    height:auto;
+    display:flex;
+    flex-direction:column;
+}
+
+#subcontenedor
+{
+    position:relative;
+    top:0;
+    width:100%;
+    height:auto;   
+}
+
+#movilObjetoOculto 
+{
+    display:none;
+}
+
+#escritorioObjetoOculto
+{
+    display:relative;
+}
+
+/**********************************/
+/* HEADER ************************/
+header
+{
+    width:100%;
+    height:auto;
+    background-color:#005da4; 
+    text-align:center;
+}
+
+#headerImagenUcr
+{
+    display:none;
+}
+
+
+#headerImagenLis
+{
+    position:relative;
+    width:70%;
+}
+
+/* HEADER ************************/
+/**********************************/
+
+
+nav
+{
+    width:100%;
+    height:auto;
+    background-color:#004071;
+}
+
+section
+{
+    width:100%;
+    height:auto;
+    background-color:#FFF;
+    min-height:600px;
+}
+
+
+/**********************************/
+/* FOOTER ************************/
+footer
+{
+    width:100%;
+    height:400px;
+    background-color:#2C2E36;
+    border-top:4px solid red;
+}
+
+#escritorioInicioFooterColumna1
+{
+    display:none;
+}
+
+#escritorioInicioFooterColumna2
+{
+    display:none;
+}
+
+#escritorioInicioFooterColumna3
+{
+    position:relative;
+    width:100%;
+    top:0;
+    left:0;
+    height:400px;
+    text-align:center;
+}
+
+#escritorioInicioFooterColumna3Imagen
+{
+    position:relative;   
+}
+/* FOOTER ************************/
+/**********************************/
+
+
+
+#margen
+{
+    width:100%;
+    height:130px;
+    background-color:#2C2E36;
+}
+
+
+
+
+/************************************************************/
+/* Todas las paginas */
+#escritorioPaginasEncabezado 
+{
+    display:none;     
+}
+
+
+/************************************************************/
+/* INICIO */
+#multiplataformaInicio
+{
+    position:relative;
+    height:auto;
+}
+
+#multiplataformaInicioIntro
+{
+    position:relative;
+    top:0;
+    left:0;
+    width:100%;
+    height:auto;
+    padding:8px;
+    text-align:justify;
+}
+
+#escritorioInicioCarrusel
+{
+    display:none;     
+}
+
+
+#escritorioInicioTarjetas
+{
+     display:none; 
+}
+
+#escritorioInicioEdificios
+{
+    position:relative;
+    top:0;
+    left:0;
+    width:100%;
+    height:auto;
+    padding:8px;
+    text-align:justify;    
+    border-top:4px double #DDD;
+    padding-top:8px;
+    display: flex;flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#movilInicioTarjetas
+{
+    position:relative;
+    top:0;
+    left:-5px;
+    width:100%;
+    height:auto;
+    margin-bottom:20px;
+    display: flex;flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+
+/************************************************************/
+/* Animación */
+#multiplataformaAnimacionYoutube
+{
+    margin-left:5%;
+    width:90%;
+    height:400px;
+}
+/* Animación */
+/************************************************************/
+
+
+/************************************************************/
+/* Trazas */
+#multiplataformaTrazas
+{
+    position:relative;
+    height:auto;
+}
+
+#escritorioTrazasThumbnail
+{
+    display:none;
+}
+
+#escritorioTrazasTrazas
+{
+    position:relative;
+    top:0;
+    left:0;
+    vertical-align: text-bottom;
+}
+
+#movilTrazasEdificio
+{
+    position:relative;
+    top:0;
+    left:0;
+    font-size:18px;
+    text-align:center;
+}
+
+.multiplataformaTrazasImagen
+{
+    width:100%;
+}
+
+#multiplataformaTrazasHospitalAlajuela
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasHospitalHeredia
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;   
+}
+
+#multiplataformaTrazasINS
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;    
+}
+
+#multiplataformaTrazasHospitalAnexion
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasTobogan
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasColon
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasMuseo
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasJenaro
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasTrauma
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasBiblica
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+
+#multiplataformaTrazasLaureano  
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    border-bottom: 2px solid #CCC;
+    padding:20px;
+}
+/* Trazas */
+/************************************************************/
+
+
+/************************************************************/
+/* Instrumentar */
+#multiplataformaInstrumentar
+{
+    position:relative;
+    height:auto;
+}
+
+#multiplataformaInstrumentarTexto
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    padding:20px;
+}
+
+#multiplataformaInstrumentarImagen1
+{
+    position:relative;
+    width:100%;
+    height:auto;
+}
+
+#multiplataformaInstrumentarImagen2
+{
+    position:relative;
+    width:100%;
+    height:auto;
+}
+
+/* Instrumentar */
+/************************************************************/
+
+
+/************************************************************/
+/* Estructuras */
+
+/*Esta etiqueta es para los tag ARTICLE*/
+#multiplataformaEstructuras
+{
+    position:relative;
+    width:100%;
+    height:auto; 
+    padding:10px;
+}
+
+#multiplataformaEstructurasTrazas
+{
+    position:relative;
+    width:100%;
+    height:auto;
+    overflow:hidden;
+}
+
+#multiplataformaEstructurasImagenTrazas
+{
+    position:relative;
+    top:0;
+    left:0;
+    width:100%;   
+}
+
+#movilEstructurasImagenCociente
+{
+    position:relative;
+    top:0;
+    left:0;
+    width:100%; 
+}
+
+#movilEstructurasTextoCociente
+{
+    position:relative;
+    top:0;
+    left:0;
+    width:100%; 
+    text-align:justify;
+}
+
+#escritorioEstructurasTabla
+{    
+    display:none;
+    
+}
+
+#multiplataformaEstructurasUbicacion
+{
+    position:relative;
+    width:100%;
+}
+
+#multiplataformaEstructurasTextoGeneral
+{
+    position:relative;
+    width:100%;
+    text-align:justify;
+}
+
+#multiplataformaEstructurasImagenesGeneral
+{
+    position:relative;   
+    width:100%;
+}
+
+#escritorioEstrucutras24horas
+{
+    display:none;   
+}
+
+#movilEstructuras24horas
+{
+    
+    position:relative;
+    width:100%;
+    text-align:justify;
+}
+/* Estructuras */
+/************************************************************/
+
+
+
+/************************************************************/
+/* Teatro */
+
+
+
+
+#escritorioTeatro24horas
+{
+    display:none;   
+    
+}
+
+#movilTeatro24horas
+{
+     position:relative;  
+}
+/* Teatro */
+/************************************************************/
+
+
+
+

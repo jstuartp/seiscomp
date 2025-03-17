@@ -1,0 +1,90 @@
+{% extends '/base.html.twig' %}
+
+{% block body %}
+
+    <div class="container" xmlns="http://www.w3.org/1999/html">
+
+        <div class="row">
+            <br><br><br>
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{ title }} {{ fecha|date("F jS \\a\\t g:ia") }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+        </div>
+        <div class="row">
+            <br><br><br><br>
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div class="bs-example" data-example-id="contextual-table">
+                    <table class="table table-bordered table-hover table-condensed table-striped" id="example2" style="font-size: 14px">
+                        <caption>
+                            Ultimos Sismos Registrados
+                        </caption>
+                        <thead>
+                        <tr>
+
+                            <th>Fecha y Hora (UTC)</th>
+                            <th>Latitud</th>
+                            <th>Longitud</th>
+                            <th>Magnitud</th>
+                            <th>Profundidad</th>
+                            <th>Acci&oacute;n</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for dato in datos %}
+                            <tr class="info">
+                                <td>{{ dato.hora }}</td>
+                                <td>{{ dato.latitud }}</td>
+                                <td>{{ dato.longitud }}</td>
+                                <td>{{ dato.magnitud }}</td>
+                                <td>{{ dato.profundidad }}</td>
+                                <td class="nowrap">
+                                    <div class="icon button viewButton" rel="{{ dato.publicID }}">
+                                        <button type="button" onclick="enviaDatos('{{ dato.publicID }}','{{ dato.hora }}')">Informe </button>
+
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div id="hidden_form_container" style="display:none;"></div>
+
+        <div class="row">
+
+            <br><br><br><br><br><br><br><br><br>
+            <div class="col">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col">
+
+        </div>
+    </div>
+
+
+{% endblock %}
