@@ -1,0 +1,187 @@
+{% extends '/base.html.twig' %}
+
+{% block body %}
+
+    <script >
+        let ciudades =[];
+
+        document.addEventListener("DOMContentLoaded", function() {
+            {% for ciudadp in ciudadesp %}
+            ciudades.push({nombre: '{{ ciudadp.nombre }}',lat: '{{ ciudadp.lat }}',lon: '{{ ciudadp.lon }}' });
+
+            {% endfor %}
+            //alert(ciudades.nombre);
+
+        });
+
+        function calcularCiudadesCercanas() {
+            const R = 6371; // Radio de la Tierra en km
+            const latReferencia ={{ lat }};
+            const lonReferencia ={{ long }};
+
+            // Función interna para calcular la distancia con la fórmula de Haversine
+            function calcularDistancia(lat1, lon1, lat2, lon2) {
+                //alert(lat1+";"+lon1+";"+lat2+";"+lon2);
+                const rad = Math.PI / 180;
+                const dLat = (lat2 - lat1) * rad;
+                const dLon = (lon2 - lon1) * rad;
+                const a = Math.sin(dLat / 2) ** 2 +
+                    Math.cos(lat1 * rad) * Math.cos(lat2 * rad) *
+                    Math.sin(dLon / 2) ** 2;
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                return R * c;
+            }
+
+            // Mapear ciudades con su distancia al punto de referencia
+            const ciudadesConDistancia = ciudades.map(ciudad => {
+                const distancia = calcularDistancia(
+                    latReferencia, lonReferencia,
+                    ciudad.lat, ciudad.lon
+                );
+                return { ...ciudad, distancia };
+            });
+            // Ordenar por distancia ascendente
+            ciudadesConDistancia.sort((a, b) => a.distancia - b.distancia);
+
+            // Retornar las 20 más cercanas
+            return ciudadesConDistancia.slice(0, 20);
+        }
+
+
+        </script>
+
+    <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
+
+
+
+        <div class="row">
+            <br><br><br>
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{ title }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+        </div>
+        <div class="row">
+            <br><br><br><br>
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+
+            <div class="col-4">
+                <div class="bs-example" data-example-id="contextual-table">
+                    <table class="table table-bordered table-hover table-condensed table-striped" id="tabla1" style="font-size: 14px">
+                        <caption>
+                            Ciudades m&aacute;s Cercanas al Epicentro
+                        </caption>
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Ciudad</th>
+                            <th>Distancia (km)</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-8">Mapa de Epicentro
+                <div class="row">
+                    <div id="map">MAPA</div>
+                </div>
+            </div>
+
+        </div>
+        <div id="hidden_form_container" style="display:none;"></div>
+
+        <div class="row">
+
+            <br><br><br><br><br><br><br><br><br>
+            <div class="col">
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div class="col">
+
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Inicializar el mapa centrado en una posición predeterminada
+            var map = L.map('map').setView([{{ lat }}, {{ long }}], 13);
+
+            // Agregar capa de mapa base
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
+            // Icono personalizado de estrella
+            const starIcon = L.divIcon({
+                html: ' <img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" alt="Estrella" style="width:50%;"> ',
+                className: '',
+                iconSize: [80, 80],
+                iconAnchor: [30, 30]
+            });
+            const cuadradoIcon = L.divIcon({
+                html: '<div style="width: 10px; height: 10px; background-color: blue; border: 2px solid black;"></div>',
+                className: '',  // eliminar clases por defecto
+                iconSize: [20, 20],
+                iconAnchor: [10, 10]  // centra el cuadrado en el punto
+            });
+
+            // Agregar el marcador con estrella
+            L.marker([ {{ lat }}, {{ long }}], { icon: starIcon })
+                .addTo(map)
+                .bindPopup('Ubicación marcada con una estrella');
+            const cercanas = calcularCiudadesCercanas();
+            //alert(JSON.stringify(cercanas, null, 2));
+
+            // Agregar marcadores al mapa
+            cercanas.forEach(ciudad => {
+                L.marker([ciudad.lat, ciudad.lon], { icon: cuadradoIcon })
+                    .addTo(map)
+                    .bindPopup(`${ciudad.nombre}<br>Distancia: ${ciudad.distancia.toFixed(2)} km`);
+            });
+
+            // Cargar en la tabla
+            const tablaBody = document.querySelector("#tabla1 tbody");
+            cercanas.forEach((ciudad, index) => {
+                const fila = document.createElement("tr");
+                fila.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${ciudad.nombre}</td>
+            <td>${ciudad.distancia.toFixed(2)}</td>
+        `;
+                tablaBody.appendChild(fila);
+            });
+
+
+
+
+            // Lista de puntos en formato Twig
+
+        });
+    </script>
+    <script>
+
+    </script>
+
+
+{% endblock %}

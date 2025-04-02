@@ -151,6 +151,59 @@ class mainController extends AbstractController
     }
 
 
+    /**
+     * @Route("/informe/", name="informe")
+     */
+    #[Route('/informe/', name:'informe', methods: ['POST','GET','PUT'])]
+    public function informeAction(Request $request, EntityManagerInterface $em): Response
+    {
+        //Chequeo los datos que llegan por post del ID y la Fecha
+        if ($request->isMethod('POST')) {
+            $evento = $request->request->get('id');
+            $fecha = $request->request->get('fecha');
+            $mag = $request->request->get('mag');
+            $lat = $request->request->get('lat');
+            $long = $request->request->get('long');
+        }else{echo "NO HAY NADA";}
+
+
+
+        return $this->render('informe.html.twig',
+            ['title'=> "Datos del Sismo: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento,'lat'=>$lat,'long'=>$long]);
+    }
+
+
+
+    /**
+     * @Route("/epicentro/", name="epicentro")
+     */
+    #[Route('/epicentro/', name:'epicentro', methods: ['POST','GET','PUT'])]
+    public function epicentroAction(Request $request, EntityManagerInterface $em): Response
+    {
+        //Chequeo los datos que llegan por post del ID y la Fecha
+        if ($request->isMethod('POST')) {
+            $evento = $request->request->get('id');
+            $fecha = $request->request->get('fecha');
+            $mag = $request->request->get('mag');
+            $lat = $request->request->get('lat');
+            $long = $request->request->get('long');
+        }else{echo "NO HAY NADA";}
+
+        $ciudades1 = [];
+        // IF para leer el archivo de distritos y calcular el epicentro
+        if (($handle = fopen("distritos.csv", "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                $ciudades1[] = ["nombre" => $data[2], "lat" => (float)$data[1], "lon" => (float)$data[0]];
+            }
+            fclose($handle);
+        }
+
+
+
+        return $this->render('epicentro.html.twig',
+            ['title'=> "Ciudades cercanas al Epicentro: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento, 'lat'=>$lat,'long'=>$long , 'ciudadesp' =>$ciudades1]);
+    }
+
     public function datosTablaSeiscomp(EntityManagerInterface $seiscomp, $mydate)
     {
         $sql = "SELECT r.startTime_value, r.waveformID_stationCode, 

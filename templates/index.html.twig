@@ -77,11 +77,11 @@
             return ciudadMasCercana;
         }
 
-        function enviaDatos (id, fecha) {
-            var theForm, newInput1, newInput2;
+        function enviaDatos (id, fecha, mag,lat,long) {
+            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5;
             // Start by creating a <form>
             theForm = document.createElement('form');
-            theForm.action = 'pga/';
+            theForm.action = 'informe/';
             theForm.method = 'post';
             // Next create the <input>s in the form and give them names and values
             newInput1 = document.createElement('input');
@@ -92,9 +92,24 @@
             newInput2.type = 'hidden';
             newInput2.name = 'fecha';
             newInput2.value = fecha;
+            newInput3 = document.createElement('input');
+            newInput3.type = 'hidden';
+            newInput3.name = 'mag';
+            newInput3.value = mag;
+            newInput4 = document.createElement('input');
+            newInput4.type = 'hidden';
+            newInput4.name = 'lat';
+            newInput4.value = lat;
+            newInput5 = document.createElement('input');
+            newInput5.type = 'hidden';
+            newInput5.name = 'long';
+            newInput5.value = long;
             // Now put everything together...
             theForm.appendChild(newInput1);
             theForm.appendChild(newInput2);
+            theForm.appendChild(newInput3);
+            theForm.appendChild(newInput4);
+            theForm.appendChild(newInput5);
             // ...and it to the DOM...
             document.getElementById('hidden_form_container').appendChild(theForm);
             // ...and submit it
@@ -151,19 +166,12 @@
                         <tbody>
                         {% for dato in datos %}
 
-                            <tr class="info" onclick="enviaDatos('{{ dato.publicID }}','{{ dato.hora }}')">
+                            <tr class="info" onclick="enviaDatos('{{ dato.publicID }}','{{ dato.hora }}','{{ dato.magnitud }}','{{ dato.latitud }}','{{ dato.longitud }}')">
                                 <td>{{ dato.hora }}</td>
                                 <td>{{ dato.latitud }}</td>
                                 <td>{{ dato.longitud }}</td>
                                 <td>{{ dato.magnitud }}</td>
                                 <td id="resultado-{{ loop.index }}">Cargando...</td>
-                               <!-- <td></td> -->
-                              <!--  <td class="nowrap">
-                                    <div class="icon button viewButton" rel="{{ dato.publicID }}">
-                                        <button type="button" onclick="enviaDatos('{{ dato.publicID }}','{{ dato.hora }}')">Informe </button>
-
-                                    </div>
-                                </td> -->
                             </tr>
                         {% endfor %}
 

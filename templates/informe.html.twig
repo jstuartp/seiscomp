@@ -1,89 +1,150 @@
 {% extends '/base.html.twig' %}
 
+
+
 {% block body %}
 
-    <div class="container" xmlns="http://www.w3.org/1999/html">
+    <script>
+        function enviaDatos (id, fecha, mag) {
+            var theForm, newInput1, newInput2, newInput3;
+            // Start by creating a <form>
+            theForm = document.createElement('form');
+            theForm.action = '{{ path('pga') }}';
+            theForm.method = 'post';
+            // Next create the <input>s in the form and give them names and values
+            newInput1 = document.createElement('input');
+            newInput1.type = 'hidden';
+            newInput1.name = 'id';
+            newInput1.value = id;
+            newInput2 = document.createElement('input');
+            newInput2.type = 'hidden';
+            newInput2.name = 'fecha';
+            newInput2.value = fecha;
+            newInput3 = document.createElement('input');
+            newInput3.type = 'hidden';
+            newInput3.name = 'mag';
+            newInput3.value = mag;
+            // Now put everything together...
+            theForm.appendChild(newInput1);
+            theForm.appendChild(newInput2);
+            theForm.appendChild(newInput3);
+            // ...and it to the DOM...
+            document.getElementById('hidden_form_container').appendChild(theForm);
+            // ...and submit it
+            theForm.submit();
+        }
 
-        <div class="row">
-            <br><br><br>
-            <div class="col">
+        function enviaEpicentro (id, fecha, mag,lat,long) {
+            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5;
+            // Start by creating a <form>
+            theForm = document.createElement('form');
+            theForm.action = '{{ path('epicentro') }}';
+            theForm.method = 'post';
+            // Next create the <input>s in the form and give them names and values
+            newInput1 = document.createElement('input');
+            newInput1.type = 'hidden';
+            newInput1.name = 'id';
+            newInput1.value = id;
+            newInput2 = document.createElement('input');
+            newInput2.type = 'hidden';
+            newInput2.name = 'fecha';
+            newInput2.value = fecha;
+            newInput3 = document.createElement('input');
+            newInput3.type = 'hidden';
+            newInput3.name = 'mag';
+            newInput3.value = mag;
+            newInput4 = document.createElement('input');
+            newInput4.type = 'hidden';
+            newInput4.name = 'lat';
+            newInput4.value = lat;
+            newInput5 = document.createElement('input');
+            newInput5.type = 'hidden';
+            newInput5.name = 'long';
+            newInput5.value = long;
+            // Now put everything together...
+            theForm.appendChild(newInput1);
+            theForm.appendChild(newInput2);
+            theForm.appendChild(newInput3);
+            theForm.appendChild(newInput4);
+            theForm.appendChild(newInput5);
+            // ...and it to the DOM...
+            document.getElementById('hidden_form_container').appendChild(theForm);
+            // ...and submit it
+            theForm.submit();
+        }
 
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                {{ title }} {{ fecha|date("F jS \\a\\t g:ia") }}
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
+    </script>
 
-            </div>
-        </div>
-        <div class="row">
-        </div>
-        <div class="row">
-            <br><br><br><br>
-            <div class="col">
 
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                <div class="bs-example" data-example-id="contextual-table">
-                    <table class="table table-bordered table-hover table-condensed table-striped" id="example2" style="font-size: 14px">
-                        <caption>
-                            Ultimos Sismos Registrados
-                        </caption>
-                        <thead>
-                        <tr>
+    <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
 
-                            <th>Fecha y Hora (UTC)</th>
-                            <th>Latitud</th>
-                            <th>Longitud</th>
-                            <th>Magnitud</th>
-                            <th>Profundidad</th>
-                            <th>Acci&oacute;n</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for dato in datos %}
-                            <tr class="info">
-                                <td>{{ dato.hora }}</td>
-                                <td>{{ dato.latitud }}</td>
-                                <td>{{ dato.longitud }}</td>
-                                <td>{{ dato.magnitud }}</td>
-                                <td>{{ dato.profundidad }}</td>
-                                <td class="nowrap">
-                                    <div class="icon button viewButton" rel="{{ dato.publicID }}">
-                                        <button type="button" onclick="enviaDatos('{{ dato.publicID }}','{{ dato.hora }}')">Informe </button>
 
+
+            <div class="row ">
+                {# Menú lateral izquierdo #}
+                <nav class="col-3 bg-white border-0 d-flex flex-column p-3">
+                    <h3 class="text-left mb-4">Menú</h3>
+                    <ul class="nav nav-pills flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link text-left" href={{ path('homepage') }}>&Uacute;ltimos S&iacute;smos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-left" href="#">Aceleraciones</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-left" href="#">Epicentro</a>
+                        </li>
+                    </ul>
+                </nav>
+
+                {# Contenido principal #}
+                <main class="col-9 bg-light p-4 overflow-auto">
+                    <h2 class="mb-4">{% block page_title %}
+                        Sismo del {{ fecha }} Magnitud {{ magnitud }}
+                        {% endblock %}</h2>
+
+                    <a class="row g-4">
+                        {% block content %}
+                            <div class="col-md-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-body" onclick="enviaDatos('{{ id }}','{{ fecha }}','{{ magnitud }}')">
+                                        <h5 class="card-title" onclick="">Mapa de Aceleraci&oacute;n </h5>
+                                        <p class="card-text">Principales valores de Aceleraci&oacute;n</p>
                                     </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
+                                </div>
 
-                        </tbody>
-                    </table>
-                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-body" onclick="enviaEpicentro('{{ id }}','{{ fecha }}','{{ magnitud }}','{{ lat }}','{{ long }}')">
+                                        <h5 class="card-title">Epicentro</h5>
+                                        <p class="card-text">Mapa interactivo con fallas</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Intensidad</h5>
+                                        <p class="card-text">Datos de intensidad</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card shadow-sm">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Espectros</h5>
+                                        <p class="card-text">An&aacute;lisis de los principales Espectros</p>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endblock %}
+                    </a>
+                </main>
             </div>
-        </div>
         <div id="hidden_form_container" style="display:none;"></div>
 
-        <div class="row">
-
-            <br><br><br><br><br><br><br><br><br>
-            <div class="col">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="row">
-        <div class="col">
-
-        </div>
     </div>
 
 
