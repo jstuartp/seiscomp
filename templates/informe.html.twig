@@ -75,72 +75,172 @@
 
     </script>
 
+    {% set ruta_actual = app.request.attributes.get('_route') %}
+    <div class="container-fluid h-100" xmlns="http://www.w3.org/1999/html">
 
-    <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
 
 
-
-            <div class="row ">
+            <div class="row h-100 flex-nowrap">
                 {# Menú lateral izquierdo #}
-                <nav class="col-3 bg-white border-0 d-flex flex-column p-3">
-                    <h3 class="text-left mb-4">Menú</h3>
-                    <ul class="nav nav-pills flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link text-left" href={{ path('homepage') }}>&Uacute;ltimos S&iacute;smos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-left" href="#">Aceleraciones</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-left" href="#">Epicentro</a>
-                        </li>
-                    </ul>
+                {# Sidebar Offcanvas #}
+
+
+                <nav id="sidebarMenu"
+                     class="col-3 bg-light collapse d-lg-block border-end">
+
+                    {# 1) Botón “Cerrar” visible solo en < lg (para ocultar el menú) #}
+                    <div class="d-flex d-lg-none justify-content-end p-2">
+                        <button class="btn btn-sm btn-outline-secondary"
+                                type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#sidebarMenu"
+                                aria-controls="sidebarMenu"
+                                aria-expanded="true"
+                                aria-label="Cerrar menú">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+
+                    {# Encabezado fijo con logo y título #}
+                    <div class="offcanvas-header d-md-none">
+                        <h5 class="offcanvas-title" id="sidebarMenuLabel">Menú</h5>
+                        <button type="button"
+                                class="btn-close text-reset"
+                                data-bs-dismiss="offcanvas"
+                                aria-label="Cerrar"></button>
+                    </div>
+
+                    <div class="offcanvas-body px-0 d-flex flex-column">
+                        {# Grupo Principal #}
+                        <ul class="nav nav-pills flex-column mb-3">
+                            <li class="nav-item mb-2">
+                                <span class="mx-3 mb-1 text-muted text-uppercase small">General</span>
+                                <hr class="my-1">
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ path('homepage') }}"
+                                   class="nav-link {% if ruta_actual=='homepage' %}active{% endif %}"
+                                   {% if ruta_actual=='homepage' %}aria-current="page"{% endif %}>
+                                    <i class="bi bi-house-door-fill me-2"></i>
+                                    Inicio
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ path('pga') }}"
+                                   class="nav-link {% if ruta_actual=='aceleraciones' %}active{% endif %}"
+                                   {% if ruta_actual=='aceleraciones' %}aria-current="page"{% endif %}>
+                                    <i class="bi bi-lightning-fill me-2"></i>
+                                    Aceleraciones
+                                </a>
+                            </li>
+                        </ul>
+
+                        {# Grupo Análisis Sísmicos #}
+                        <ul class="nav nav-pills flex-column mb-3">
+                            <li class="nav-item mb-2">
+                                <span class="mx-3 mb-1 text-muted text-uppercase small">Análisis Sísmicos</span>
+                                <hr class="my-1">
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ path('epicentro') }}"
+                                   class="nav-link {% if ruta_actual=='epicentro' %}active{% endif %}"
+                                   {% if ruta_actual=='epicentro' %}aria-current="page"{% endif %}>
+                                    <i class="bi bi-geo-alt-fill me-2"></i>
+                                    Epicentro
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href=""
+                                   class="nav-link {% if ruta_actual=='intensidad' %}active{% endif %}"
+                                   {% if ruta_actual=='intensidad' %}aria-current="page"{% endif %}>
+                                    <i class="bi bi-speedometer2 me-2"></i>
+                                    Intensidad
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href=""
+                                   class="nav-link {% if ruta_actual=='espectros' %}active{% endif %}"
+                                   {% if ruta_actual=='espectros' %}aria-current="page"{% endif %}>
+                                    <i class="bi bi-activity me-2"></i>
+                                    Espectros
+                                </a>
+                            </li>
+                        </ul>
+
+                        {# Footer con perfil y cierre de sesión #}
+                        <hr>
+                    </div>
                 </nav>
 
                 {# Contenido principal #}
-                <main class="col-9 bg-light p-4 overflow-auto">
+                <main class="col-9 bg-light p-4 overflow-auto mt-3">
                     <h2 class="mb-4">{% block page_title %}
-                        Sismo del {{ fecha }} Magnitud {{ magnitud }}
-                        {% endblock %}</h2>
+                        S&iacute;smo del <strong>{{ fecha|date("d-m-Y H:i:s ") }}  </strong>
+                        <span class="badge bg-secondary">M {{ magnitud }} </span>{% endblock %}
+                    </h2>
 
-                    <a class="row g-4">
+                    <div class="row g-4">
                         {% block content %}
                             <div class="col-md-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-body" onclick="enviaDatos('{{ id }}','{{ fecha }}','{{ magnitud }}')">
+                                <div class="card shadow-sm position-relative">
+                                    <div class="card-body" >
+                                        <div class="mb-3">
+                                            <i class="bi bi-speedometer2 fs-2 text-primary"></i>
+                                        </div>
                                         <h5 class="card-title" onclick="">Mapa de Aceleraci&oacute;n </h5>
                                         <p class="card-text">Principales valores de Aceleraci&oacute;n</p>
+                                        <a href="javascript:void(0);"
+                                           onclick="enviaDatos('{{ id }}','{{ fecha }}','{{ magnitud }}')"
+                                           class="stretched-link"></a>
                                     </div>
                                 </div>
 
                             </div>
 
                             <div class="col-md-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-body" onclick="enviaEpicentro('{{ id }}','{{ fecha }}','{{ magnitud }}','{{ lat }}','{{ long }}')">
+                                <div class="card shadow-sm position-relative">
+                                    <div class="card-body" >
+                                        <div class="mb-3">
+                                            <i class="bi bi-geo-alt-fill fs-2 text-primary"></i>
+                                        </div>
                                         <h5 class="card-title">Epicentro</h5>
                                         <p class="card-text">Mapa interactivo con fallas</p>
+                                        <a href="javascript:void(0);"
+                                           onclick="enviaEpicentro('{{ id }}','{{ fecha }}','{{ magnitud }}','{{ lat }}','{{ long }}')"
+                                           class="stretched-link"></a>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="card shadow-sm">
                                     <div class="card-body">
+                                        <div class="mb-3">
+                                            <i class="bi bi-speedometer fs-2 text-primary"></i>
+                                        </div>
                                         <h5 class="card-title">Intensidad</h5>
                                         <p class="card-text">Datos de intensidad</p>
+                                        <a href="javascript:void(0);"
+                                           onclick=""
+                                           class="stretched-link"></a>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="card shadow-sm">
                                     <div class="card-body">
+                                            <div class="mb-3">
+                                                <i class="bi bi-activity fs-2 text-primary"></i>
+                                            </div>
                                         <h5 class="card-title">Espectros</h5>
                                         <p class="card-text">An&aacute;lisis de los principales Espectros</p>
+                                            <a href="javascript:void(0);"
+                                               onclick=""
+                                               class="stretched-link"></a>
                                     </div>
                                 </div>
                             </div>
                         {% endblock %}
-                    </a>
+                    </div>
                 </main>
             </div>
         <div id="hidden_form_container" style="display:none;"></div>

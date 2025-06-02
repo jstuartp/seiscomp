@@ -32,6 +32,20 @@
 
             <style>
                 #map { height: 900px; width: 100%; }
+
+                .card-body:hover {
+                    cursor: pointer;
+                    /* opcional: una ligera sombra extra o transformación */
+                    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.15);
+                    transform: translateY(-2px);
+                    transition: transform 0.1s ease, box-shadow 0.1s ease;
+                } /*AÑADIDO POR STUART PARA DIFERENCIAR LAS CAJAS MOUSE OVER*/
+
+
+
+
+
+
             </style>
 
         {% endblock %}
