@@ -1,0 +1,7 @@
+<h1>Últimos Sismos</h1>
+<div id="map" style="height:500px"></div>
+<ul>
+  <li *ngFor="let q of earthquakes">
+    {{ q.hora }} - Magnitud {{ q.magnitud }} ({{ q.latitud }}, {{ q.longitud }})
+  </li>
+</ul>
