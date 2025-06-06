@@ -1,0 +1,26 @@
+{
+  "name": "seiscomp-frontend",
+  "version": "0.0.1",
+  "scripts": {
+    "start": "ng serve",
+    "build": "ng build"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^17.1.0",
+    "@angular/common": "^17.1.0",
+    "@angular/compiler": "^17.1.0",
+    "@angular/core": "^17.1.0",
+    "@angular/forms": "^17.1.0",
+    "@angular/platform-browser": "^17.1.0",
+    "@angular/platform-browser-dynamic": "^17.1.0",
+    "@angular/router": "^17.1.0",
+    "leaflet": "^1.9.4",
+    "rxjs": "^7.8.1",
+    "zone.js": "^0.14.1"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "^17.1.0",
+    "typescript": "~5.3.3"
+  }
+}
