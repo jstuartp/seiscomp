@@ -48,8 +48,8 @@ class PgaRepository extends ServiceEntityRepository
     public function findPgaByEvento($evento): ?array
     {
         $conn = $this->getEntityManager()->getConnection();
-        $sql ="select distinct Pga.idpga as id, Pga.estacion, ROUND(Pga.latitud,3) as latitud, ROUND(Pga.longitud,3) as longitud, ROUND(Pga.hne_pga*100,4) as hne, ROUND(Pga.hnn_pga*100,4) as hnn, ROUND(Pga.hnz_pga*100,4) as hnz,
-                ROUND(Pga.maximo*100,4) as maximo, Pga.rutaWaveform as grafica
+        $sql ="select distinct Pga.idpga as id, Pga.estacion, ROUND(Pga.latitud,3) as latitud, ROUND(Pga.longitud,3) as longitud, ROUND(Pga.hne_pga,4) as hne, ROUND(Pga.hnn_pga,4) as hnn, ROUND(Pga.hnz_pga,4) as hnz,
+                ROUND(Pga.maximo,4) as maximo, Pga.rutaWaveform as grafica
                 From Pga Where Pga.tipo_estacion != 2 and Pga.nombre_evento = '".$evento."'";
         try {
 

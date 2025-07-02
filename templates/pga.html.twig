@@ -5,45 +5,43 @@
     <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
 
         <div class="row">
-            <br><br><br>
+            <br><br>
             <div class="col">
 
             </div>
         </div>
         <div class="row">
-            <div class="col">
-                {{ title }} {{ fecha }}
+            <div class="col-sm-8">
+                <h2 class="mb-4">{% block page_title %}
+                        Aceleraciones M&aacute;ximas del sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} (UTC)  </strong>
+                        <span class="badge bg-secondary">M {{ magnitud }} </span>{% endblock %}
+                </h2>
+            </div>
+            <div class="col-sm-4 text-end">
+                <a href="javascript:window.history.back();" class="btn btn-dark">
+                    Regresar
+                </a>
             </div>
         </div>
         <div class="row">
+        </div>
+        <div class="row">
+            <br><br>
             <div class="col">
 
             </div>
         </div>
         <div class="row">
-        </div>
-        <div class="row">
-            <br><br><br><br>
-            <div class="col">
-
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-sm">
+            <div class="col-4">
                 <div class="bs-example" data-example-id="contextual-table">
                     <table class="table table-bordered table-hover table-condensed table-striped" id="example2" style="font-size: 14px">
-                        <caption>
-                            Aceleraciones Registradas para el sismo
-                        </caption>
                         <thead>
                         <tr>
                             <th>Estación</th>
-                            <th>Latitud</th>
-                            <th>Longitud</th>
-                            <th>HNE MAX PGA (cm/s*2)</th>
-                            <th>HNN MAX PGA (cm/s*2)</th>
-                            <th>HNZ MAX PGA (cm/s*2)</th>
-                            <th>PGA MAXIMO (canales) (cm/s*2)</th>
+                            <th>HNE MAX PGA (cm/s&sup2)</th>
+                            <th>HNN MAX PGA (cm/s&sup2)</th>
+                            <th>HNZ MAX PGA (cm/s&sup2)</th>
+                            <th>PGA MAXIMO (canales) (cm/s&sup2)</th>
                             <th>Onda</th>
                         </tr>
                         </thead>
@@ -51,13 +49,11 @@
                         {% for dato in datos %}
                         <tr class="info">
                             <td>{{ dato.estacion }}</td>
-                            <td>{{ dato.latitud }}</td>
-                            <td>{{ dato.longitud }}</td>
                             <td>{{ dato.hne }}</td>
                             <td>{{ dato.hnn }}</td>
                             <td>{{ dato.hnz }}</td>
                             <td>{{ dato.maximo }}</td>
-                            <td><div class="icon button viewButton"><button onclick="openModal('{{asset('assets/waves/'~ dato.grafica)}}')">Gr&aacute;fica</button></div></td>
+                            <td><div class="icon button viewButton"><button onclick="openModal('{{asset('assets/waves/'~ dato.grafica~'.png')}}')">Onda</button></div></td>
                         </tr>
                         {% endfor %}
 
@@ -65,7 +61,7 @@
                     </table>
                 </div>
             </div>
-            <div class="col-sm">Mapa de Aceleraciones M&aacute;ximas
+            <div class="col-8">
                 <div class="row">
                     <div id="map">MAPA</div>
                 </div>

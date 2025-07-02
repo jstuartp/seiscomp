@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Repository\PgaRepository;
+use App\Repository\HistoricoSismosRepository;
+use App\Repository\TodosSismosRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -13,23 +15,24 @@ use Symfony\Component\Routing\Annotation\Route;
 class mainController extends AbstractController
 {
     private pgaRepository $repository;  //Variable para inyectar el repositorio se usa PGA pero se puede hacer general
+    private HistoricoSismosRepository $historicoSismosRepository;  //Variable para inyectar el repositorio se usa PGA pero se puede hacer general
+    private TodosSismosRepository $todoSismoRepository;  //Variable para inyectar el repositorio se usa PGA pero se puede hacer general
 
-    public function __construct(PgaRepository $repository)
+    public function __construct(PgaRepository $repository, HistoricoSismosRepository $historicoSismosRepository,
+                                TodosSismosRepository $todosSismosRepository)
     {
         $this->repository = $repository;
+        $this->historicoSismosRepository = $historicoSismosRepository;
+        $this->todoSismoRepository = $todosSismosRepository;
     }
 
     #[Route('/', name:'homepage', methods: ['POST','GET'])]
     public function index(Request $request, EntityManagerInterface $em, ManagerRegistry $doctrine): Response
     {
-
-
         //nombre de la pagina
         $nombre="Ultimos Sismos Registrados";
-
         $salida="";
         $datosSeiscomp="";
-
         $ciudades1 = [];
         // IF para leer el archivo de distritos y calcular el epicentro
         if (($handle = fopen("distritos.csv", "r")) !== FALSE) {
@@ -38,9 +41,9 @@ class mainController extends AbstractController
             }
             fclose($handle);
         }
-
         //Uso el repository PGA para traer los datos de los sismos
-        $masDatos = $this->repository->findSismo();
+        //$masDatos = $this->repository->findSismo();
+        $masDatos = $this->historicoSismosRepository->findHistoricoSismos();
 
         //Devuelvo todo el entity, lo que me permite usarlo en el twigg
         return $this->render('index.html.twig',
@@ -48,12 +51,40 @@ class mainController extends AbstractController
                  'seiscomp' =>$datosSeiscomp, 'ciudadesp' =>$ciudades1] );
     }
 
+    /*
+     * Controlador para el template de todos los sismos
+     * Muestra la tabla con todos los sismos registrados por el seiscomp
+    */
+    #[Route('/todos', name:'todos', methods: ['POST','GET'])]
+    public function todosAction(Request $request, EntityManagerInterface $em, ManagerRegistry $doctrine): Response
+    {
+        //nombre de la pagina
+        $nombre="Todos los Sismos Registrados";
+        $salida="";
+        $datosSeiscomp="";
+        $ciudades1 = [];
+        // IF para leer el archivo de distritos y calcular el epicentro
+        if (($handle = fopen("distritos.csv", "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                $ciudades1[] = ["nombre" => $data[2], "lat" => (float)$data[1], "lon" => (float)$data[0]];
+            }
+            fclose($handle);
+        }
+        //Uso el repository PGA para traer los datos de los sismos
+        //$masDatos = $this->repository->findSismo();
+        $masDatos = $this->todoSismoRepository->findTodosSismos();
+
+        //Devuelvo todo el entity, lo que me permite usarlo en el twigg
+        return $this->render('todos.html.twig',
+            ['title'=> $nombre, 'datos'=>$masDatos, 'salida'=>$salida,
+                'seiscomp' =>$datosSeiscomp, 'ciudadesp' =>$ciudades1] );
+    }
+
 
     #[Route('/indexAA', name:'indexAA', methods: ['POST','GET'])]
     public function indexAA(Request $request, EntityManagerInterface $em, ManagerRegistry $doctrine): Response
     {
         $titulo="Pagina Principal";
-
         #$mydate = $request->request->get('date');
         #$time = $request->request->get('time');
         $em = $doctrine->getManager('default');
@@ -64,20 +95,10 @@ class mainController extends AbstractController
         $datos = "";
         $json= "";
         $salida="";
-        $datosSeiscomp="";
-
-
-
-
-        //se llama a la funcion para sacar los datos de la tabla
+        $datosSeiscomp="";//se llama a la funcion para sacar los datos de la tabla
         $datos = $this->datosTabla($em);
-
         //$datosSeiscomp = $this->datosTablaSeiscomp($seiscomp,$mydate);
         $json = json_encode($datos);
-
-
-
-//print_r($salida);
 
         //Devuelvo todo el entity, lo que me permite usarlo en el twigg
         return $this->render('index.html.twig',
@@ -96,19 +117,12 @@ class mainController extends AbstractController
         //$request = $this->get('request_stack')->getCurrentRequest();
         $date = $request->get('date');
         $time = $request->get('time');
-
-
-
         //nombre de la pagina
         $nombre="Datos Obtenidos";
         $salida = array(); //contendrá cada linea salida desde la aplicación en Python
-
         //exec("python3 /var/www/html/prueba/main.py", $salida); //llamada a python
-
-
         $datos = $this->datosTabla($em);
         $json= json_encode($datos);
-
         //Devuelvo todo el entity, lo que me permite usarlo en el twigg
         return $this->render('index.html.twig',
             ['title'=> $nombre, 'datos'=>$datos,'json'=>$json, 'salida'=>$salida]);
@@ -140,6 +154,7 @@ class mainController extends AbstractController
         if ($request->isMethod('POST')) {
             $evento = $request->request->get('id');
             $fecha = $request->request->get('fecha');
+            $magnitud = $request->request->get('mag');
         }else{echo "NO HAY NADA";}
 
         //Activo el repositorio para traer los datos de PGA segun el evento
@@ -147,7 +162,7 @@ class mainController extends AbstractController
 
 
         return $this->render('pga.html.twig',
-            ['title'=> "Aceleraciones Maximas del Sismo de: ", 'fecha' => $fecha,'datos'=>$datosPga,'id'=>$evento]);
+            ['fecha' => $fecha,'datos'=>$datosPga,'id'=>$evento,'magnitud'=>$magnitud]);
     }
 
 
@@ -165,8 +180,6 @@ class mainController extends AbstractController
             $lat = $request->request->get('lat');
             $long = $request->request->get('long');
         }else{echo "NO HAY NADA";}
-
-
 
         return $this->render('informe.html.twig',
             ['title'=> "Datos del Sismo: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento,'lat'=>$lat,'long'=>$long]);
@@ -197,9 +210,6 @@ class mainController extends AbstractController
             }
             fclose($handle);
         }
-
-
-
         return $this->render('epicentro.html.twig',
             ['title'=> "Ciudades cercanas al Epicentro: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento, 'lat'=>$lat,'long'=>$long , 'ciudadesp' =>$ciudades1]);
     }

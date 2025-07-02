@@ -118,28 +118,30 @@
         </script>
 
     <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
+
+
+
+
         <div class="row">
         </div>
         <div class="row">
-            <br><h2 align="center">
-                        <a href="{{ path('homepage') }}" class="badge badge-pill badge-danger"> Sismos con Informe </a>
-                <a href="{{ path('todos') }}" class="badge badge-pill badge-primary"> Todos los Sismos</a></h2><br>
+            <br><br><h2 align="center">
+                <a href="{{ path('homepage') }}" class="badge badge-pill badge-primary"> Sismos con Informe </a>
+                <a href="{{ path('todos') }}" class="badge badge-pill badge-danger"> Todos los Sismos</a></h2><br>
             <div class="col">
-
             </div>
         </div>
         <div class="row">
-
             <div class="col-4">
                 <div class="bs-example" data-example-id="contextual-table">
                     <table class="table table-bordered table-hover table-sm table-striped" id="tabla1" style="font-size: 14px">
-                        <thead class="dt-head-center">
+
+                        <thead>
                         <tr>
                             <th>Fecha y Hora (UTC)</th>
-                            <th hidden="">Latitud</th>
-                            <th hidden="">Longitud</th>
+                            <th>Latitud</th>
+                            <th>Longitud</th>
                             <th>Magnitud</th>
-                            <th>Mayor Aceleraci&oacute;n<br>(cm/s&sup2)</th>
                             <th>Epicentro</th>
                            <!-- <th>Acci&oacute;n</th> -->
                         </tr>
@@ -149,10 +151,9 @@
 
                             <tr class="info" onclick="enviaDatos('{{ dato.idEvento }}','{{ dato.fechaEvento }}','{{ dato.magnitudEvento }}','{{ dato.latitudEvento }}','{{ dato.longitudEvento }}')">
                                 <td>{{ dato.fechaEvento }}</td>
-                                <td hidden="">{{ dato.latitudEvento }}</td>
-                                <td hidden="">{{ dato.longitudEvento }}</td>
+                                <td>{{ dato.latitudEvento }}</td>
+                                <td>{{ dato.longitudEvento }}</td>
                                 <td>{{ dato.magnitudEvento }}</td>
-                                <td>{{ dato.aceleracionEvento |round(2)  }}</td>
                                 <td id="resultado-{{ loop.index }}">Cargando...</td>
                             </tr>
                         {% endfor %}
