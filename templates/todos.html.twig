@@ -139,8 +139,8 @@
                         <thead>
                         <tr>
                             <th>Fecha y Hora (UTC)</th>
-                            <th>Latitud</th>
-                            <th>Longitud</th>
+                            <th hidden="">Latitud</th>
+                            <th hidden="">Longitud</th>
                             <th>Magnitud</th>
                             <th>Epicentro</th>
                            <!-- <th>Acci&oacute;n</th> -->
@@ -151,8 +151,8 @@
 
                             <tr class="info" onclick="enviaDatos('{{ dato.idEvento }}','{{ dato.fechaEvento }}','{{ dato.magnitudEvento }}','{{ dato.latitudEvento }}','{{ dato.longitudEvento }}')">
                                 <td>{{ dato.fechaEvento }}</td>
-                                <td>{{ dato.latitudEvento }}</td>
-                                <td>{{ dato.longitudEvento }}</td>
+                                <td hidden="">{{ dato.latitudEvento }}</td>
+                                <td hidden="">{{ dato.longitudEvento }}</td>
                                 <td>{{ dato.magnitudEvento }}</td>
                                 <td id="resultado-{{ loop.index }}">Cargando...</td>
                             </tr>
