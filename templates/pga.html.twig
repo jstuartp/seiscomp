@@ -14,7 +14,7 @@
             <div class="col-sm-8">
                 <h2 class="mb-4">{% block page_title %}
                         Aceleraciones M&aacute;ximas del sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} (UTC)  </strong>
-                        <span class="badge bg-secondary">M {{ magnitud }} </span>{% endblock %}
+                        <span class="badge bg-secondary">M {{ magnitud |round(1)}} </span>{% endblock %}
                 </h2>
             </div>
             <div class="col-sm-4 text-end">
@@ -27,70 +27,52 @@
         </div>
         <div class="row">
             <br><br>
-            <div class="col">
-
-            </div>
         </div>
-        <div class="row">
+        <div class="row h-100">
             <div class="col-4">
-                <div class="bs-example" data-example-id="contextual-table">
-                    <table class="table table-bordered table-hover table-condensed table-striped" id="example2" style="font-size: 14px">
-                        <thead>
-                        <tr>
-                            <th>Estación</th>
-                            <th>HNE MAX PGA (cm/s&sup2)</th>
-                            <th>HNN MAX PGA (cm/s&sup2)</th>
-                            <th>HNZ MAX PGA (cm/s&sup2)</th>
-                            <th>PGA MAXIMO (canales) (cm/s&sup2)</th>
-                            <th>Onda</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for dato in datos %}
-                        <tr class="info">
-                            <td>{{ dato.estacion }}</td>
-                            <td>{{ dato.hne }}</td>
-                            <td>{{ dato.hnn }}</td>
-                            <td>{{ dato.hnz }}</td>
-                            <td>{{ dato.maximo }}</td>
-                            <td><div class="icon button viewButton"><button onclick="openModal('{{asset('assets/waves/'~ dato.grafica~'.png')}}')">Onda</button></div></td>
-                        </tr>
-                        {% endfor %}
+                <div class="row h-100">
+                    <div class="bs-example" data-example-id="contextual-table">
+                        <table class="table table-bordered table-hover table-condensed table-striped" id="example2" style="font-size: 14px">
+                            <thead>
+                            <tr>
+                                <th>Estación</th>
+                                <th>HNE MAX PGA (cm/s&sup2)</th>
+                                <th>HNN MAX PGA (cm/s&sup2)</th>
+                                <th>HNZ MAX PGA (cm/s&sup2)</th>
+                                <th>PGA MAXIMO (canales) (cm/s&sup2)</th>
+                                <th>Onda</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for dato in datos %}
+                            <tr class="info">
+                                <td>{{ dato.estacion }}</td>
+                                <td>{{ dato.hne | round(2)}}</td>
+                                <td>{{ dato.hnn | round(2)}}</td>
+                                <td>{{ dato.hnz | round(2)}}</td>
+                                <td>{{ dato.maximo | round(2)}}</td>
+                                <td><div class="icon button viewButton"><button onclick="openModal('{{asset('assets/waves/'~ dato.grafica~'.png')}}')">Onda</button></div></td>
+                            </tr>
+                            {% endfor %}
 
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
             <div class="col-8">
-                <div class="row">
+                <div class="row h-100">
                     <div id="map">MAPA</div>
                 </div>
             </div>
         </div>
-        <div class="row">
-            <br><br><br><br><br><br><br><br><br>
-            <div class="col">
-
-            </div>
-        </div>
-
-
         <div id="myModal" class="modal">
             <!-- El contenido del modal (la imagen) -->
             <span class="close">&times;</span>
             <img class="modal-content" id="img01">
         </div>
 
-        <div class="row">
-            <!--<h1>Mapa de Google</h1> -->
 
-
-            <div id="map" style="width:100%;height:800px;">
-
-
-
-            </div>
-        </div>
     </div>
 
     <div class="row">
@@ -103,19 +85,24 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Inicializar el mapa centrado en una posición predeterminada
-            var map = L.map('map').setView([0, 0], 2);
+            var map = L.map('map').setView([9.7489, -83.7534], 2);
 
             // Agregar capa de mapa base
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
+            L.control.scale().addTo(map);
 
             // Función para determinar el color del círculo según el valor numérico
             function getColor(valor) {
-                valor1 = valor*1000
-                if (valor1 > 80) return 'red';      // Alto
-                if (valor1 > 50) return 'orange';   // Medio
-                return 'green';                   // Bajo
+                valor1 = valor
+                if (valor1 > 60) return "#cc0000";      // Alto
+                if (valor1 > 40) return '#cc5200';   // Medio
+                if (valor1 > 20) return '#cc8b00';   // Medio
+                if (valor1 > 10) return '#ccaa00';   // Medio
+                if (valor1 > 5) return '#88cc00';   // Medio
+                if (valor1 > 1) return '#00cc03';   // Medio
+                return '#0058cc';                   // Bajo
             }
 
             // Lista de puntos en formato Twig
@@ -127,19 +114,20 @@
 
             // Dibujar los puntos en el mapa
             puntos.forEach(function(punto) {
-                L.circle([punto.lat, punto.lng], {
+                let marker = L.circleMarker([punto.lat, punto.lng], {
                     color: getColor(punto.max),
                     fillColor: getColor(punto.max),
                     fillOpacity: 0.5,
-                    radius: punto.max*1000
+                    weight: 2,                  // Grosor del borde
+                    radius: 9
                 }).addTo(map).bindPopup(punto.datos);
             });
 
-            // Centrar el mapa si hay puntos
             if (puntos.length > 0) {
                 var bounds = L.latLngBounds(puntos.map(p => [p.lat, p.lng]));
                 map.fitBounds(bounds);
             }
+
         });
     </script>
 

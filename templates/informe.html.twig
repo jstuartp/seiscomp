@@ -84,7 +84,7 @@
                 {# Menú lateral izquierdo #}
                 {# Sidebar Offcanvas #}
 
-
+<!--
                 <nav id="sidebarMenu"
                      class="col-3 bg-light collapse d-lg-block border-end">
 
@@ -126,7 +126,9 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a href="{{ path('pga') }}"
+                                <a href="javascript:void(0);"
+                                   onclick="enviaDatos('{{ id }}','{{ fecha }}','{{ magnitud }}')"
+                                   class="stretched-link"
                                    class="nav-link {% if ruta_actual=='aceleraciones' %}active{% endif %}"
                                    {% if ruta_actual=='aceleraciones' %}aria-current="page"{% endif %}>
                                     <i class="bi bi-lightning-fill me-2"></i>
@@ -171,77 +173,100 @@
                         <hr>
                     </div>
                 </nav>
-
+-->
                 {# Contenido principal #}
-                <main class="col-9 bg-light p-4 overflow-auto mt-3">
-                    <h2 class="mb-4">{% block page_title %}
-                        Sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }}  </strong>
-                        <span class="badge bg-secondary">M {{ magnitud }} </span>{% endblock %}
-                    </h2>
 
-                    <div class="row g-4">
-                        {% block content %}
-                            <div class="col-md-4">
-                                <div class="card shadow-sm position-relative">
-                                    <div class="card-body" >
-                                        <div class="mb-3">
-                                            <i class="bi bi-speedometer2 fs-2 text-primary"></i>
-                                        </div>
-                                        <h5 class="card-title" onclick="">Mapa de Aceleraci&oacute;n </h5>
-                                        <p class="card-text">Principales valores de Aceleraci&oacute;n</p>
-                                        <a href="javascript:void(0);"
-                                           onclick="enviaDatos('{{ id }}','{{ fecha }}','{{ magnitud }}')"
-                                           class="stretched-link"></a>
-                                    </div>
-                                </div>
+                <div class="row h-100">
 
-                            </div>
+                    <div class="row">
+                        <br><br>
+                        <div class="col">
 
-                            <div class="col-md-4">
-                                <div class="card shadow-sm position-relative">
-                                    <div class="card-body" >
-                                        <div class="mb-3">
-                                            <i class="bi bi-geo-alt-fill fs-2 text-primary"></i>
-                                        </div>
-                                        <h5 class="card-title">Epicentro</h5>
-                                        <p class="card-text">Mapa interactivo con fallas</p>
-                                        <a href="javascript:void(0);"
-                                           onclick="enviaEpicentro('{{ id }}','{{ fecha }}','{{ magnitud }}','{{ lat }}','{{ long }}')"
-                                           class="stretched-link"></a>
-                                    </div>
-                                </div>
+                        </div>
+                    </div>
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <h2 class="mb-4">{% block page_title %}
+                                    Sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} U.T.C. </strong>
+                                    <span class="badge bg-secondary">M {{ magnitud | round(1)}} </span>{% endblock %}
+                                </h2>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-body">
-                                        <div class="mb-3">
-                                            <i class="bi bi-speedometer fs-2 text-primary"></i>
-                                        </div>
-                                        <h5 class="card-title">Intensidad</h5>
-                                        <p class="card-text">Datos de intensidad</p>
-                                        <a href="javascript:void(0);"
-                                           onclick=""
-                                           class="stretched-link"></a>
-                                    </div>
-                                </div>
+                            <div class="col-sm-4 text-end">
+                                <a href="javascript:window.history.back();" class="btn btn-dark">
+                                    Regresar
+                                </a>
                             </div>
-                            <div class="col-md-4">
-                                <div class="card shadow-sm">
-                                    <div class="card-body">
+                        </div>
+                    <main class="col-9  p-4 overflow-auto mt-3">
+
+                        <div class="row g-4">
+                            {% block content %}
+                                <div class="col-md-4">
+                                    <div class="card shadow-sm position-relative">
+                                        <div class="card-body" >
                                             <div class="mb-3">
-                                                <i class="bi bi-activity fs-2 text-primary"></i>
+                                                <i class="bi bi-speedometer2 fs-2 text-primary"></i>
                                             </div>
-                                        <h5 class="card-title">Espectros</h5>
-                                        <p class="card-text">An&aacute;lisis de los principales Espectros</p>
+                                            <h5 class="card-title" onclick="">Mapa de Aceleraci&oacute;n </h5>
+                                            <p class="card-text">Principales valores de Aceleraci&oacute;n</p>
+                                            <a href="javascript:void(0);"
+                                               onclick="enviaDatos('{{ id }}','{{ fecha }}','{{ magnitud }}')"
+                                               class="stretched-link"></a>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="card shadow-sm position-relative">
+                                        <div class="card-body" >
+                                            <div class="mb-3">
+                                                <i class="bi bi-geo-alt-fill fs-2 text-primary"></i>
+                                            </div>
+                                            <h5 class="card-title">Epicentro</h5>
+                                            <p class="card-text">Mapa interactivo con fallas</p>
+                                            <a href="javascript:void(0);"
+                                               onclick="enviaEpicentro('{{ id }}','{{ fecha }}','{{ magnitud }}','{{ lat }}','{{ long }}')"
+                                               class="stretched-link"></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--
+                                <div class="col-md-4">
+                                    <div class="card shadow-sm">
+                                        <div class="card-body">
+                                            <div class="mb-3">
+                                                <i class="bi bi-speedometer fs-2 text-primary"></i>
+                                            </div>
+                                            <h5 class="card-title">Intensidad</h5>
+                                            <p class="card-text">Datos de intensidad</p>
                                             <a href="javascript:void(0);"
                                                onclick=""
                                                class="stretched-link"></a>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        {% endblock %}
-                    </div>
-                </main>
+                                -->
+                                <!--
+                                <div class="col-md-4">
+                                    <div class="card shadow-sm">
+                                        <div class="card-body">
+                                                <div class="mb-3">
+                                                    <i class="bi bi-activity fs-2 text-primary"></i>
+                                                </div>
+                                            <h5 class="card-title">Espectros</h5>
+                                            <p class="card-text">An&aacute;lisis de los principales Espectros</p>
+                                                <a href="javascript:void(0);"
+                                                   onclick=""
+                                                   class="stretched-link"></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                -->
+                            {% endblock %}
+                        </div>
+                    </main>
+                </div>
             </div>
         <div id="hidden_form_container" style="display:none;"></div>
 

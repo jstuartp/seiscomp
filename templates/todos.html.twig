@@ -1,5 +1,8 @@
 {% extends '/base.html.twig' %}
 
+{% block head_extra %}
+    <meta http-equiv="refresh" content="60"> {# se recarga cada 60 segundos #}
+{% endblock %}
 {% block body %}
 
     <script >
@@ -139,9 +142,10 @@
                         <thead>
                         <tr>
                             <th>Fecha y Hora (UTC)</th>
-                            <th hidden="">Latitud</th>
-                            <th hidden="">Longitud</th>
-                            <th>Magnitud</th>
+                            <th hidden="" >Latitud</th>
+                            <th hidden="" >Longitud</th>
+                            <th>Magnitud (Mw)</th>
+                            <th>Profundidad (m)</th>
                             <th>Epicentro</th>
                            <!-- <th>Acci&oacute;n</th> -->
                         </tr>
@@ -151,9 +155,10 @@
 
                             <tr class="info" onclick="enviaDatos('{{ dato.idEvento }}','{{ dato.fechaEvento }}','{{ dato.magnitudEvento }}','{{ dato.latitudEvento }}','{{ dato.longitudEvento }}')">
                                 <td>{{ dato.fechaEvento }}</td>
-                                <td hidden="">{{ dato.latitudEvento }}</td>
-                                <td hidden="">{{ dato.longitudEvento }}</td>
-                                <td>{{ dato.magnitudEvento }}</td>
+                                <td hidden="">{{ dato.latitudEvento | number_format(2, '.', '')}}</td>
+                                <td hidden="">{{ dato.longitudEvento | number_format(2, '.', '')}}</td>
+                                <td>{{ dato.magnitudEvento | round(1)}}</td>
+                                <td>{{ dato.profundidadEvento | round(1)}}</td>
                                 <td id="resultado-{{ loop.index }}">Cargando...</td>
                             </tr>
                         {% endfor %}
@@ -163,7 +168,7 @@
                 </div>
             </div>
             <div class="col-8">
-                <div class="row">
+                <div class="row h-100">
                     <div id="map">MAPA</div>
                 </div>
             </div>
@@ -240,22 +245,25 @@
             // Dibujar los puntos en el mapa
             puntos.forEach(function(punto) {
                 i = 0;
-                let marker = L.circle([punto.lat, punto.lng], {
-                    color: 'blue',
-                    fillColor: '#30f',
-                    fillOpacity: 0,
-                    radius: punto.mag*2000
+                let marker = L.circleMarker([punto.lat, punto.lng], {
+                    radius: 8,                 // Tamaño fijo en píxeles
+                    color: '#0033cc',          // Color del borde
+                    fillColor: '#3399ff',      // Color de relleno sólido
+                    fillOpacity: 1,            // Opacidad completa para un color sólido
+                    weight: 2                  // Grosor del borde
                 }).addTo(map).bindPopup(punto.datos);
                 marcadores[punto.index] = marker;
                 i++;
                 // Cambiar el color cuando el mouse pasa sobre el círculo
                 marker.on("mouseover", function () {
-                    this.setStyle({ color: "red", weight: 5 }); // Cambia a rojo con mayor grosor
+                    this.setStyle({ color: "#cc0000", fillColor: "#ff3333", weight: 3 });
+                    //this.setStyle({ color: "red", weight: 5 }); // Cambia a rojo con mayor grosor
                 });
 
                 // Restaurar el color original cuando el mouse sale
                 marker.on("mouseout", function () {
-                    this.setStyle({ color: "blue", weight: 3 }); // Vuelve a azul
+                    this.setStyle({ color: "#0033cc", fillColor: "#3399ff", weight: 2 });
+                    //this.setStyle({ color: "blue", weight: 3 }); // Vuelve a azul
                 });
             });
 
@@ -280,7 +288,7 @@
             $('#tabla1 tbody').on('mouseleave', 'tr', function () {
                 let index = mytabla.row(this).index();
                 if (marcadores[index]) {
-                    marcadores[index].setStyle({ color: "blue", fillColor: "blue"});
+                    marcadores[index].setStyle({ color: "#0033cc", fillColor: "#3399ff", weight: 2 });
                 }
                 $(this).removeClass("highlight");
             });

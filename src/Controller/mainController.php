@@ -32,7 +32,6 @@ class mainController extends AbstractController
         //nombre de la pagina
         $nombre="Ultimos Sismos Registrados";
         $salida="";
-        $datosSeiscomp="";
         $ciudades1 = [];
         // IF para leer el archivo de distritos y calcular el epicentro
         if (($handle = fopen("distritos.csv", "r")) !== FALSE) {
@@ -48,7 +47,7 @@ class mainController extends AbstractController
         //Devuelvo todo el entity, lo que me permite usarlo en el twigg
         return $this->render('index.html.twig',
             ['title'=> $nombre, 'datos'=>$masDatos, 'salida'=>$salida,
-                 'seiscomp' =>$datosSeiscomp, 'ciudadesp' =>$ciudades1] );
+                 'ciudadesp' =>$ciudades1] );
     }
 
     /*
@@ -61,7 +60,6 @@ class mainController extends AbstractController
         //nombre de la pagina
         $nombre="Todos los Sismos Registrados";
         $salida="";
-        $datosSeiscomp="";
         $ciudades1 = [];
         // IF para leer el archivo de distritos y calcular el epicentro
         if (($handle = fopen("distritos.csv", "r")) !== FALSE) {
@@ -77,7 +75,7 @@ class mainController extends AbstractController
         //Devuelvo todo el entity, lo que me permite usarlo en el twigg
         return $this->render('todos.html.twig',
             ['title'=> $nombre, 'datos'=>$masDatos, 'salida'=>$salida,
-                'seiscomp' =>$datosSeiscomp, 'ciudadesp' =>$ciudades1] );
+                'ciudadesp' =>$ciudades1] );
     }
 
 
