@@ -32,7 +32,7 @@
             <div class="col-4">
                 <div class="row h-100">
                     <div class="bs-example" data-example-id="contextual-table">
-                        <table class="table table-bordered table-hover table-condensed table-striped" id="example2" style="font-size: 14px">
+                        <table class="table table-bordered table-hover table-condensed table-striped" id="tabla_pga" style="font-size: 12px">
                             <thead>
                             <tr>
                                 <th>Estación</th>
@@ -85,7 +85,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Inicializar el mapa centrado en una posición predeterminada
-            var map = L.map('map').setView([9.7489, -83.7534], 2);
+            var map = L.map('map').setView([9.7489, -83.7534], 8);
 
             // Agregar capa de mapa base
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -95,20 +95,21 @@
 
             // Función para determinar el color del círculo según el valor numérico
             function getColor(valor) {
-                valor1 = valor
-                if (valor1 > 60) return "#cc0000";      // Alto
-                if (valor1 > 40) return '#cc5200';   // Medio
-                if (valor1 > 20) return '#cc8b00';   // Medio
-                if (valor1 > 10) return '#ccaa00';   // Medio
-                if (valor1 > 5) return '#88cc00';   // Medio
-                if (valor1 > 1) return '#00cc03';   // Medio
+
+                if (valor > 60) return "#cc0000";      // Alto
+                if (valor > 40) return '#cc5200';   // Medio
+                if (valor > 20) return '#cc8b00';   // Medio
+                if (valor > 10) return '#ccaa00';   // Medio
+                if (valor > 5) return '#88cc00';   // Medio
+                if (valor > 1) return '#00cc03';   // Medio
                 return '#0058cc';                   // Bajo
             }
 
             // Lista de puntos en formato Twig
             var puntos = [
                 {% for dato in datos %}
-                { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo }},datos: "Estaci&oacute;n {{ dato.estacion }} , Maximo: {{ dato.maximo }} " }{% if not loop.last %},{% endif %}
+                { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo }},
+                    datos: "Estaci&oacute;n {{ dato.estacion }} , Maximo: {{ dato.maximo | round(2) }} " }{% if not loop.last %},{% endif %}
                 {% endfor %}
             ];
 
@@ -127,6 +128,33 @@
                 var bounds = L.latLngBounds(puntos.map(p => [p.lat, p.lng]));
                 map.fitBounds(bounds);
             }
+
+
+            let mytabla =$('#tabla_pga').DataTable({
+                responsive: true,
+                retrieve: true,
+                paging: true,       // Habilita paginación
+                ordering: true,
+                order: [[4, "desc"],],
+                lengthMenu: [15, 30, 60], // Opciones de cantidad de filas por página
+                pageLength: 15,      // Número de filas por defecto
+                language: {
+                    processing: "En curso...",
+                    search: "Buscar:",
+                    paginate: {
+                        first: "Primero",
+                        previous: "Anterior",
+                        next: "Siguiente",
+                        last: "Último"
+                    },
+                },
+                layout: {
+                    topStart: {
+                        buttons: ['csv', 'excel']
+                    }
+                }
+
+            });
 
         });
     </script>

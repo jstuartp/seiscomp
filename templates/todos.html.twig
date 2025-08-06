@@ -1,7 +1,7 @@
 {% extends '/base.html.twig' %}
 
 {% block head_extra %}
-    <meta http-equiv="refresh" content="60"> {# se recarga cada 60 segundos #}
+    <meta http-equiv="refresh" content="1800"> {# se recarga cada 60 segundos #}
 {% endblock %}
 {% block body %}
 
@@ -235,7 +235,7 @@
             // Lista de puntos en formato Twig
             var puntos = [
                 {% for dato in datos | slice (0,60) %}
-                { lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }}, datos: "Fecha: {{ dato.fechaEvento }} , Magnitud: {{ dato.magnitudEvento }}",
+                { lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }}, datos: "Fecha: {{ dato.fechaEvento }} , Magnitud: {{ dato.magnitudEvento | round(1) }}",
                     mag: {{ dato.magnitudEvento }}, index: {{ loop.index0 }} }
                 {% if not loop.last %},{% endif %}
                 {% endfor %}

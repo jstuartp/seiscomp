@@ -125,7 +125,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             // Inicializar el mapa centrado en una posición predeterminada
-            var map = L.map('map').setView([{{ lat }}, {{ long }}], 13);
+            var map = L.map('map').setView([{{ lat }}, {{ long }}], 7);
 
             // Agregar capa de mapa base
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
