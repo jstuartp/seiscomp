@@ -137,7 +137,10 @@
         <div class="row">
             <div class="col-4">
                 <div class="bs-example" data-example-id="contextual-table">
-                    <table class="table table-bordered table-hover table-sm table-striped" id="tabla1" style="font-size: 14px">
+                    <table class="table table-bordered table-hover table-condensed table-sm table-striped" id="tabla_todos" style="font-size: 12px !important;
+                                                                                                                     height: 32px !important;
+                                                                                                                    min-width: 100px !important;
+                                                                                                                    padding: 2px 6px !important; ">
 
                         <thead>
                         <tr>
@@ -206,7 +209,7 @@
             //matriz con marcadores
             let marcadores ={};
 
-            let mytabla =$('#tabla1').DataTable({
+            let mytabla =$('#tabla_todos').DataTable({
                 responsive: true,
                 retrieve: true,
                 paging: true,       // Habilita paginación
@@ -224,18 +227,21 @@
                         last: "Último"
                     },
                 },
-                layout: {
-                    topStart: {
-                        buttons: ['csv', 'excel']
-                    }
-                }
-
             });
 
             // Lista de puntos en formato Twig
             var puntos = [
                 {% for dato in datos | slice (0,60) %}
-                { lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }}, datos: "Fecha: {{ dato.fechaEvento }} , Magnitud: {{ dato.magnitudEvento | round(1) }}",
+                { lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }},
+                    datos: `Fecha: {{ dato.fechaEvento }}<br>
+                Magnitud: {{ dato.magnitudEvento | round(1) }}<br>
+                <button onclick="enviaDatos(
+                    '{{ dato.idEvento }}',
+                    '{{ dato.fechaEvento }}',
+                    '{{ dato.magnitudEvento }}',
+                    '{{ dato.latitudEvento }}',
+                    '{{ dato.longitudEvento }}'
+                )">Mostrar</button>`,
                     mag: {{ dato.magnitudEvento }}, index: {{ loop.index0 }} }
                 {% if not loop.last %},{% endif %}
                 {% endfor %}
@@ -276,7 +282,7 @@
             }
 
 
-            $('#tabla1 tbody').on('mouseenter', 'tr', function () {
+            $('#tabla_todos> tbody').on('mouseenter', 'tr', function () {
                 let index = mytabla.row(this).index();
                 //alert(mytabla.row(this).index());
                 if (marcadores[index]) {
@@ -285,7 +291,7 @@
                 $(this).addClass("highlight");
             });
 
-            $('#tabla1 tbody').on('mouseleave', 'tr', function () {
+            $('#tabla_todos tbody').on('mouseleave', 'tr', function () {
                 let index = mytabla.row(this).index();
                 if (marcadores[index]) {
                     marcadores[index].setStyle({ color: "#0033cc", fillColor: "#3399ff", weight: 2 });

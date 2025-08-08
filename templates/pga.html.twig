@@ -32,7 +32,10 @@
             <div class="col-4">
                 <div class="row h-100">
                     <div class="bs-example" data-example-id="contextual-table">
-                        <table class="table table-bordered table-hover table-condensed table-striped" id="tabla_pga" style="font-size: 12px">
+                        <table class="table table-bordered table-hover table-condensed table-sm table-striped" id="tabla_pga" style="font-size: 12px !important;
+                                                                                                                     height: 32px !important;
+                                                                                                                    min-width: 100px !important;
+                                                                                                                    padding: 2px 6px !important; ">
                             <thead>
                             <tr>
                                 <th>Estación</th>
@@ -84,8 +87,33 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+
+            let mytabla =$('#tabla_pga').DataTable({
+                responsive: true,
+                paging: true,       // Habilita paginación
+                ordering: true,
+                order: [[4, "desc"],],
+                lengthMenu: [15, 30, 60], // Opciones de cantidad de filas por página
+                pageLength: 15,      // Número de filas por defecto
+                language: {
+                    processing: "En curso...",
+                    search: "Buscar:",
+                    paginate: {
+                        first: "Primero",
+                        previous: "Anterior",
+                        next: "Siguiente",
+                        last: "Último"
+                    },
+                },
+            });
+
+
+
             // Inicializar el mapa centrado en una posición predeterminada
-            var map = L.map('map').setView([9.7489, -83.7534], 8);
+            var map = L.map('map').setView([0, 0], 2);
+            let bounds = L.latLngBounds([7.886, -84.409],   // Suroeste (SW)
+                [11.019, -82.976])   // Noreste (NE)));
+            map.fitBounds(bounds);
 
             // Agregar capa de mapa base
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -123,38 +151,15 @@
                     radius: 9
                 }).addTo(map).bindPopup(punto.datos);
             });
-
+/*
             if (puntos.length > 0) {
                 var bounds = L.latLngBounds(puntos.map(p => [p.lat, p.lng]));
                 map.fitBounds(bounds);
-            }
+            }*/
 
 
-            let mytabla =$('#tabla_pga').DataTable({
-                responsive: true,
-                retrieve: true,
-                paging: true,       // Habilita paginación
-                ordering: true,
-                order: [[4, "desc"],],
-                lengthMenu: [15, 30, 60], // Opciones de cantidad de filas por página
-                pageLength: 15,      // Número de filas por defecto
-                language: {
-                    processing: "En curso...",
-                    search: "Buscar:",
-                    paginate: {
-                        first: "Primero",
-                        previous: "Anterior",
-                        next: "Siguiente",
-                        last: "Último"
-                    },
-                },
-                layout: {
-                    topStart: {
-                        buttons: ['csv', 'excel']
-                    }
-                }
 
-            });
+
 
         });
     </script>

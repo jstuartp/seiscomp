@@ -235,7 +235,16 @@
             // Lista de puntos en formato Twig
             var puntos = [
                 {% for dato in datos | slice (0,60) %}
-                { lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }}, datos: "Fecha: {{ dato.fechaEvento }} , Magnitud: {{ dato.magnitudEvento | round(1) }}",
+                { lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }},
+                    datos: `Fecha: {{ dato.fechaEvento }}<br>
+                Magnitud: {{ dato.magnitudEvento | round(1) }}<br>
+                <button onclick="enviaDatos(
+                    '{{ dato.idEvento }}',
+                    '{{ dato.fechaEvento }}',
+                    '{{ dato.magnitudEvento }}',
+                    '{{ dato.latitudEvento }}',
+                    '{{ dato.longitudEvento }}'
+                )">Mostrar</button>`,
                     mag: {{ dato.magnitudEvento }}, index: {{ loop.index0 }} }
                 {% if not loop.last %},{% endif %}
                 {% endfor %}
