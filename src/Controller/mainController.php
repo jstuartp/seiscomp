@@ -70,7 +70,7 @@ class mainController extends AbstractController
         }
         //Uso el repository PGA para traer los datos de los sismos
         //$masDatos = $this->repository->findSismo();
-        $masDatos = $this->todoSismoRepository->findTodosSismos();
+        $masDatos = $this->historicoSismosRepository->findTodosSismos();
 
         //Devuelvo todo el entity, lo que me permite usarlo en el twigg
         return $this->render('todos.html.twig',
@@ -177,10 +177,11 @@ class mainController extends AbstractController
             $mag = $request->request->get('mag');
             $lat = $request->request->get('lat');
             $long = $request->request->get('long');
+            $informe = $request->request->get('informe');
         }else{echo "NO HAY NADA";}
 
         return $this->render('informe.html.twig',
-            ['title'=> "Datos del Sismo: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento,'lat'=>$lat,'long'=>$long]);
+            ['title'=> "Datos del Sismo: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento,'lat'=>$lat,'long'=>$long,'informe'=>$informe]);
     }
 
 

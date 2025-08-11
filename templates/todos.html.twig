@@ -80,8 +80,8 @@
             return ciudadMasCercana;
         }
 
-        function enviaDatos (id, fecha, mag,lat,long) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5;
+        function enviaDatos (id, fecha, mag,lat,long,informe) {
+            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6;
             // Start by creating a <form>
             theForm = document.createElement('form');
             theForm.action = 'informe/';
@@ -107,12 +107,17 @@
             newInput5.type = 'hidden';
             newInput5.name = 'long';
             newInput5.value = long;
+            newInput6 = document.createElement('input');
+            newInput6.type = 'hidden';
+            newInput6.name = 'informe';
+            newInput6.value = informe;
             // Now put everything together...
             theForm.appendChild(newInput1);
             theForm.appendChild(newInput2);
             theForm.appendChild(newInput3);
             theForm.appendChild(newInput4);
             theForm.appendChild(newInput5);
+            theForm.appendChild(newInput6);
             // ...and it to the DOM...
             document.getElementById('hidden_form_container').appendChild(theForm);
             // ...and submit it
@@ -156,7 +161,8 @@
                         <tbody>
                         {% for dato in datos %}
 
-                            <tr class="info" onclick="enviaDatos('{{ dato.idEvento }}','{{ dato.fechaEvento }}','{{ dato.magnitudEvento }}','{{ dato.latitudEvento }}','{{ dato.longitudEvento }}')">
+                            <tr class="info" onclick="enviaDatos('{{ dato.idEvento }}','{{ dato.fechaEvento }}','{{ dato.magnitudEvento }}',
+                                    '{{ dato.latitudEvento }}','{{ dato.longitudEvento }}',{{ dato.informe }})">
                                 <td>{{ dato.fechaEvento }}</td>
                                 <td hidden="">{{ dato.latitudEvento | number_format(2, '.', '')}}</td>
                                 <td hidden="">{{ dato.longitudEvento | number_format(2, '.', '')}}</td>
@@ -240,7 +246,8 @@
                     '{{ dato.fechaEvento }}',
                     '{{ dato.magnitudEvento }}',
                     '{{ dato.latitudEvento }}',
-                    '{{ dato.longitudEvento }}'
+                    '{{ dato.longitudEvento }}',
+                    '{{ dato.informe }}'
                 )">Mostrar</button>`,
                     mag: {{ dato.magnitudEvento }}, index: {{ loop.index0 }} }
                 {% if not loop.last %},{% endif %}

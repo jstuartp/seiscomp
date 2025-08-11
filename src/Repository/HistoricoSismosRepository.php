@@ -19,9 +19,30 @@ class HistoricoSismosRepository extends ServiceEntityRepository
 
 
     /**
-     * Obtener Todos los sismos registrados en la tabla historico_sismos
+     * Obtener Todos los sismos registrados en la tabla historico_sismos que tengan informe
      */
     public function findHistoricoSismos(): ?array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql ="select * from historico_sismos
+                Where informe = 1
+                Order by fechaEvento DESC;";
+        try {
+
+            $datos= $conn->executeQuery($sql);
+            return $datos->fetchAllAssociative();
+        }catch (Exception $e){
+            return [];
+        }
+
+
+    }
+
+
+    /**
+     * Obtener Todos los sismos registrados en la tabla historico_sismos
+     */
+    public function findTodosSismos(): ?array
     {
         $conn = $this->getEntityManager()->getConnection();
         $sql ="select * from historico_sismos
@@ -36,6 +57,7 @@ class HistoricoSismosRepository extends ServiceEntityRepository
 
 
     }
+
 
 
     //    /**

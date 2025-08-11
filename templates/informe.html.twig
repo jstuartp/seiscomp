@@ -1,4 +1,4 @@
-{% extends '/base.html.twig' %}
+{% extends 'base.html.twig' %}
 
 
 
@@ -202,16 +202,37 @@
                         <div class="row g-4">
                             {% block content %}
                                 <div class="col-md-4">
-                                    <div class="card shadow-sm position-relative">
-                                        <div class="card-body" >
+                                    {# Determina si la card debe estar habilitada según "informe" #}
+                                    {% set habilitada = (informe|default(0)) == 1 %}
+
+                                    {# Card: Mapa de Aceleración / Principales valores de aceleración #}
+                                    <div
+                                            id="card-aceleracion"
+                                            class="card shadow-sm position-relative {{ habilitada ? '' : 'opacity-50' }}"
+                                            aria-disabled="{{ habilitada ? 'false' : 'true' }}"
+                                    >
+                                        <div class="card-body">
                                             <div class="mb-3">
-                                                <i class="bi bi-speedometer2 fs-2 text-primary"></i>
+                                                <i class="bi bi-speedometer2 fs-2 text-primary" aria-hidden="true"></i>
                                             </div>
-                                            <h5 class="card-title" onclick="">Mapa de Aceleraci&oacute;n </h5>
-                                            <p class="card-text">Principales valores de Aceleraci&oacute;n</p>
-                                            <a href="javascript:void(0);"
-                                               onclick="enviaDatos('{{ id }}','{{ fecha }}','{{ magnitud }}')"
-                                               class="stretched-link"></a>
+
+                                            <h5 class="card-title">Mapa de Aceleración</h5>
+                                            <p class="card-text">Principales valores de Aceleración</p>
+
+                                            {# Enlace/activador: sólo permite acción real cuando está habilitada #}
+                                            <a
+                                                    id="card-aceleracion-link"
+                                                    class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
+                                                    {% if habilitada %}
+                                                        href="javascript:void(0);"
+                                                        onclick="enviaDatos('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}')"
+                                                    {% else %}
+                                                        href="#"
+                                                        tabindex="-1"
+                                                        aria-disabled="true"
+                                                        onclick="return false;"
+                                                    {% endif %}
+                                            ></a>
                                         </div>
                                     </div>
 
