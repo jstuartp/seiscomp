@@ -192,7 +192,7 @@
             // Agregar el marcador con estrella
             L.marker([ {{ lat }}, {{ long }}], { icon: starIcon })
                 .addTo(map)
-                .bindPopup('Ubicación marcada con una estrella');
+                .bindPopup('Epicentro');
             let puntos_cercanos = calcularCiudadesCercanas();
             //alert(JSON.stringify(cercanas, null, 2));
 

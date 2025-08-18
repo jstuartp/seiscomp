@@ -107,35 +107,6 @@
                 },
             });
 
-            // Crea un ícono triangular de tamaño en píxeles similar a radius=9 (≈ 18 px)
-            function triangleIcon(color, sizePx = 20, fillOpacity = 0.5, strokeColor = '#333', strokeWidth = 2) {
-                const s = sizePx;
-                // Triángulo equilátero dentro del recuadro, con un pequeño margen de 2 px
-                const points = `${s/2},2 ${s-2},${s-2} 2,${s-2}`;
-                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-                                  <polygon points="${points}"
-                                           fill="${color}"
-                                           fill-opacity="${fillOpacity}"
-                                           stroke="${strokeColor}"
-                                           stroke-width="${strokeWidth}" />
-                                </svg>`;
-
-                return L.divIcon({
-                    html: svg,
-                    className: 'triangle-icon',       // clase para estilos si desea
-                    iconSize: [s, s],
-                    iconAnchor: [s/2, s/2]            // ancla al centro, como circleMarker
-                });
-            }
-
-            // Icono personalizado de estrella
-            const starIcon = L.divIcon({
-                html: ' <img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" alt="Estrella" style="width:50%;"> ',
-                className: '',
-                iconSize: [80, 80],
-                iconAnchor: [30, 30]
-            });
-
 
 
             // Inicializar el mapa centrado en una posición predeterminada
@@ -149,10 +120,6 @@
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
             L.control.scale().addTo(map);
-            // Agregar el marcador con estrella
-            L.marker([ {{ epi_lat }}, {{ epi_long }}], { icon: starIcon })
-                .addTo(map)
-                .bindPopup('Epicentro<br> M: {{ magnitud | round(1)}}');
 
             // Función para determinar el color del círculo según el valor numérico
             function getColor(valor) {
@@ -170,60 +137,25 @@
             var puntos = [
                 {% for dato in datos %}
                 { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo }},
-                    datos: "Estaci&oacute;n {{ dato.estacion }} <br> Maximo: {{ dato.maximo | round(2) }} cm/s&sup2" }{% if not loop.last %},{% endif %}
+                    datos: "Estaci&oacute;n {{ dato.estacion }} , Maximo: {{ dato.maximo | round(2) }} " }{% if not loop.last %},{% endif %}
                 {% endfor %}
             ];
 
-            // Dibujar los puntos en el mapa (triángulo en lugar de círculo)
+            // Dibujar los puntos en el mapa
             puntos.forEach(function(punto) {
-                const color = getColor(punto.max);
-                const icono = triangleIcon(color, /* tamaño px */ 18, /* fillOpacity */ 0.5, /* stroke */ '#333', /* strokeWidth */ 2);
-
-                L.marker([punto.lat, punto.lng], { icon: icono })
-                    .addTo(map)
-                    .bindPopup(punto.datos);
+                let marker = L.circleMarker([punto.lat, punto.lng], {
+                    color: getColor(punto.max),
+                    fillColor: getColor(punto.max),
+                    fillOpacity: 0.5,
+                    weight: 2,                  // Grosor del borde
+                    radius: 9
+                }).addTo(map).bindPopup(punto.datos);
             });
-
-            // Utilidad para dibujar un triángulo pequeño en la leyenda (SVG inline)
-            function legendTriangle(color) {
-                const s = 16;
-                const points = `${s/2},2 ${s-2},${s-2} 2,${s-2}`;
-                return `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}"
-                         style="vertical-align: middle; margin-right: 6px;">
-                      <polygon points="${points}"
-                               fill="${color}" fill-opacity="0.5"
-                               stroke="#333" stroke-width="1.5"/>
-                    </svg>`;
-            }
-
-            // Definición de rangos en el mismo orden que el getColor
-            const legendItems = [
-                { label: '> 60',    color: '#cc0000' },
-                { label: '40 – 60',        color: '#cc5200' },
-                { label: '20 – 40',        color: '#cc8b00' },
-                { label: '10 – 20',        color: '#ccaa00' },
-                { label: '5 – 10',         color: '#88cc00' },
-                { label: '1 – 5',          color: '#00cc03' },
-                { label: '≤ 1',     color: '#0058cc' }
-            ];
-
-            // Control de Leaflet para la leyenda
-            const legend = L.control({ position: 'bottomright' });
-
-            legend.onAdd = function () {
-                const div = L.DomUtil.create('div', 'info legend');
-                div.innerHTML = '<div class="legend-title">PGA (cm/s&sup2)</div>';
-                legendItems.forEach(item => {
-                    div.innerHTML += `
-                                      <div class="legend-item">
-                                        ${legendTriangle(item.color)}<span>${item.label}</span>
-                                      </div>`;
-                });
-                return div;
-            };
-
-            legend.addTo(map);
+/*
+            if (puntos.length > 0) {
+                var bounds = L.latLngBounds(puntos.map(p => [p.lat, p.lng]));
+                map.fitBounds(bounds);
+            }*/
 
 
 

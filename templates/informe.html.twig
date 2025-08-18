@@ -5,8 +5,8 @@
 {% block body %}
 
     <script>
-        function enviaDatos (id, fecha, mag) {
-            var theForm, newInput1, newInput2, newInput3;
+        function enviaDatos (id, fecha, mag,lat,long) {
+            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5;
             // Start by creating a <form>
             theForm = document.createElement('form');
             theForm.action = '{{ path('pga') }}';
@@ -24,10 +24,20 @@
             newInput3.type = 'hidden';
             newInput3.name = 'mag';
             newInput3.value = mag;
+            newInput4 = document.createElement('input');
+            newInput4.type = 'hidden';
+            newInput4.name = 'lat';
+            newInput4.value = lat;
+            newInput5 = document.createElement('input');
+            newInput5.type = 'hidden';
+            newInput5.name = 'long';
+            newInput5.value = long;
             // Now put everything together...
             theForm.appendChild(newInput1);
             theForm.appendChild(newInput2);
             theForm.appendChild(newInput3);
+            theForm.appendChild(newInput4);
+            theForm.appendChild(newInput5);
             // ...and it to the DOM...
             document.getElementById('hidden_form_container').appendChild(theForm);
             // ...and submit it

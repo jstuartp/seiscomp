@@ -153,6 +153,8 @@ class mainController extends AbstractController
             $evento = $request->request->get('id');
             $fecha = $request->request->get('fecha');
             $magnitud = $request->request->get('mag');
+            $epi_lat = $request->request->get('lat');
+            $epi_long = $request->request->get('long');
         }else{echo "NO HAY NADA";}
 
         //Activo el repositorio para traer los datos de PGA segun el evento
@@ -160,7 +162,7 @@ class mainController extends AbstractController
 
 
         return $this->render('pga.html.twig',
-            ['fecha' => $fecha,'datos'=>$datosPga,'id'=>$evento,'magnitud'=>$magnitud]);
+            ['fecha' => $fecha,'datos'=>$datosPga,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,'epi_long'=>$epi_long]);
     }
 
 
