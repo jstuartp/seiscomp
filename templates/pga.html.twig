@@ -152,7 +152,7 @@
             // Agregar el marcador con estrella
             L.marker([ {{ epi_lat }}, {{ epi_long }}], { icon: starIcon })
                 .addTo(map)
-                .bindPopup('Epicentro<br> M: {{ magnitud | round(1)}}');
+                .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1)}}');
 
             // Función para determinar el color del círculo según el valor numérico
             function getColor(valor) {
@@ -170,7 +170,7 @@
             var puntos = [
                 {% for dato in datos %}
                 { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo }},
-                    datos: "Estaci&oacute;n {{ dato.estacion }} <br> Maximo: {{ dato.maximo | round(2) }} cm/s&sup2" }{% if not loop.last %},{% endif %}
+                    datos: "Estaci&oacute;n {{ dato.estacion }} <br> M&aacute;ximo: {{ dato.maximo | round(2) }} cm/s&sup2" }{% if not loop.last %},{% endif %}
                 {% endfor %}
             ];
 
