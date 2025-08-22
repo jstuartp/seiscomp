@@ -242,7 +242,8 @@
             var puntos = [
                 {% for dato in datos | slice (0,60) %}
                 { lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }},
-                    datos: `Fecha: {{ dato.fechaEvento }}<br>
+                    datos: `Fecha: {{ dato.fechaEvento|date('Y-m-d', false) }} <br>
+                            Hora: {{ dato.fechaEvento|date('H:i:s', 'UTC') }} (UTC) - {{ dato.fechaEvento|date('H:i:s', 'America/Costa_Rica') }} (Local)<br>
                 Magnitud: {{ dato.magnitudEvento | round(1) }}<br>
                 <button onclick="enviaDatos(
                     '{{ dato.idEvento }}',
