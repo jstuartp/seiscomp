@@ -38,11 +38,16 @@
                                                                                                                     padding: 2px 6px !important; ">
                             <thead>
                             <tr>
+                                <th></th>
+                                <th colspan="4">PGA M&aacute;ximos en cm/s&sup2</th>
+                                <th></th>
+                            </tr>
+                            <tr>
                                 <th>Estación</th>
-                                <th>HNE MAX PGA (cm/s&sup2)</th>
-                                <th>HNN MAX PGA (cm/s&sup2)</th>
-                                <th>HNZ MAX PGA (cm/s&sup2)</th>
-                                <th>PGA MAXIMO (canales) (cm/s&sup2)</th>
+                                <th>HNE</th>
+                                <th>HNN</th>
+                                <th>HNZ</th>
+                                <th>M&aacute;ximo</th>
                                 <th>Onda</th>
                             </tr>
                             </thead>
@@ -89,6 +94,9 @@
         document.addEventListener("DOMContentLoaded", function() {
 
             let mytabla =$('#tabla_pga').DataTable({
+                columnDefs: [
+                    { targets: '_all', className: 'dt-head-center dt-body-center' }
+                ],
                 responsive: true,
                 paging: true,       // Habilita paginación
                 ordering: true,
@@ -170,7 +178,11 @@
             var puntos = [
                 {% for dato in datos %}
                 { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo }},
-                    datos: "Estaci&oacute;n {{ dato.estacion }} <br> M&aacute;ximo: {{ dato.maximo | round(2) }} cm/s&sup2" }{% if not loop.last %},{% endif %}
+                    datos: `Estaci&oacute;n: {{ dato.estacion }} <br>
+                            M&aacute;ximo: {{ dato.maximo | round(2) }} cm/s&sup2<br>
+                <button onclick="openModal('{{asset('assets/waves/'~ dato.grafica~'.png')}}')">Onda</button>`,
+                    }
+                {% if not loop.last %},{% endif %}
                 {% endfor %}
             ];
 

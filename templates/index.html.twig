@@ -202,6 +202,9 @@
         document.addEventListener("DOMContentLoaded", function() {
             // Inicializar el mapa centrado en una posición predeterminada
             var map = L.map('map').setView([0, 0], 2);
+            let bounds = L.latLngBounds([7.886, -84.409],   // Suroeste (SW)
+                [11.019, -82.976])   // Noreste (NE)));
+            map.fitBounds(bounds);
 
             // Agregar capa de mapa base
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -240,7 +243,7 @@
 
             // Lista de puntos en formato Twig
             var puntos = [
-                {% for dato in datos | slice (0,60) %}
+                {% for dato in datos | slice (0,40) %}
                 { lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }},
                     datos: `Fecha: {{ dato.fechaEvento|date('Y-m-d', false) }} <br>
                             Hora: {{ dato.fechaEvento|date('H:i:s', 'UTC') }} (UTC) - {{ dato.fechaEvento|date('H:i:s', 'America/Costa_Rica') }} (Local)<br>
@@ -287,10 +290,10 @@
 
 
             // Centrar el mapa si hay puntos
-            if (puntos.length > 0) {
+           /* if (puntos.length > 0) {
                 var bounds = L.latLngBounds(puntos.map(p => [p.lat, p.lng]));
                 map.fitBounds(bounds);
-            }
+            }*/
 
 
             $('#tabla1 tbody').on('mouseenter', 'tr', function () {
