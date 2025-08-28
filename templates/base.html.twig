@@ -69,6 +69,19 @@
                 }
                 table.dataTable thead th { text-align: center; }
 
+                table.dataTable {
+                    /*table-layout: fixed;        /* reparte ancho de columnas */
+                    width: 100% !important;
+                }
+
+                /* Envuelto de texto en TH/TD */
+                table.dataTable th,
+                table.dataTable td {
+                    white-space: normal !important;  /* permite múltiples líneas */
+                    /*overflow-wrap: anywhere;         /* corta palabras muy largas */
+                    word-break: normal;              /* deje normal; cambie a break-word/break-all si necesita más agresividad */
+                }
+
 
 
 

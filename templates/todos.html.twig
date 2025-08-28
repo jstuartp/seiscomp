@@ -187,7 +187,7 @@
 
         <div class="row">
 
-            <br><br><br><br><br><br><br><br><br>
+            <br><br><br><br>
             <div class="col">
 
             </div>
@@ -203,20 +203,9 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Inicializar el mapa centrado en una posición predeterminada
-            var map = L.map('map').setView([0, 0], 2);
-
-            // Agregar capa de mapa base
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
-            L.control.scale().addTo(map);
-
-            //matriz con marcadores
-            let marcadores ={};
 
             let mytabla =$('#tabla_todos').DataTable({
-                responsive: true,
+                responsive: false,
                 retrieve: true,
                 paging: true,       // Habilita paginación
                 ordering: true,
@@ -234,6 +223,23 @@
                     },
                 },
             });
+
+            // Inicializar el mapa centrado en una posición predeterminada
+            var map = L.map('map').setView([0, 0], 2);
+            let bounds = L.latLngBounds([7.886, -84.409],   // Suroeste (SW)
+                [11.019, -82.976])   // Noreste (NE)));
+            map.fitBounds(bounds);
+
+            // Agregar capa de mapa base
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            L.control.scale().addTo(map);
+
+            //matriz con marcadores
+            let marcadores ={};
+
+
 
             // Lista de puntos en formato Twig
             var puntos = [
@@ -284,10 +290,10 @@
 
 
             // Centrar el mapa si hay puntos
-            if (puntos.length > 0) {
+           /* if (puntos.length > 0) {
                 var bounds = L.latLngBounds(puntos.map(p => [p.lat, p.lng]));
                 map.fitBounds(bounds);
-            }
+            }*/
 
 
             $('#tabla_todos> tbody').on('mouseenter', 'tr', function () {
