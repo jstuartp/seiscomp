@@ -124,6 +124,26 @@
             theForm.submit();
         }
         </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const q = new URLSearchParams(location.search);
+            const id    = q.get('id');
+            const fecha = q.get('fecha');
+            const mag   = q.get('mag');
+            const lat   = q.get('lat');
+            const lon   = q.get('long');
+            const informe = q.get('informe') || '1';
+
+            if (id && fecha && mag && lat && lon && typeof enviaDatos === 'function') {
+                const f = fecha.includes(' ') ? fecha.replace(' ', 'T') : fecha; // opcional
+                enviaDatos(id, f, mag, lat, lon,informe);
+            }
+
+        });
+    </script>
+
+
+
 
     <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
         <div class="row">

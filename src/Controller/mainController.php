@@ -173,7 +173,8 @@ class mainController extends AbstractController
     public function informeAction(Request $request, EntityManagerInterface $em): Response
     {
         //Chequeo los datos que llegan por post del ID y la Fecha
-        if ($request->isMethod('POST')) {
+        //if ($request->isMethod('POST')) {
+        if ($request->isMethod('POST') or $request->isMethod('GET')) {
             $evento = $request->request->get('id');
             $fecha = $request->request->get('fecha');
             $mag = $request->request->get('mag');
