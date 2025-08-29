@@ -197,7 +197,7 @@
                         <div class="row">
                             <div class="col-sm-8">
                                 <h2 class="mb-4">{% block page_title %}
-                                    Sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} U.T.C. </strong>
+                                    Sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }}</strong>(u.t.c)
                                     <span class="badge bg-secondary">M {{ magnitud | round(1)}} </span>{% endblock %}
                                 </h2>
                             </div>
@@ -205,6 +205,13 @@
                                 <a href="javascript:window.history.back();" class="btn btn-dark">
                                     Regresar
                                 </a>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-sm-8">
+                                <h3 class="mb-4">
+                                        {{ epi }}
+                                </h3>
                             </div>
                         </div>
                     <main class="col-9  p-4 overflow-auto mt-3">

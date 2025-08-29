@@ -10,78 +10,14 @@
 
 
         document.addEventListener("DOMContentLoaded", function() {
-            {% for ciudadp in ciudadesp %}
-                ciudades.push({nombre: '{{ ciudadp.nombre }}',lat: '{{ ciudadp.lat }}',lon: '{{ ciudadp.lon }}' });
 
-            {% endfor %}
-            //alert(ciudades.nombre);
-            {% for dato in datos %}
-                document.getElementById("resultado-{{ loop.index }}").textContent = epicentro({{ dato.latitudEvento }}, {{ dato.longitudEvento }});
-            {% endfor %}
+
         });
-        function epicentro(lat,lon){
-
-            var puntoInicial = {
-                lat: lat,
-                lon: lon
-            };
-            let ciudadCercana = calcularCiudadMasCercana(puntoInicial);
-            let direccion = obtenerDireccion(puntoInicial.lat, puntoInicial.lon, ciudadCercana.lat, ciudadCercana.lon);
-            return ciudadCercana.distancia.toFixed(2) + " km " + direccion + " de " + ciudadCercana.nombre;
-        }
 
 
-        // Función para calcular la distancia en km con la fórmula de Haversine
-        function calcularDistanciaHaversine(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Radio de la Tierra en km
-            const dLat = (lat2 - lat1) * Math.PI / 180;
-            const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-                Math.sin(dLon / 2) * Math.sin(dLon / 2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            return R * c; // Distancia en km
-        }
 
-        // Función para determinar la dirección cardinal
-        function obtenerDireccion(lat1, lon1, lat2, lon2) {
-            let direccion = "";
-
-            if (lat2 > lat1) {
-                direccion += "S.";
-            } else if (lat2 < lat1) {
-                direccion += "N.";
-            }
-
-            if (lon2 > lon1) {
-                direccion += "E.";
-            } else if (lon2 < lon1) {
-                direccion += "O.";
-            }
-
-            return direccion || "Mismo punto";
-        }
-
-
-        // Función para encontrar la ciudad más cercana
-        function calcularCiudadMasCercana(punto) {
-
-            let ciudadMasCercana = null;
-            let distanciaMinima = Infinity;
-            ciudades.forEach(ciudad => {
-                let nombre;
-                let distancia = calcularDistanciaHaversine(punto.lat, punto.lon, ciudad.lat, ciudad.lon);
-                if (distancia < distanciaMinima) {
-                    distanciaMinima = distancia;
-                    nombre = ciudad.nombre;
-                    ciudadMasCercana = { ...ciudad, nombre,distancia };
-                }
-            });
-            return ciudadMasCercana;
-        }
-
-        function enviaDatos (id, fecha, mag,lat,long,informe) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6;
+        function enviaDatos (id, fecha, mag,lat,long,informe,epi) {
+            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6,newInput7;
             // Start by creating a <form>
             theForm = document.createElement('form');
             theForm.action = 'informe/';
@@ -111,6 +47,10 @@
             newInput6.type = 'hidden';
             newInput6.name = 'informe';
             newInput6.value = informe;
+            newInput7 = document.createElement('input');
+            newInput7.type = 'hidden';
+            newInput7.name = 'epi';
+            newInput7.value = epi;
             // Now put everything together...
             theForm.appendChild(newInput1);
             theForm.appendChild(newInput2);
@@ -118,6 +58,7 @@
             theForm.appendChild(newInput4);
             theForm.appendChild(newInput5);
             theForm.appendChild(newInput6);
+            theForm.appendChild(newInput7);
             // ...and it to the DOM...
             document.getElementById('hidden_form_container').appendChild(theForm);
             // ...and submit it
@@ -141,6 +82,7 @@
         </div>
         <div class="row">
             <div class="col-4">
+
                 <div class="bs-example" data-example-id="contextual-table">
                     <table class="table table-bordered table-hover table-condensed table-sm table-striped" id="tabla_todos" style="font-size: 12px !important;
                                                                                                                      height: 32px !important;
@@ -162,13 +104,13 @@
                         {% for dato in datos %}
 
                             <tr class="info" onclick="enviaDatos('{{ dato.idEvento }}','{{ dato.fechaEvento }}','{{ dato.magnitudEvento }}',
-                                    '{{ dato.latitudEvento }}','{{ dato.longitudEvento }}',{{ dato.informe }})">
+                                    '{{ dato.latitudEvento }}','{{ dato.longitudEvento }}','{{ dato.informe }}','{{ dato.epi }}')">
                                 <td>{{ dato.fechaEvento }}</td>
                                 <td hidden="">{{ dato.latitudEvento | number_format(2, '.', '')}}</td>
                                 <td hidden="">{{ dato.longitudEvento | number_format(2, '.', '')}}</td>
                                 <td>{{ dato.magnitudEvento | round(1)}}</td>
                                 <td>{{ dato.profundidadEvento | round(1)}}</td>
-                                <td id="resultado-{{ loop.index }}">Cargando...</td>
+                                <td> {{ dato.epi }} </td>
                             </tr>
                         {% endfor %}
 
@@ -248,15 +190,9 @@
                     datos: `Fecha: {{ dato.fechaEvento|date('Y-m-d', false) }} <br>
                             Hora: {{ dato.fechaEvento|date('H:i:s', 'UTC') }} (UTC) - {{ dato.fechaEvento|date('H:i:s', 'America/Costa_Rica') }} (Local)<br>
                 Magnitud: {{ dato.magnitudEvento | round(1) }}<br>
-                <button onclick="enviaDatos(
-                    '{{ dato.idEvento }}',
-                    '{{ dato.fechaEvento }}',
-                    '{{ dato.magnitudEvento }}',
-                    '{{ dato.latitudEvento }}',
-                    '{{ dato.longitudEvento }}',
-                    '{{ dato.informe }}'
-                )">Mostrar</button>`,
-                    mag: {{ dato.magnitudEvento }}, index: {{ loop.index0 }} }
+                <button onclick="enviaDatos('{{ dato.idEvento }}','{{ dato.fechaEvento }}','{{ dato.magnitudEvento }}',
+                                    '{{ dato.latitudEvento }}','{{ dato.longitudEvento }}','{{ dato.informe }}','{{ dato.epi }}')">Mostrar</button>`,
+                    mag: {{ dato.magnitudEvento }}, index: {{ loop.index0 }}}
                 {% if not loop.last %},{% endif %}
                 {% endfor %}
             ];

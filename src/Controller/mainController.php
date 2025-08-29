@@ -32,22 +32,18 @@ class mainController extends AbstractController
         //nombre de la pagina
         $nombre="Ultimos Sismos Registrados";
         $salida="";
-        $ciudades1 = [];
-        // IF para leer el archivo de distritos y calcular el epicentro
-        if (($handle = fopen("distritos.csv", "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $ciudades1[] = ["nombre" => $data[2], "lat" => (float)$data[1], "lon" => (float)$data[0]];
-            }
-            fclose($handle);
-        }
+
         //Uso el repository PGA para traer los datos de los sismos
         //$masDatos = $this->repository->findSismo();
         $masDatos = $this->historicoSismosRepository->findHistoricoSismos();
+        //Iteracion para agregar el epicentro a cada resultado del arreglo
+        foreach ($masDatos as &$dato) {
+            $dato['epi'] = $this->CalculaEpicentro($dato['latitudEvento'], $dato['longitudEvento']);
+        }
 
         //Devuelvo todo el entity, lo que me permite usarlo en el twigg
         return $this->render('index.html.twig',
-            ['title'=> $nombre, 'datos'=>$masDatos, 'salida'=>$salida,
-                 'ciudadesp' =>$ciudades1] );
+            ['title'=> $nombre, 'datos'=>$masDatos, 'salida'=>$salida] );
     }
 
     /*
@@ -60,22 +56,87 @@ class mainController extends AbstractController
         //nombre de la pagina
         $nombre="Todos los Sismos Registrados";
         $salida="";
-        $ciudades1 = [];
-        // IF para leer el archivo de distritos y calcular el epicentro
-        if (($handle = fopen("distritos.csv", "r")) !== FALSE) {
-            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $ciudades1[] = ["nombre" => $data[2], "lat" => (float)$data[1], "lon" => (float)$data[0]];
-            }
-            fclose($handle);
-        }
+
         //Uso el repository PGA para traer los datos de los sismos
         //$masDatos = $this->repository->findSismo();
         $masDatos = $this->historicoSismosRepository->findTodosSismos();
+        //Iteracion para agregar el epicentro a cada resultado del arreglo
+        foreach ($masDatos as &$dato) {
+            $dato['epi'] = $this->CalculaEpicentro($dato['latitudEvento'], $dato['longitudEvento']);
+        }
 
         //Devuelvo todo el entity, lo que me permite usarlo en el twigg
         return $this->render('todos.html.twig',
-            ['title'=> $nombre, 'datos'=>$masDatos, 'salida'=>$salida,
-                'ciudadesp' =>$ciudades1] );
+            ['title'=> $nombre, 'datos'=>$masDatos, 'salida'=>$salida] );
+    }
+
+    //Calcula el epicentro para una ubicacion especifica y retorna el epicento en strig
+    private function CalculaEpicentro($lat, $lon): string
+    {
+        $ciudades = [];
+        // IF para leer el archivo de distritos y calcular el epicentro
+        if (($handle = fopen("distritos.csv", "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                $ciudades[] = ["nombre" => $data[2], "lat" => (float)$data[1], "lon" => (float)$data[0]];
+            }
+            fclose($handle);
+        }
+
+        $calcularDistanciaHaversine = function($lat1, $lon1, $lat2, $lon2) {
+            $R = 6371; // Radio de la Tierra en km
+            $dLat = deg2rad($lat2 - $lat1);
+            $dLon = deg2rad($lon2 - $lon1);
+            $a = sin($dLat / 2) * sin($dLat / 2) +
+                cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+                sin($dLon / 2) * sin($dLon / 2);
+            $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+            return $R * $c;
+        };
+
+        // --- Función para calcular dirección cardinal ---
+        $obtenerDireccion = function($lat1, $lon1, $lat2, $lon2) {
+            $direccion = "";
+            if ($lat2 > $lat1) {
+                $direccion .= "S.";
+            } elseif ($lat2 < $lat1) {
+                $direccion .= "N.";
+            }
+            if ($lon2 > $lon1) {
+                $direccion .= "E.";
+            } elseif ($lon2 < $lon1) {
+                $direccion .= "O.";
+            }
+            return $direccion !== "" ? $direccion : "Mismo punto";
+        };
+
+        // --- Encontrar ciudad más cercana ---
+        $ciudadMasCercana = null;
+        $distanciaMinima = INF;
+
+        foreach ($ciudades as $ciudad) {
+            $distancia = $calcularDistanciaHaversine($lat, $lon, $ciudad['lat'], $ciudad['lon']);
+            if ($distancia < $distanciaMinima) {
+                $distanciaMinima = $distancia;
+                $ciudadMasCercana = [
+                    'nombre' => $ciudad['nombre'],
+                    'lat' => $ciudad['lat'],
+                    'lon' => $ciudad['lon'],
+                    'distancia' => $distancia
+                ];
+            }
+        }
+
+        if ($ciudadMasCercana === null) {
+            return "No hay ciudades disponibles";
+        }
+
+        // --- Calcular dirección respecto a la ciudad ---
+        $direccion = $obtenerDireccion($lat, $lon, $ciudadMasCercana['lat'], $ciudadMasCercana['lon']);
+
+        return number_format($ciudadMasCercana['distancia'], 2) . " km " . $direccion . " de " . $ciudadMasCercana['nombre'];
+
+        //$epicentro = "Este es el epicentro de ".$lat.", ".$lon;
+        //return $epicentro;
     }
 
 
@@ -181,10 +242,11 @@ class mainController extends AbstractController
             $lat = $request->request->get('lat');
             $long = $request->request->get('long');
             $informe = $request->request->get('informe');
+            $epi = $request->request->get('epi');
         }else{echo "NO HAY NADA";}
 
         return $this->render('informe.html.twig',
-            ['title'=> "Datos del Sismo: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento,'lat'=>$lat,'long'=>$long,'informe'=>$informe]);
+            ['title'=> "Datos del Sismo: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento,'lat'=>$lat,'long'=>$long,'informe'=>$informe,'epi'=>$epi]);
     }
 
 
