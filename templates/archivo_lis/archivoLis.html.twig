@@ -1,0 +1,250 @@
+{% extends '/base.html.twig' %}
+
+{% block body %}
+    <div class="container-fluid">
+
+        <!-- Encabezado -->
+        <div class="row align-items-center mt-3">
+            <div class="col-sm-8">
+                <h2 class="mb-0">
+                    {% block page_title %}
+                        Aceleraciones M&aacute;ximas del sismo del
+                        <strong>{{ fecha|date("d-m-Y H:i:s ") }} (UTC)</strong>
+                        <span class="badge bg-secondary">M {{ magnitud|round(1) }}</span>
+                    {% endblock %}
+                </h2>
+            </div>
+            <div class="col-sm-4 text-end">
+                <a href="javascript:window.history.back();" class="btn btn-dark">Regresar</a>
+            </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Cuerpo: Lista izquierda (grid), botones centro, contenedor derecho (grid) -->
+        <div class="row g-3">
+
+            <!-- Columna izquierda (ORIGEN) en 2–3 columnas -->
+            <div class="col-12 col-lg-5">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span class="fw-semibold">Estaciones (Origen)</span>
+                        <div class="form-check m-0">
+                            <input class="form-check-input" type="checkbox" id="selectAllLeft">
+                            <label class="form-check-label" for="selectAllLeft">Seleccionar todos</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row row-cols-2 row-cols-lg-3 g-2" id="grid-izquierda" style="max-height:60vh; overflow:auto;">
+                            {% for dato in datos %}
+                                <div class="col">
+                                    <div class="card border-0 shadow-sm h-100">
+                                        <div class="card-body p-2">
+                                            <div class="form-check">
+                                                <input class="form-check-input item-left"
+                                                       type="checkbox"
+                                                       id="left-{{ dato.estacion|e('html_attr') }}"
+                                                       value="{{ dato.estacion }}"
+                                                       data-estacion="{{ dato.estacion }}"
+                                                       data-hne="{{ dato.hne|round(2) }}"
+                                                       data-hnn="{{ dato.hnn|round(2) }}"
+                                                       data-hnz="{{ dato.hnz|round(2) }}"
+                                                       data-maximo="{{ dato.maximo|round(2) }}">
+                                                <label class="form-check-label small" for="left-{{ dato.estacion|e('html_attr') }}">
+                                                    <strong>{{ dato.estacion }}</strong><br>
+                                                    <span class="text-muted">HNE: {{ dato.hne|round(2) }}, HNN: {{ dato.hnn|round(2) }}, HNZ: {{ dato.hnz|round(2) }}</span><br>
+                                                    <span class="text-muted">Máx: {{ dato.maximo|round(2) }}</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        Marque ítems y use “Añadir” para transferirlos al contenedor derecho.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botones centrales -->
+            <div class="col-12 col-lg-2 d-flex flex-column align-items-center justify-content-center gap-2">
+                <button type="button" id="btnAdd" class="btn btn-primary w-100">
+                    Añadir →
+                </button>
+                <button type="button" id="btnRemove" class="btn btn-outline-danger w-100">
+                    ← Quitar
+                </button>
+            </div>
+
+            <!-- Columna derecha (DESTINO) en 2–3 columnas -->
+            <div class="col-12 col-lg-5">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header d-flex align-items-center justify-content-between">
+                        <span class="fw-semibold">Contenedor (Destino)</span>
+                        <div class="form-check m-0">
+                            <input class="form-check-input" type="checkbox" id="selectAllRight">
+                            <label class="form-check-label" for="selectAllRight">Seleccionar todos</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row row-cols-2 row-cols-lg-3 g-2" id="grid-derecha" style="max-height:60vh; overflow:auto;">
+                            {# Se llenará por JS al “Añadir” #}
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        Marque ítems y use “Quitar” para devolverlos a la lista izquierda.
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Lógica de interacción -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const gridIzquierda   = document.getElementById('grid-izquierda');
+            const gridDerecha     = document.getElementById('grid-derecha');
+
+            const selectAllLeft   = document.getElementById('selectAllLeft');
+            const selectAllRight  = document.getElementById('selectAllRight');
+
+            const btnAdd          = document.getElementById('btnAdd');
+            const btnRemove       = document.getElementById('btnRemove');
+
+            // Seleccionar / deseleccionar todos (izquierda)
+            selectAllLeft.addEventListener('change', (e) => {
+                const checked = e.target.checked;
+                gridIzquierda.querySelectorAll('.item-left').forEach(chk => chk.checked = checked);
+            });
+
+            // Seleccionar / deseleccionar todos (derecha)
+            selectAllRight.addEventListener('change', (e) => {
+                const checked = e.target.checked;
+                gridDerecha.querySelectorAll('.item-right').forEach(chk => chk.checked = checked);
+            });
+
+            // Transferir seleccionados de IZQUIERDA → DERECHA
+            btnAdd.addEventListener('click', () => {
+                const seleccionados = Array.from(gridIzquierda.querySelectorAll('.item-left:checked'));
+                if (!seleccionados.length) { return; }
+
+                seleccionados.forEach(chk => {
+                    const data = leerData(chk);
+                    // Crear tarjeta en la derecha
+                    const col = document.createElement('div');
+                    col.className = 'col';
+                    col.innerHTML = crearTarjetaDerecha(data);
+                    gridDerecha.appendChild(col);
+
+                    // Eliminar la tarjeta de la izquierda (transferencia)
+                    const cardCol = chk.closest('.col');
+                    if (cardCol) cardCol.remove();
+                });
+
+                selectAllLeft.checked = false;
+            });
+
+            // Devolver seleccionados de DERECHA → IZQUIERDA
+            btnRemove.addEventListener('click', () => {
+                const seleccionados = Array.from(gridDerecha.querySelectorAll('.item-right:checked'));
+                if (!seleccionados.length) { return; }
+
+                seleccionados.forEach(chk => {
+                    const data = leerData(chk);
+                    // Crear tarjeta en la izquierda
+                    const col = document.createElement('div');
+                    col.className = 'col';
+                    col.innerHTML = crearTarjetaIzquierda(data);
+                    gridIzquierda.appendChild(col);
+
+                    // Eliminar la tarjeta de la derecha
+                    const cardCol = chk.closest('.col');
+                    if (cardCol) cardCol.remove();
+                });
+
+                selectAllRight.checked = false;
+            });
+
+            /* ================== Utilidades ================== */
+
+            function leerData(chk) {
+                return {
+                    estacion: chk.dataset.estacion,
+                    hne: chk.dataset.hne,
+                    hnn: chk.dataset.hnn,
+                    hnz: chk.dataset.hnz,
+                    maximo: chk.dataset.maximo
+                };
+            }
+
+            function crearTarjetaIzquierda(data) {
+                const id = 'left-' + cssSafe(data.estacion);
+                return `
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-2">
+                    <div class="form-check">
+                        <input class="form-check-input item-left"
+                               type="checkbox"
+                               id="${id}"
+                               value="${escapeHtml(data.estacion)}"
+                               data-estacion="${escapeHtml(data.estacion)}"
+                               data-hne="${escapeHtml(data.hne)}"
+                               data-hnn="${escapeHtml(data.hnn)}"
+                               data-hnz="${escapeHtml(data.hnz)}"
+                               data-maximo="${escapeHtml(data.maximo)}">
+                        <label class="form-check-label small" for="${id}">
+                            <strong>${escapeHtml(data.estacion)}</strong><br>
+                            <span class="text-muted">HNE: ${escapeHtml(data.hne)}, HNN: ${escapeHtml(data.hnn)}, HNZ: ${escapeHtml(data.hnz)}</span><br>
+                            <span class="text-muted">Máx: ${escapeHtml(data.maximo)}</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        `;
+            }
+
+            function crearTarjetaDerecha(data) {
+                const id = 'right-' + cssSafe(data.estacion);
+                return `
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-2">
+                    <div class="form-check">
+                        <input class="form-check-input item-right"
+                               type="checkbox"
+                               id="${id}"
+                               data-estacion="${escapeHtml(data.estacion)}"
+                               data-hne="${escapeHtml(data.hne)}"
+                               data-hnn="${escapeHtml(data.hnn)}"
+                               data-hnz="${escapeHtml(data.hnz)}"
+                               data-maximo="${escapeHtml(data.maximo)}">
+                        <label class="form-check-label small" for="${id}">
+                            <strong>${escapeHtml(data.estacion)}</strong><br>
+                            <span class="text-muted">HNE: ${escapeHtml(data.hne)}, HNN: ${escapeHtml(data.hnn)}, HNZ: ${escapeHtml(data.hnz)}</span><br>
+                            <span class="text-muted">Máx: ${escapeHtml(data.maximo)}</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        `;
+            }
+
+            function cssSafe(str) {
+                return String(str).replace(/[^a-zA-Z0-9_-]/g, '_');
+            }
+
+            function escapeHtml(str) {
+                return String(str)
+                    .replaceAll('&', '&amp;')
+                    .replaceAll('<', '&lt;')
+                    .replaceAll('>', '&gt;')
+                    .replaceAll('"', '&quot;')
+                    .replaceAll("'", '&#039;');
+            }
+
+        });
+    </script>
+{% endblock %}

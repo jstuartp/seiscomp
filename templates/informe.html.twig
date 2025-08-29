@@ -5,8 +5,8 @@
 {% block body %}
 
     <script>
-        function enviaDatos (id, fecha, mag,lat,long) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5;
+        function enviaDatos (id, fecha, mag,lat,long,epi) {
+            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6;
             // Start by creating a <form>
             theForm = document.createElement('form');
             theForm.action = '{{ path('pga') }}';
@@ -32,12 +32,61 @@
             newInput5.type = 'hidden';
             newInput5.name = 'long';
             newInput5.value = long;
+            newInput6 = document.createElement('input');
+            newInput6.type = 'hidden';
+            newInput6.name = 'long';
+            newInput6.value = long;
             // Now put everything together...
             theForm.appendChild(newInput1);
             theForm.appendChild(newInput2);
             theForm.appendChild(newInput3);
             theForm.appendChild(newInput4);
             theForm.appendChild(newInput5);
+            theForm.appendChild(newInput6);
+            // ...and it to the DOM...
+            document.getElementById('hidden_form_container').appendChild(theForm);
+            // ...and submit it
+            theForm.submit();
+        }
+
+        function archivosLis (id, fecha, mag,lat,long,epi) {
+            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6;
+            // Start by creating a <form>
+            theForm = document.createElement('form');
+            theForm.action = '{{ path('app_archivo_lis') }}';
+            theForm.method = 'post';
+            // Next create the <input>s in the form and give them names and values
+            newInput1 = document.createElement('input');
+            newInput1.type = 'hidden';
+            newInput1.name = 'id';
+            newInput1.value = id;
+            newInput2 = document.createElement('input');
+            newInput2.type = 'hidden';
+            newInput2.name = 'fecha';
+            newInput2.value = fecha;
+            newInput3 = document.createElement('input');
+            newInput3.type = 'hidden';
+            newInput3.name = 'mag';
+            newInput3.value = mag;
+            newInput4 = document.createElement('input');
+            newInput4.type = 'hidden';
+            newInput4.name = 'lat';
+            newInput4.value = lat;
+            newInput5 = document.createElement('input');
+            newInput5.type = 'hidden';
+            newInput5.name = 'long';
+            newInput5.value = long;
+            newInput6 = document.createElement('input');
+            newInput6.type = 'hidden';
+            newInput6.name = 'epi';
+            newInput6.value = epi;
+            // Now put everything together...
+            theForm.appendChild(newInput1);
+            theForm.appendChild(newInput2);
+            theForm.appendChild(newInput3);
+            theForm.appendChild(newInput4);
+            theForm.appendChild(newInput5);
+            theForm.appendChild(newInput6);
             // ...and it to the DOM...
             document.getElementById('hidden_form_container').appendChild(theForm);
             // ...and submit it
@@ -242,7 +291,8 @@
                                                     class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
                                                     {% if habilitada %}
                                                         href="javascript:void(0);"
-                                                        onclick="enviaDatos('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}')"
+                                                        onclick="enviaDatos('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
+                                                                '{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
                                                     {% else %}
                                                         href="#"
                                                         tabindex="-1"
@@ -269,22 +319,43 @@
                                         </div>
                                     </div>
                                 </div>
-                                <!--
                                 <div class="col-md-4">
-                                    <div class="card shadow-sm">
+                                    {# Determina si la card debe estar habilitada según "informe" #}
+                                    {% set habilitada = (informe|default(0)) == 1 %}
+
+                                    {# Card: Archivos LIS #}
+                                    <div
+                                            id="card-archivoslis"
+                                            class="card shadow-sm position-relative {{ habilitada ? '' : 'opacity-50' }}"
+                                            aria-disabled="{{ habilitada ? 'false' : 'true' }}"
+                                    >
                                         <div class="card-body">
                                             <div class="mb-3">
-                                                <i class="bi bi-speedometer fs-2 text-primary"></i>
+                                                <i class="bi bi-archive fs-2 text-primary" aria-hidden="true"></i>
                                             </div>
-                                            <h5 class="card-title">Intensidad</h5>
-                                            <p class="card-text">Datos de intensidad</p>
-                                            <a href="javascript:void(0);"
-                                               onclick=""
-                                               class="stretched-link"></a>
+
+                                            <h5 class="card-title">Archivos LIS</h5>
+                                            <p class="card-text">Repositorio de Archivos .LIS</p>
+
+                                            {# Enlace/activador: sólo permite acción real cuando está habilitada #}
+                                            <a
+                                                    id="card-aceleracion-link"
+                                                    class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
+                                                    {% if habilitada %}
+                                                        href="javascript:void(0);"
+                                                        onclick="archivosLis('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
+                                                                '{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                                    {% else %}
+                                                        href="#"
+                                                        tabindex="-1"
+                                                        aria-disabled="true"
+                                                        onclick="return false;"
+                                                    {% endif %}
+                                            ></a>
                                         </div>
                                     </div>
+
                                 </div>
-                                -->
                                 <!--
                                 <div class="col-md-4">
                                     <div class="card shadow-sm">
