@@ -1,0 +1,155 @@
+{% extends '/base.html.twig' %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row align-items-center mt-3">
+            <div class="col-sm-8">
+                <h2 class="mb-0">Archivos generados para el sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(u.t.c.)
+                    <span class="badge bg-secondary">M {{ magnitud |round(1)}} </span></h2>
+            </div>
+            <div class="col-sm-4 text-end">
+                <a href="javascript:window.history.back();" class="btn btn-dark">Regresar</a>
+            </div>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="card shadow-sm">
+            <div class="card-header d-flex flex-wrap gap-2 align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <input id="buscador" type="search" class="form-control form-control-sm" placeholder="Buscar…">
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button id="btnDescargarSeleccionados" class="btn btn-outline-primary btn-sm" disabled>Descargar seleccionados</button>
+                    <a href="{{ path('app_archivo_lis') }}" class="btn btn-success btn-sm"
+                        data-evento="{{ id }}"
+                    >Generar nuevos archivos</a>
+                </div>
+            </div>
+
+            <div class="card-body p-0">
+                {% if archivos is defined and archivos|length > 0 %}
+                    <div class="table-responsive">
+                        <table id="tablaArchivos" class="table table-sm align-middle mb-0">
+                            <thead class="table-light">
+                            <tr>
+                                <th style="width:40px;">
+                                    <input id="seleccionarTodos" type="checkbox" class="form-check-input">
+                                </th>
+                                <th data-sort="text">Estaci&oacute;n</th>
+                                <th data-sort="text">Max PGA</th>
+                                <th style="width:140px;">Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for a in archivos %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="form-check-input fila-check"
+                                               data-url="{{ a.urlDescarga }}"
+                                               data-nombre="{{ a.nombreEstacion }}">
+                                    </td>
+                                    <td class="td-nombre">{{ a.nombreEstacion }}</td>
+                                    <td class="td-pga text-truncate" style="max-width: 40ch;">{{ a.maximoPga }}</td>
+                                    <td>
+                                        <a class="btn btn-sm btn-outline-primary" href="{{ a.urlDescarga }}" download>Descargar</a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="p-4 text-muted">No hay archivos generados.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabla     = document.getElementById('tablaArchivos');
+            const buscador  = document.getElementById('buscador');
+            const selTodos  = document.getElementById('seleccionarTodos');
+            const btnBatch  = document.getElementById('btnDescargarSeleccionados');
+
+            function actualizarBotonBatch() {
+                const sel = document.querySelectorAll('.fila-check:checked');
+                btnBatch.disabled = (sel.length === 0);
+            }
+
+            // Buscar (filtro por texto en carpeta o nombre)
+            if (buscador && tabla) {
+                buscador.addEventListener('input', () => {
+                    const q = buscador.value.toLowerCase().trim();
+                    tabla.querySelectorAll('tbody tr').forEach(tr => {
+                        const carpeta = tr.querySelector('.td-carpeta')?.textContent.toLowerCase() || '';
+                        const nombre  = tr.querySelector('.td-nombre')?.textContent.toLowerCase() || '';
+                        const show    = carpeta.includes(q) || nombre.includes(q);
+                        tr.style.display = show ? '' : 'none';
+                    });
+                });
+            }
+
+            // Ordenamiento simple (clic en th con data-sort)
+            if (tabla) {
+                tabla.querySelectorAll('thead th[data-sort]').forEach((th, idx) => {
+                    let asc = true;
+                    th.style.cursor = 'pointer';
+                    th.addEventListener('click', () => {
+                        const tipo = th.getAttribute('data-sort'); // 'text'
+                        const rows = Array.from(tabla.querySelectorAll('tbody tr')).filter(tr => tr.style.display !== 'none');
+                        rows.sort((a, b) => {
+                            const A = a.children[idx].textContent.trim().toLowerCase();
+                            const B = b.children[idx].textContent.trim().toLowerCase();
+                            if (tipo === 'text') return asc ? A.localeCompare(B) : B.localeCompare(A);
+                            return 0;
+                        });
+                        // Reinsertar en orden
+                        const tbody = tabla.querySelector('tbody');
+                        rows.forEach(r => tbody.appendChild(r));
+                        asc = !asc;
+                    });
+                });
+            }
+
+            // Seleccionar todos
+            if (selTodos) {
+                selTodos.addEventListener('change', () => {
+                    const checked = selTodos.checked;
+                    document.querySelectorAll('.fila-check').forEach(cb => cb.checked = checked);
+                    actualizarBotonBatch();
+                });
+            }
+
+            // Habilitar/Deshabilitar botón batch según selección
+            document.querySelectorAll('.fila-check').forEach(cb => {
+                cb.addEventListener('change', () => {
+                    if (!cb.checked && selTodos.checked) {
+                        selTodos.checked = false;
+                    }
+                    actualizarBotonBatch();
+                });
+            });
+
+            // Descargar seleccionados (abre múltiples descargas en el navegador)
+            btnBatch?.addEventListener('click', () => {
+                const seleccion = Array.from(document.querySelectorAll('.fila-check:checked'))
+                    .map(cb => ({ url: cb.dataset.url, nombre: cb.dataset.nombre }));
+
+                if (!seleccion.length) return;
+
+                // NOTA: si dispone de un endpoint para descargar ZIP, envíe 'seleccion' por POST y redirija al ZIP.
+                // Aquí se disparan descargas individuales:
+                seleccion.forEach(item => {
+                    const a = document.createElement('a');
+                    a.href = item.url;
+                    a.download = item.nombre || '';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                });
+            });
+        });
+    </script>
+{% endblock %}

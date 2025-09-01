@@ -7,7 +7,7 @@
                 <h2 class="mb-0">Generar archivos LIS</h2>
             </div>
             <div class="col-sm-4 text-end">
-                <a href="{{ path('listado_Lis') }}" class="btn btn-outline-secondary">Volver a la lista</a>
+                <a href="{{ path('vista_lista_archivos') }}" class="btn btn-outline-secondary">Volver a la lista</a>
             </div>
         </div>
 
@@ -117,8 +117,8 @@
             const msgOk      = document.getElementById('msgOk');
             const msgErr     = document.getElementById('msgErr');
 
-            const urlGenerar = "{{ path('archivo_lis_generar') }}";           // POST que ejecuta Python
-            const urlLista   = "{{ path('listado_Lis') }}";              // Redirección al finalizar
+            const urlGenerar = "{{ path('accion_generar_archivos') }}";           // POST que ejecuta Python
+            const urlLista   = "{{ path('vista_lista_archivos') }}";              // Redirección al finalizar
 
             function enableGen() {
                 btnGen.disabled = (gridRight.querySelectorAll('.item-right').length === 0);

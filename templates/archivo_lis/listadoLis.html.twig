@@ -1,0 +1,249 @@
+{# templates/lis/lista.html.twig #}
+{% extends '/base.html.twig' %}
+
+{% block body %}
+    <div class="container-fluid">
+
+        <!-- Encabezado -->
+        <div class="row align-items-center mt-3">
+            <div class="col-sm-8">
+                <h2 class="mb-0">Archivos existentes para el sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(u.t.c.)
+                    <span class="badge bg-secondary">M {{ magnitud |round(1)}} </span></h2>
+            </div>
+            <div class="col-sm-4 text-end">
+                <a href="javascript:window.history.back();" class="btn btn-dark">Regresar</a>
+            </div>
+        </div>
+
+        <hr class="my-3">
+
+        {# Mensaje opcional tras regresar de la generación #}
+        {% if app.request.query.get('ok') %}
+            <div class="alert alert-success py-2">Generación realizada con éxito.</div>
+        {% endif %}
+
+        <!-- Controles superiores -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="row g-2 align-items-center">
+                    <div class="col-12 col-md-4">
+                        <input id="buscador" type="search" class="form-control form-control-sm" placeholder="Buscar por carpeta o nombre…">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <select id="ordenPor" class="form-select form-select-sm" aria-label="Ordenar por">
+                            <option value="carpeta">Ordenar por carpeta</option>
+                            <option value="nombre">Ordenar por nombre</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <button id="btnToggleOrden" class="btn btn-outline-secondary btn-sm w-100" data-asc="true" title="Cambiar orden">
+                            Ascendente
+                        </button>
+                    </div>
+                    <div class="col-12 col-md-3 d-flex gap-2 justify-content-md-end">
+                        <button id="btnDescargarSeleccionados" class="btn btn-outline-primary btn-sm" disabled>
+                            Descargar seleccionados
+                        </button>
+
+                        {# POST hacia Plantilla 2, enviando eventoId #}
+                        <form id="formIrGenerar" method="post" action="{{ path('app_archivo_lis') }}">
+                            <input type="hidden" name="eventoId" value="{{ id }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('app_archivo_lis' ~ id) }}">
+                            <button type="submit" id="btnIrGenerar" class="btn btn-success btn-sm"
+                                    {% if id is not defined or id is empty %}disabled{% endif %}>
+                                Generar nuevos archivos
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="mt-2 d-flex align-items-center gap-3">
+                    <div class="form-check">
+                        <input id="seleccionarTodos" type="checkbox" class="form-check-input">
+                        <label for="seleccionarTodos" class="form-check-label">Seleccionar todos (visibles)</label>
+                    </div>
+                    <div class="text-muted small" id="contadorSeleccion">0 seleccionados</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid en 3/4 columnas (responsive) -->
+        {% set hayArchivos = (archivos is defined and archivos|length > 0) %}
+        <div id="gridArchivos" class="row row-cols-1 row-cols-md-3 row-cols-xl-4 g-3">
+            {% if hayArchivos %}
+                {% for a in archivos %}
+                    <div class="col item-archivo"
+                         data-carpeta="{{ a.nombreEstacion }}"
+                         data-nombre="{{ a.maximoPga | round(2) }}"
+                         data-url="{{ a.urlDescarga }}"
+                         data-mostrado="1">
+                        <div class="card h-100 shadow-sm">
+                            <div class="card-header py-2 d-flex align-items-center justify-content-between">
+                                <div class="form-check m-0">
+                                    <input class="form-check-input chk-item" type="checkbox"
+                                           aria-label="Seleccionar archivo {{ a.nombreEstacion }}">
+                                </div>
+                                <span class="badge bg-light text-dark text-monospace small">{{ a.nombreArchivo }}</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="text-muted small">Estaci&oacute;n</div>
+                                <div class="fw-semibold text-truncate" title="{{ a.nombreEstacion }}">{{ a.nombreEstacion }}</div>
+                                <div class="text-muted small mt-2">Max PGA</div>
+                                <div class="text-truncate" title="{{ a.maximoPga |round(2) }}">{{ a.maximoPga |round(2) }}</div>
+                            </div>
+                            <div class="card-footer bg-white border-0 pb-3">
+                                <a class="btn btn-sm btn-outline-primary w-100" href="{{ a.urlDescarga }}" download>Descargar</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="p-4 text-muted border rounded text-center">
+                        No hay archivos generados.
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+    </div>
+
+    <!-- Lógica de interacción -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid      = document.getElementById('gridArchivos');
+            const buscador  = document.getElementById('buscador');
+            const ordenPor  = document.getElementById('ordenPor');
+            const btnOrden  = document.getElementById('btnToggleOrden');
+            const selTodos  = document.getElementById('seleccionarTodos');
+            const btnBatch  = document.getElementById('btnDescargarSeleccionados');
+            const lblCount  = document.getElementById('contadorSeleccion');
+            const formGen   = document.getElementById('formIrGenerar');
+            const btnGen    = document.getElementById('btnIrGenerar');
+
+            function items() {
+                return Array.from(grid.querySelectorAll('.item-archivo'));
+            }
+
+            function visibles() {
+                return items().filter(x => x.style.display !== 'none');
+            }
+
+            function checks() {
+                return items().map(x => x.querySelector('.chk-item'));
+            }
+
+            function checksVisibles() {
+                return visibles().map(x => x.querySelector('.chk-item'));
+            }
+
+            function actualizarContador() {
+                const count = items().reduce((acc, el) => acc + (el.querySelector('.chk-item')?.checked ? 1 : 0), 0);
+                if (lblCount) lblCount.textContent = count + ' seleccionados';
+                btnBatch.disabled = (count === 0);
+            }
+
+            function setOrdenLabel(isAsc) {
+                btnOrden.textContent = isAsc ? 'Ascendente' : 'Descendente';
+                btnOrden.dataset.asc = String(isAsc);
+            }
+
+            function ordenar() {
+                const por   = (ordenPor?.value || 'carpeta');
+                const asc   = (btnOrden?.dataset.asc !== 'false');
+                const lista = visibles();
+
+                lista.sort((a, b) => {
+                    const A = (a.dataset[por] || '');
+                    const B = (b.dataset[por] || '');
+                    return asc ? A.localeCompare(B) : B.localeCompare(A);
+                });
+
+                // Reinsertar en orden
+                const frag = document.createDocumentFragment();
+                lista.forEach(el => frag.appendChild(el));
+                grid.appendChild(frag);
+            }
+
+            function filtrar() {
+                const q = (buscador?.value || '').toLowerCase().trim();
+                items().forEach(el => {
+                    const match = (el.dataset.carpeta || '').includes(q) || (el.dataset.nombre || '').includes(q);
+                    el.style.display = match ? '' : 'none';
+                    el.dataset.mostrado = match ? '1' : '0';
+                    if (!match) {
+                        // Si se oculta, desmarcar su checkbox para evitar confusión
+                        const chk = el.querySelector('.chk-item');
+                        if (chk) chk.checked = false;
+                    }
+                });
+                // Tras filtrar, el "seleccionar todos" debe pasar a no marcado
+                if (selTodos) selTodos.checked = false;
+                actualizarContador();
+                ordenar();
+            }
+
+            // Buscar
+            buscador?.addEventListener('input', filtrar);
+
+            // Ordenar por campo
+            ordenPor?.addEventListener('change', () => {
+                ordenar();
+            });
+
+            // Cambiar sentido del orden
+            btnOrden?.addEventListener('click', () => {
+                const isAsc = (btnOrden.dataset.asc !== 'false');
+                setOrdenLabel(!isAsc);
+                ordenar();
+            });
+
+            // Seleccionar todos (solo visibles)
+            selTodos?.addEventListener('change', () => {
+                const on = selTodos.checked;
+                checksVisibles().forEach(chk => chk.checked = on);
+                actualizarContador();
+            });
+
+            // Escuchar cambios de cada checkbox
+            checks().forEach(chk => {
+                chk.addEventListener('change', () => {
+                    if (!chk.checked && selTodos?.checked) {
+                        selTodos.checked = false;
+                    }
+                    actualizarContador();
+                });
+            });
+
+            // Descarga por lote (múltiples descargas; sustituible por endpoint ZIP si lo prefiere)
+            btnBatch?.addEventListener('click', () => {
+                const seleccion = items()
+                    .filter(x => x.querySelector('.chk-item')?.checked)
+                    .map(x => ({ url: x.dataset.url, nombre: x.dataset.nombre }));
+
+                if (!seleccion.length) return;
+
+                seleccion.forEach(item => {
+                    const a = document.createElement('a');
+                    a.href = item.url;
+                    a.download = item.nombre || '';
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                });
+            });
+
+            // Prevención de doble envío al ir a generar (opcional)
+            formGen?.addEventListener('submit', () => {
+                if (btnGen) {
+                    btnGen.disabled = true;
+                    btnGen.textContent = 'Redirigiendo…';
+                }
+            });
+
+            // Estado inicial
+            setOrdenLabel(true);
+            ordenar();
+        });
+    </script>
+{% endblock %}

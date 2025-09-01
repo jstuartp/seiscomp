@@ -63,6 +63,26 @@ class PgaRepository extends ServiceEntityRepository
     }
 
 
+
+    /**
+     * Obtener Listado de los Archivos LIS creados
+     */
+    public function findArchivoLisByEvento($evento): ?array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql ="select distinct * From archivoLis Where nombreEvento = '".$evento."'";
+        try {
+            $datos= $conn->executeQuery($sql);
+            return $datos->fetchAllAssociative();
+        }catch (Exception $e){
+            return [];
+        }
+
+
+    }
+
+
+
     //    /**
     //     * @return Pga[] Returns an array of Pga objects
     //     */
