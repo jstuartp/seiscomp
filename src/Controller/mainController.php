@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\PgaRepository;
 use App\Repository\HistoricoSismosRepository;
 use App\Repository\TodosSismosRepository;
+use App\Repository\JmaRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,12 +19,15 @@ class mainController extends AbstractController
     private HistoricoSismosRepository $historicoSismosRepository;  //Variable para inyectar el repositorio se usa PGA pero se puede hacer general
     private TodosSismosRepository $todoSismoRepository;  //Variable para inyectar el repositorio se usa PGA pero se puede hacer general
 
+    private JmaRepository $jmaRepository;  //Variable para inyectar el repositorio de la tabla JMA
+
     public function __construct(PgaRepository $repository, HistoricoSismosRepository $historicoSismosRepository,
-                                TodosSismosRepository $todosSismosRepository)
+                                TodosSismosRepository $todosSismosRepository, JmaRepository $jmaRepository)
     {
         $this->repository = $repository;
         $this->historicoSismosRepository = $historicoSismosRepository;
         $this->todoSismoRepository = $todosSismosRepository;
+        $this->jmaRepository = $jmaRepository;
     }
 
     #[Route('/', name:'homepage', methods: ['POST','GET'])]
@@ -167,27 +171,6 @@ class mainController extends AbstractController
 
 
 
-    /**
-     * @Route("/llenaTabla", name="llenaTabla")
-     */
-    public function llenaTabla(Request $request, EntityManagerInterface $em)
-    {
-        $titulo="Pagina Principal";
-        //$request = $this->get('request_stack')->getCurrentRequest();
-        $date = $request->get('date');
-        $time = $request->get('time');
-        //nombre de la pagina
-        $nombre="Datos Obtenidos";
-        $salida = array(); //contendrá cada linea salida desde la aplicación en Python
-        //exec("python3 /var/www/html/prueba/main.py", $salida); //llamada a python
-        $datos = $this->datosTabla($em);
-        $json= json_encode($datos);
-        //Devuelvo todo el entity, lo que me permite usarlo en el twigg
-        return $this->render('index.html.twig',
-            ['title'=> $nombre, 'datos'=>$datos,'json'=>$json, 'salida'=>$salida]);
-    }
-
-
     public function datosTabla(EntityManagerInterface $em)
     {
         $sql = "select distinct PEvent.publicID,Event._oid, Origin.time_value as hora, Origin._oid, ROUND(M.magnitude_value,1) as magnitud,
@@ -225,6 +208,36 @@ class mainController extends AbstractController
         return $this->render('pga.html.twig',
             ['fecha' => $fecha,'datos'=>$datosPga,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,'epi_long'=>$epi_long]);
     }
+
+
+
+    /**
+     * @Route("/jma/", name="pga")
+     */
+    #[Route('/jma/', name:'jma', methods: ['POST','GET','PUT'])]
+    public function jmaAction(Request $request, EntityManagerInterface $em): Response
+    {
+        //Chequeo los datos que llegan por post del ID y la Fecha
+        if ($request->isMethod('POST')) {
+            $evento = $request->request->get('id');
+            $fecha = $request->request->get('fecha');
+            $magnitud = $request->request->get('mag');
+            $epi_lat = $request->request->get('lat');
+            $epi_long = $request->request->get('long');
+        }else{echo "NO HAY NADA";}
+
+        //Activo el repositorio para traer los datos de JMA segun el evento
+        $datosJma = $this->jmaRepository->findJmaByEvent($evento);
+
+
+        return $this->render('jma.html.twig',
+            ['fecha' => $fecha,'datos'=>$datosJma,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,'epi_long'=>$epi_long]);
+    }
+
+
+
+
+
 
 
     /**

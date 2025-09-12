@@ -1,0 +1,241 @@
+{% extends '/base.html.twig' %}
+
+{% block body %}
+
+    <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
+
+        <div class="row">
+            <br><br>
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8">
+                <h2 class="mb-4">{% block page_title %}
+                        Intensidades JMA para el sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(u.t.c.)
+                        <span class="badge bg-secondary">M {{ magnitud |round(1)}} </span>{% endblock %}
+                </h2>
+            </div>
+            <div class="col-sm-4 text-end">
+                <a href="javascript:window.history.back();" class="btn btn-dark">
+                    Regresar
+                </a>
+            </div>
+        </div>
+        <div class="row">
+        </div>
+        <div class="row">
+            <br><br>
+        </div>
+        <div class="row h-100">
+            <div class="col-4">
+                <div class="row h-100">
+                    <div class="bs-example" data-example-id="contextual-table">
+                        <table class="table table-bordered table-hover table-condensed table-sm table-striped" id="tabla_pga" style="font-size: 12px !important;
+                                                                                                                     height: 32px !important;
+                                                                                                                    min-width: 100px !important;
+                                                                                                                    padding: 2px 6px !important; ">
+                            <thead>
+                            <tr>
+                                <th>Estación</th>
+                                <th>Intensidad JMA</th>
+                                <th>Sostenida (cm/s&sup2)</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for dato in datos %}
+                            <tr class="info">
+                                <td>{{ dato.estacion }}</td>
+                                <td>{{ dato.jma }}</td>
+                                <td>{{ dato.threshold_a0 | round(2)}}</td>
+                            </tr>
+                            {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-8">
+                <div class="row h-100">
+                    <div id="map">MAPA</div>
+                </div>
+            </div>
+        </div>
+        <div id="myModal" class="modal">
+            <!-- El contenido del modal (la imagen) -->
+            <span class="close">&times;</span>
+            <img class="modal-content" id="img01">
+        </div>
+
+
+    </div>
+
+    <div class="row">
+        <div class="col">
+
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            let mytabla =$('#tabla_pga').DataTable({
+                columnDefs: [
+                    { targets: '_all', className: 'dt-head-center dt-body-center' }
+                ],
+                responsive: false,
+                paging: true,       // Habilita paginación
+                ordering: true,
+                order: [[2, "desc"],],
+                lengthMenu: [15, 30, 60], // Opciones de cantidad de filas por página
+                pageLength: 15,      // Número de filas por defecto
+                language: {
+                    processing: "En curso...",
+                    search: "Buscar:",
+                    paginate: {
+                        first: "Primero",
+                        previous: "Anterior",
+                        next: "Siguiente",
+                        last: "Último"
+                    },
+                },
+            });
+
+            // Crea un ícono triangular de tamaño en píxeles similar a radius=9 (≈ 18 px)
+            function triangleIcon(color, sizePx = 20, fillOpacity = 0.5, strokeColor = '#333', strokeWidth = 2) {
+                const s = sizePx;
+                // Triángulo equilátero dentro del recuadro, con un pequeño margen de 2 px
+                const points = `${s/2},2 ${s-2},${s-2} 2,${s-2}`;
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
+                                  <polygon points="${points}"
+                                           fill="${color}"
+                                           fill-opacity="${fillOpacity}"
+                                           stroke="${strokeColor}"
+                                           stroke-width="${strokeWidth}" />
+                                </svg>`;
+
+                return L.divIcon({
+                    html: svg,
+                    className: 'triangle-icon',       // clase para estilos si desea
+                    iconSize: [s, s],
+                    iconAnchor: [s/2, s/2]            // ancla al centro, como circleMarker
+                });
+            }
+
+            // Icono personalizado de estrella
+            const starIcon = L.divIcon({
+                html: ' <img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" alt="Estrella" style="width:50%;"> ',
+                className: '',
+                iconSize: [80, 80],
+                iconAnchor: [30, 30]
+            });
+
+
+
+            // Inicializar el mapa centrado en una posición predeterminada
+            var map = L.map('map').setView([0, 0], 2);
+            let bounds = L.latLngBounds([7.886, -84.409],   // Suroeste (SW)
+                [11.019, -82.976])   // Noreste (NE)));
+            map.fitBounds(bounds);
+
+            // Agregar capa de mapa base
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            L.control.scale().addTo(map);
+            // Agregar el marcador con estrella
+            L.marker([ {{ epi_lat }}, {{ epi_long }}], { icon: starIcon })
+                .addTo(map)
+                .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1)}}');
+
+            // Función para determinar el color del círculo según el valor numérico
+            function getColor(valor) {
+
+                if (valor === "6+") return '#a90000';   // Medio
+                if (valor === "6-") return '#f40001';   // Medio
+                if (valor === "5+") return '#f77a00';   // Medio
+                if (valor === "5-") return '#ffff00';   // Medio
+                if (valor === 4) return '#0bc200';   // Medio
+                if (valor === 3) return '#00faff';   // Medio
+                if (valor === 2) return '#0032ff';   // Medio
+                if (valor === 1) return '#d2d2d2';   // Medio
+                if (valor === 0) return '#ffffff';   // Medio
+                return '#640064';                   // Bajo
+            }
+
+            // Lista de puntos en formato Twig
+            var puntos = [
+                {% for dato in datos %}
+                { lat: {{ dato.lat }}, lng: {{ dato.lon }}, max: {{ dato.jma }},
+                    datos: `Estaci&oacute;n: {{ dato.estacion }} <br>
+                            JMA: {{ dato.jma }} <br>`
+                    }
+                {% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            // Dibujar los puntos en el mapa (triángulo en lugar de círculo)
+            puntos.forEach(function(punto) {
+                const color = getColor(punto.max);
+                const icono = triangleIcon(color, /* tamaño px */ 18, /* fillOpacity */ 0.5, /* stroke */ '#333', /* strokeWidth */ 2);
+
+                L.marker([punto.lat, punto.lng], { icon: icono })
+                    .addTo(map)
+                    .bindPopup(punto.datos);
+            });
+
+            // Utilidad para dibujar un triángulo pequeño en la leyenda (SVG inline)
+            function legendTriangle(color) {
+                const s = 16;
+                const points = `${s/2},2 ${s-2},${s-2} 2,${s-2}`;
+                return `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}"
+                         style="vertical-align: middle; margin-right: 6px;">
+                      <polygon points="${points}"
+                               fill="${color}" fill-opacity="0.5"
+                               stroke="#333" stroke-width="1.5"/>
+                    </svg>`;
+            }
+
+            // Definición de rangos en el mismo orden que el getColor
+            const legendItems = [
+                { label: '7',  color: '#640064' },
+                { label: '6+', color: '#a90000' },
+                { label: '6-', color: '#f40001' },
+                { label: '5+', color: '#f77a00' },
+                { label: '5-', color: '#ffff00' },
+                { label: '4',  color: '#0bc200' },
+                { label: '3',  color: '#00faff' },
+                { label: '2',  color: '#0032ff' },
+                { label: '1',  color: '#d2d2d2' },
+                { label: '0',  color: '#ffffff' }
+            ];
+
+            // Control de Leaflet para la leyenda
+            const legend = L.control({ position: 'bottomright' });
+
+            legend.onAdd = function () {
+                const div = L.DomUtil.create('div', 'info legend');
+                div.innerHTML = '<div class="legend-title">Escala JMA</div>';
+                legendItems.forEach(item => {
+                    div.innerHTML += `
+                                      <div class="legend-item">
+                                        ${legendTriangle(item.color)}<span>${item.label}</span>
+                                      </div>`;
+                });
+                return div;
+            };
+
+            legend.addTo(map);
+
+
+
+
+
+        });
+    </script>
+
+{% endblock %}

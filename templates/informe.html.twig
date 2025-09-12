@@ -49,11 +49,11 @@
             theForm.submit();
         }
 
-        function archivosLis (id, fecha, mag,lat,long,epi) {
+        function intensidadJma (id, fecha, mag,lat,long,epi) {
             var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6;
             // Start by creating a <form>
             theForm = document.createElement('form');
-            theForm.action = '{{ path('listado_Lis') }}';
+            theForm.action = '{{ path('jma') }}';
             theForm.method = 'post';
             // Next create the <input>s in the form and give them names and values
             newInput1 = document.createElement('input');
@@ -323,9 +323,9 @@
                                     {# Determina si la card debe estar habilitada según "informe" #}
                                     {% set habilitada = (informe|default(0)) == 1 %}
 
-                                    {# Card: Archivos LIS #}
+                                    {# Card: intensidad JMA #}
                                     <div
-                                            id="card-archivoslis"
+                                            id="card-jma"
                                             class="card shadow-sm position-relative {{ habilitada ? '' : 'opacity-50' }}"
                                             aria-disabled="{{ habilitada ? 'false' : 'true' }}"
                                     >
@@ -334,16 +334,16 @@
                                                 <i class="bi bi-archive fs-2 text-primary" aria-hidden="true"></i>
                                             </div>
 
-                                            <h5 class="card-title">Archivos LIS</h5>
-                                            <p class="card-text">Repositorio de Archivos .LIS</p>
+                                            <h5 class="card-title">Intensidad JMA</h5>
+                                            <p class="card-text">Valores y Mapas de Intensidad</p>
 
                                             {# Enlace/activador: sólo permite acción real cuando está habilitada #}
                                             <a
-                                                    id="card-aceleracion-link"
+                                                    id="card-intensidad-link"
                                                     class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
                                                     {% if habilitada %}
                                                         href="javascript:void(0);"
-                                                        onclick="archivosLis('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
+                                                        onclick="intensidadJma('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
                                                                 '{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
                                                     {% else %}
                                                         href="#"

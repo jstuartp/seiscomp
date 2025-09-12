@@ -70,7 +70,7 @@ class PgaRepository extends ServiceEntityRepository
     public function findArchivoLisByEvento($evento): ?array
     {
         $conn = $this->getEntityManager()->getConnection();
-        $sql ="select distinct * From archivoLis Where nombreEvento = '".$evento."'";
+        $sql ="select * From jma Where idEvento = '".$evento."'";
         try {
             $datos= $conn->executeQuery($sql);
             return $datos->fetchAllAssociative();
