@@ -34,6 +34,28 @@ class JmaRepository extends ServiceEntityRepository
         }
     }
 
+
+    public function findJmaWithNameByEvent($evento): ?array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql ="SELECT j.*,
+                p.maximo,
+                e.nombre
+                FROM informes.jma AS j
+                INNER JOIN informes.Pga AS p
+                ON  p.estacion      = j.estacion
+                AND p.nombre_evento = j.idEvento
+                INNER JOIN lis.estaciones AS e
+                ON  e.estacion = j.estacion
+                WHERE j.idEvento = '".$evento."';";
+        try {
+            $datos= $conn->executeQuery($sql);
+            return $datos->fetchAllAssociative();
+        }catch (Exception $e){
+            return [];
+        }
+    }
+
     //    public function findOneBySomeField($value): ?Jma
     //    {
     //        return $this->createQueryBuilder('j')

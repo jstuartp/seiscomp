@@ -199,6 +199,7 @@ class mainController extends AbstractController
             $magnitud = $request->request->get('mag');
             $epi_lat = $request->request->get('lat');
             $epi_long = $request->request->get('long');
+            $epi = $request->request->get('epi');
         }else{echo "NO HAY NADA";}
 
         //Activo el repositorio para traer los datos de PGA segun el evento
@@ -206,7 +207,8 @@ class mainController extends AbstractController
 
 
         return $this->render('pga.html.twig',
-            ['fecha' => $fecha,'datos'=>$datosPga,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,'epi_long'=>$epi_long]);
+            ['fecha' => $fecha,'datos'=>$datosPga,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
+                'epi_long'=>$epi_long,'epi'=>$epi]);
     }
 
 
@@ -224,14 +226,17 @@ class mainController extends AbstractController
             $magnitud = $request->request->get('mag');
             $epi_lat = $request->request->get('lat');
             $epi_long = $request->request->get('long');
+            $epi = $request->request->get('epi');
         }else{echo "NO HAY NADA";}
 
         //Activo el repositorio para traer los datos de JMA segun el evento
-        $datosJma = $this->jmaRepository->findJmaByEvent($evento);
+        #$datosJma = $this->jmaRepository->findJmaByEvent($evento);
+        $datosJma = $this->jmaRepository->findJmaWithNameByEvent($evento);
 
 
         return $this->render('jma.html.twig',
-            ['fecha' => $fecha,'datos'=>$datosJma,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,'epi_long'=>$epi_long]);
+            ['fecha' => $fecha,'datos'=>$datosJma,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
+                'epi_long'=>$epi_long,'epi'=>$epi]);
     }
 
 
@@ -277,6 +282,7 @@ class mainController extends AbstractController
             $mag = $request->request->get('mag');
             $lat = $request->request->get('lat');
             $long = $request->request->get('long');
+            $epi = $request->request->get('epi');
         }else{echo "NO HAY NADA";}
 
         $ciudades1 = [];
@@ -288,7 +294,8 @@ class mainController extends AbstractController
             fclose($handle);
         }
         return $this->render('epicentro.html.twig',
-            ['title'=> "Ciudades cercanas al Epicentro: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento, 'lat'=>$lat,'long'=>$long , 'ciudadesp' =>$ciudades1]);
+            ['title'=> "Ciudades cercanas al Epicentro: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento,
+                'lat'=>$lat,'long'=>$long , 'ciudadesp' =>$ciudades1,'epi'=>$epi]);
     }
 
     public function datosTablaSeiscomp(EntityManagerInterface $seiscomp, $mydate)

@@ -34,8 +34,8 @@
             newInput5.value = long;
             newInput6 = document.createElement('input');
             newInput6.type = 'hidden';
-            newInput6.name = 'long';
-            newInput6.value = long;
+            newInput6.name = 'epi';
+            newInput6.value = epi;
             // Now put everything together...
             theForm.appendChild(newInput1);
             theForm.appendChild(newInput2);
@@ -93,8 +93,8 @@
             theForm.submit();
         }
 
-        function enviaEpicentro (id, fecha, mag,lat,long) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5;
+        function enviaEpicentro (id, fecha, mag,lat,long,epi) {
+            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5, newInput6;
             // Start by creating a <form>
             theForm = document.createElement('form');
             theForm.action = '{{ path('epicentro') }}';
@@ -120,12 +120,17 @@
             newInput5.type = 'hidden';
             newInput5.name = 'long';
             newInput5.value = long;
+            newInput6 = document.createElement('input');
+            newInput6.type = 'hidden';
+            newInput6.name = 'epi';
+            newInput6.value = epi;
             // Now put everything together...
             theForm.appendChild(newInput1);
             theForm.appendChild(newInput2);
             theForm.appendChild(newInput3);
             theForm.appendChild(newInput4);
             theForm.appendChild(newInput5);
+            theForm.appendChild(newInput6);
             // ...and it to the DOM...
             document.getElementById('hidden_form_container').appendChild(theForm);
             // ...and submit it
@@ -246,8 +251,8 @@
                         <div class="row">
                             <div class="col-sm-8">
                                 <h2 class="mb-4">{% block page_title %}
-                                    Sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }}</strong>(u.t.c)
-                                    <span class="badge bg-secondary">M {{ magnitud | round(1)}} </span>{% endblock %}
+                                    Sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }}</strong>(UTC)
+                                    <span class="badge bg-danger">M {{ magnitud | round(1)}} </span>{% endblock %}
                                 </h2>
                             </div>
                             <div class="col-sm-4 text-end">
@@ -268,6 +273,21 @@
                         <div class="row g-4">
                             {% block content %}
                                 <div class="col-md-4">
+                                    <div class="card shadow-sm position-relative">
+                                        <div class="card-body" >
+                                            <div class="mb-3">
+                                                <i class="bi bi-geo-alt-fill fs-2 text-primary"></i>
+                                            </div>
+                                            <h5 class="card-title">Epicentro</h5>
+                                            <p class="card-text">Mapa de ubicaci&oacute;n y lugares cercanos</p>
+                                            <a href="javascript:void(0);"
+                                               onclick="enviaEpicentro('{{ id }}','{{ fecha }}','{{ magnitud }}',
+                                                       '{{ lat }}','{{ long }}','{{ epi|e('js') }}')"
+                                               class="stretched-link"></a>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
                                     {# Determina si la card debe estar habilitada según "informe" #}
                                     {% set habilitada = (informe|default(0)) == 1 %}
 
@@ -282,8 +302,8 @@
                                                 <i class="bi bi-speedometer2 fs-2 text-primary" aria-hidden="true"></i>
                                             </div>
 
-                                            <h5 class="card-title">Mapa de Aceleración</h5>
-                                            <p class="card-text">Principales valores de Aceleración</p>
+                                            <h5 class="card-title">Aceleración M&aacute;xima</h5>
+                                            <p class="card-text">Mapa interactivo y formas de Onda</p>
 
                                             {# Enlace/activador: sólo permite acción real cuando está habilitada #}
                                             <a
@@ -304,21 +324,6 @@
                                     </div>
 
                                 </div>
-
-                                <div class="col-md-4">
-                                    <div class="card shadow-sm position-relative">
-                                        <div class="card-body" >
-                                            <div class="mb-3">
-                                                <i class="bi bi-geo-alt-fill fs-2 text-primary"></i>
-                                            </div>
-                                            <h5 class="card-title">Epicentro</h5>
-                                            <p class="card-text">Mapa interactivo con fallas</p>
-                                            <a href="javascript:void(0);"
-                                               onclick="enviaEpicentro('{{ id }}','{{ fecha }}','{{ magnitud }}','{{ lat }}','{{ long }}')"
-                                               class="stretched-link"></a>
-                                        </div>
-                                    </div>
-                                </div>
                                 <div class="col-md-4">
                                     {# Determina si la card debe estar habilitada según "informe" #}
                                     {% set habilitada = (informe|default(0)) == 1 %}
@@ -335,7 +340,7 @@
                                             </div>
 
                                             <h5 class="card-title">Intensidad JMA</h5>
-                                            <p class="card-text">Valores y Mapas de Intensidad</p>
+                                            <p class="card-text">Distribuci&oacute;n de valores m&aacute;ximos</p>
 
                                             {# Enlace/activador: sólo permite acción real cuando está habilitada #}
                                             <a

@@ -13,8 +13,8 @@
         <div class="row">
             <div class="col-sm-8">
                 <h2 class="mb-4">{% block page_title %}
-                        Intensidades JMA para el sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(u.t.c.)
-                        <span class="badge bg-secondary">M {{ magnitud |round(1)}} </span>{% endblock %}
+                        Intensidades JMA para el sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(UTC)
+                        <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>{% endblock %}
                 </h2>
             </div>
             <div class="col-sm-4 text-end">
@@ -24,9 +24,16 @@
             </div>
         </div>
         <div class="row">
+            <div class="col-sm-8">
+                <h3 class="mb-4">
+                    {{ epi }}
+                </h3>
+            </div>
         </div>
         <div class="row">
-            <br><br>
+        </div>
+        <div class="row">
+            <br>
         </div>
         <div class="row h-100">
             <div class="col-4">
@@ -41,14 +48,16 @@
                                 <th>Estación</th>
                                 <th>Intensidad JMA</th>
                                 <th>Sostenida (cm/s&sup2)</th>
+                                <th>Aceleraci&oacute;n M&aacute;xima (cm/s&sup2)</th>
                             </tr>
                             </thead>
                             <tbody>
                             {% for dato in datos %}
                             <tr class="info">
-                                <td>{{ dato.estacion }}</td>
+                                <td>{{ dato.nombre }} ({{ dato.estacion }})</td>
                                 <td>{{ dato.jma }}</td>
                                 <td>{{ dato.threshold_a0 | round(2)}}</td>
+                                <td>{{ dato.maximo | round(2)}}</td>
                             </tr>
                             {% endfor %}
 
