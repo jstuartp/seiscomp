@@ -3,8 +3,8 @@
 {% block head_extra %}
     <meta http-equiv="refresh" content="1800"> {# se recarga cada 60 segundos #}
 {% endblock %}
-{% block body %}
-
+{% block javascripts %}
+    {{ parent() }}
     <script >
         let ciudades =[];
 
@@ -20,7 +20,7 @@
             var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6,newInput7;
             // Start by creating a <form>
             theForm = document.createElement('form');
-            theForm.action = 'informe/';
+            theForm.action = '{{ path('informe') }}';
             theForm.method = 'post';
             // Next create the <input>s in the form and give them names and values
             newInput1 = document.createElement('input');
@@ -64,7 +64,10 @@
             // ...and submit it
             theForm.submit();
         }
-        </script>
+    </script>
+{% endblock %}
+{% block body %}
+
 
     <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
 
