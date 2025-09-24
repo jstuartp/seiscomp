@@ -83,8 +83,16 @@
         </div>
         <div id="myModal" class="modal">
             <!-- El contenido del modal (la imagen) -->
-            <span class="close">&times;</span>
-            <img class="modal-content" id="img01">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+
+                    <div class="modal-body text-center">
+                        <img class="modal-content" id="img01">
+                    </div>
+                </div>
+            </div>
+           <!-- <span class="close">&times;</span>-->
+
         </div>
 
 
@@ -228,7 +236,7 @@
             ];
 
             // Control de Leaflet para la leyenda
-            const legend = L.control({ position: 'bottomright' });
+            const legend = L.control({ position: 'topright' });
 
             legend.onAdd = function () {
                 const div = L.DomUtil.create('div', 'info legend');

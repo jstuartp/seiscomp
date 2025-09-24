@@ -107,12 +107,6 @@
                         /*overflow-wrap: anywhere;         /* corta palabras muy largas */
                         word-break: normal;              /* deje normal; cambie a break-word/break-all si necesita más agresividad */
                     }
-
-
-
-
-
-
                 </style>
 
             {% endblock %}
@@ -131,23 +125,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- ENCABEZADO -->
         <header class="row" style="border-bottom: 6px solid #efb810">
             <div class="col-lg-1"></div>
-
             <div class="col-12 col-lg-7">
                 <img src="{{ asset('assets/img/firma_horizontal_continua_blanco.svg') }}" alt="firma horizontal continua blanco">
             </div>
 
             <div class="col-lg-3 d-none d-lg-block">
-                <form class="d-flex" method="GET" action="/Buscar" style="margin-top:12px;">
-                    <input
-                        class="form-control me-2"
-                        type="search"
-                        name="q"
-                        placeholder="Buscar..."
-                        aria-label="Buscar"
-                        value="{{ app.request.get('q')|default('') }}"
-                    >
-                    <button class="btn btn-light" type="submit">Buscar</button>
-                </form>
             </div>
 
             <div class="col-lg-1"></div>
@@ -519,14 +501,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             </script>
         {% endblock %}
 {% block scriptspie %}
+    <!-- Bootstrap 5.3 (JS) -->
+    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/js/contact2web.js') }}"></script>
     <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.7.1.min.js?a=1"></script>
     <script type="text/javascript" charset="utf8" src="{{ asset('assets/DataTables-2.3.4/js/dataTables.js') }}" > </script>
     <script type="text/javascript" charset="utf8" src="{{ asset('assets/DataTables-2.3.4/js/dataTables.jqueryui.min.js') }}" > </script>
     <script type="text/javascript" charset="utf8" src="{{ asset('assets/DataTables-2.3.4/js/dataTables.bootstrap5.js') }}" > </script>
     <script type="text/javascript" charset="utf8" src="{{ asset('assets/Buttons-3.2.5/js/buttons.dataTables.js') }}" > </script>
-    <!-- Bootstrap 5.3 (JS) -->
-    <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
+
 
 
 
@@ -534,7 +517,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 {% block endscrips %}
             <link rel="stylesheet" type="text/css" href="{{ asset('assets/datatables/datatables.css') }}" />
             <!-- js para las datatables -->
-            <script type="text/javascript" charset="utf8" src="{{ asset('assets/vendor/bootstrap/js/bootstrap.min.js') }}"  > </script>
+            <!--<script type="text/javascript" charset="utf8" src="{{ asset('assets/vendor/bootstrap/js/bootstrap.min.js') }}"  > </script> -->
             <script type="text/javascript" charset="utf8" src="{{ asset('assets/datatables/datatables.min.js') }}"  > </script>
             <script type="text/javascript" charset="utf8" src="{{ asset('assets/datatables/DataTables-1.11.5/js/jquery.dataTables.js') }}"  > </script>
             <script type="text/javascript" charset="utf8" src="{{ asset('assets/datatables/DataTables-1.11.5/js/dataTables.bootstrap5.js') }}" > </script>
