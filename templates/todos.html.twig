@@ -112,7 +112,7 @@
                                 <td hidden="">{{ dato.latitudEvento | number_format(2, '.', '')}}</td>
                                 <td hidden="">{{ dato.longitudEvento | number_format(2, '.', '')}}</td>
                                 <td>{{ dato.magnitudEvento | round(1)}}</td>
-                                <td>{{ dato.profundidadEvento | round(1)}}</td>
+                                <td>{{ dato.profundidadEvento == 0 ? 5 : dato.profundidadEvento | round(1)}}</td>
                                 <td> {{ dato.epi }} </td>
                             </tr>
                         {% endfor %}
