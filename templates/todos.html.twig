@@ -84,7 +84,7 @@
             </div>
         </div>
         <div class="row">
-            <div class="col-4">
+            <div class="col-12 col-md-4">
 
                 <div class="bs-example" data-example-id="contextual-table">
                     <table class="table table-bordered table-hover table-condensed table-sm table-striped" id="tabla_todos" style="font-size: 12px !important;
@@ -121,7 +121,7 @@
                     </table>
                 </div>
             </div>
-            <div class="col-8">
+            <div class="col-12 col-md-8 d-none d-md-block">
                 <div class="row h-100">
                     <div id="map">MAPA</div>
                 </div>
@@ -168,71 +168,66 @@
                     },
                 },
             });
-
-            // Inicializar el mapa centrado en una posición predeterminada
-            var map = L.map('map').setView([0, 0], 2);
-            let bounds = L.latLngBounds([7.886, -84.409],   // Suroeste (SW)
-                [11.019, -82.976])   // Noreste (NE)));
-            map.fitBounds(bounds);
-
-            // Agregar capa de mapa base
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
-            L.control.scale().addTo(map);
-
-            //matriz con marcadores
-            let marcadores ={};
-
-
-
-            // Lista de puntos en formato Twig
-            var puntos = [
-                {% for dato in datos | slice (0,60) %}
-                { lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }},
-                    datos: `Fecha: {{ dato.fechaEvento|date('Y-m-d', false) }} <br>
-                            Hora: {{ dato.fechaEvento|date('H:i:s', 'UTC') }} (UTC) - {{ dato.fechaEvento|date('H:i:s', 'America/Costa_Rica') }} (Local)<br>
-                Magnitud: {{ dato.magnitudEvento | round(1) }}<br>
-                <button onclick="enviaDatos('{{ dato.idEvento }}','{{ dato.fechaEvento }}','{{ dato.magnitudEvento }}',
-                                    '{{ dato.latitudEvento }}','{{ dato.longitudEvento }}','{{ dato.informe }}','{{ dato.epi }}')">Mostrar</button>`,
-                    mag: {{ dato.magnitudEvento }}, index: {{ loop.index0 }}}
-                {% if not loop.last %},{% endif %}
-                {% endfor %}
-            ];
-
-
-            // Dibujar los puntos en el mapa
-            puntos.forEach(function(punto) {
-                i = 0;
-                let marker = L.circleMarker([punto.lat, punto.lng], {
-                    radius: 8,                 // Tamaño fijo en píxeles
-                    color: '#0033cc',          // Color del borde
-                    fillColor: '#3399ff',      // Color de relleno sólido
-                    fillOpacity: 1,            // Opacidad completa para un color sólido
-                    weight: 2                  // Grosor del borde
-                }).addTo(map).bindPopup(punto.datos);
-                marcadores[punto.index] = marker;
-                i++;
-                // Cambiar el color cuando el mouse pasa sobre el círculo
-                marker.on("mouseover", function () {
-                    this.setStyle({ color: "#cc0000", fillColor: "#ff3333", weight: 3 });
-                    //this.setStyle({ color: "red", weight: 5 }); // Cambia a rojo con mayor grosor
-                });
-
-                // Restaurar el color original cuando el mouse sale
-                marker.on("mouseout", function () {
-                    this.setStyle({ color: "#0033cc", fillColor: "#3399ff", weight: 2 });
-                    //this.setStyle({ color: "blue", weight: 3 }); // Vuelve a azul
-                });
-            });
-
-
-
-            // Centrar el mapa si hay puntos
-           /* if (puntos.length > 0) {
-                var bounds = L.latLngBounds(puntos.map(p => [p.lat, p.lng]));
+            const isDesktopUp = window.matchMedia('(min-width: 768px)').matches;
+            if (isDesktopUp) {
+                // Inicializar el mapa centrado en una posición predeterminada
+                var map = L.map('map').setView([0, 0], 2);
+                let bounds = L.latLngBounds([7.886, -84.409],   // Suroeste (SW)
+                    [11.019, -82.976])   // Noreste (NE)));
                 map.fitBounds(bounds);
-            }*/
+
+                // Agregar capa de mapa base
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+                L.control.scale().addTo(map);
+
+                //matriz con marcadores
+                let marcadores = {};
+
+
+                // Lista de puntos en formato Twig
+                var puntos = [
+                    {% for dato in datos | slice (0,60) %}
+                    {
+                        lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }},
+                        datos: `Fecha: {{ dato.fechaEvento|date('Y-m-d', false) }} <br>
+                                Hora: {{ dato.fechaEvento|date('H:i:s', 'UTC') }} (UTC) - {{ dato.fechaEvento|date('H:i:s', 'America/Costa_Rica') }} (Local)<br>
+                    Magnitud: {{ dato.magnitudEvento | round(1) }}<br>
+                    <button onclick="enviaDatos('{{ dato.idEvento }}','{{ dato.fechaEvento }}','{{ dato.magnitudEvento }}',
+                                        '{{ dato.latitudEvento }}','{{ dato.longitudEvento }}','{{ dato.informe }}','{{ dato.epi }}')">Mostrar</button>`,
+                        mag: {{ dato.magnitudEvento }}, index: {{ loop.index0 }}}
+                    {% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ];
+
+
+                // Dibujar los puntos en el mapa
+                puntos.forEach(function (punto) {
+                    i = 0;
+                    let marker = L.circleMarker([punto.lat, punto.lng], {
+                        radius: 8,                 // Tamaño fijo en píxeles
+                        color: '#0033cc',          // Color del borde
+                        fillColor: '#3399ff',      // Color de relleno sólido
+                        fillOpacity: 1,            // Opacidad completa para un color sólido
+                        weight: 2                  // Grosor del borde
+                    }).addTo(map).bindPopup(punto.datos);
+                    marcadores[punto.index] = marker;
+                    i++;
+                    // Cambiar el color cuando el mouse pasa sobre el círculo
+                    marker.on("mouseover", function () {
+                        this.setStyle({color: "#cc0000", fillColor: "#ff3333", weight: 3});
+                        //this.setStyle({ color: "red", weight: 5 }); // Cambia a rojo con mayor grosor
+                    });
+
+                    // Restaurar el color original cuando el mouse sale
+                    marker.on("mouseout", function () {
+                        this.setStyle({color: "#0033cc", fillColor: "#3399ff", weight: 2});
+                        //this.setStyle({ color: "blue", weight: 3 }); // Vuelve a azul
+                    });
+                });
+
+            }
 
 
             $('#tabla_todos> tbody').on('mouseenter', 'tr', function () {
