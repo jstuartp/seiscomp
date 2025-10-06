@@ -107,6 +107,40 @@
                         /*overflow-wrap: anywhere;         /* corta palabras muy largas */
                         word-break: normal;              /* deje normal; cambie a break-word/break-all si necesita más agresividad */
                     }
+
+                    /* Altura del mapa en desktop */
+                    #map {
+                        height: calc(100vh - 220px);
+                    }
+
+                    /* Contenedor que permite superponer la tabla */
+                    .map-wrapper {
+                        position: relative;
+                    }
+
+                    /* Panel de tabla sobre el mapa en móviles */
+                    #tabla-overlay {
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        z-index: 10;
+                        /* Fondo sólido para asegurar legibilidad sobre el mapa */
+                        background: rgba(255, 255, 255, 0.98);
+                        /* Altura máxima y scroll vertical para no comprimir la tabla */
+                        max-height: 65vh;
+                        overflow: auto;
+                        padding: .5rem;
+                        border-radius: .5rem;
+                    }
+
+                    /* En móviles el mapa ocupa toda la altura disponible; la tabla se superpone */
+                    @media (max-width: 767.98px) {
+                        #map {
+                            height: 100vh;
+                            filter: brightness(0.92);
+                        }
+                    }
                 </style>
 
             {% endblock %}
