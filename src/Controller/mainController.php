@@ -30,24 +30,39 @@ class mainController extends AbstractController
         $this->jmaRepository = $jmaRepository;
     }
 
-    #[Route('/', name:'homepage', methods: ['POST','GET'])]
+    #[Route('/', name: 'homepage', methods: ['GET', 'POST'])]
     public function index(Request $request, EntityManagerInterface $em, ManagerRegistry $doctrine): Response
     {
-        //nombre de la pagina
-        $nombre="Ultimos Sismos Registrados";
-        $salida="";
+        // Nombre de la página
+        $nombre = "Últimos Sismos Registrados";
+        $salida = "";
 
-        //Uso el repository PGA para traer los datos de los sismos
-        //$masDatos = $this->repository->findSismo();
-        $masDatos = $this->historicoSismosRepository->findHistoricoSismos();
-        //Iteracion para agregar el epicentro a cada resultado del arreglo
+        // Obtiene el parámetro 'tipo' desde GET; si no existe, usa 1 por defecto
+        $tipo = $request->query->get('tipo', 1);
+
+        // Según el valor de 'tipo', ejecuta la consulta correspondiente
+        if ($tipo == 1) {
+            $masDatos = $this->historicoSismosRepository->findHistoricoSismos();
+        } elseif ($tipo == 2) {
+            $masDatos = $this->historicoSismosRepository->findTodosSismos();
+        } else {
+            // En caso de recibir otro valor no válido, por seguridad usa la opción por defecto
+            $masDatos = $this->historicoSismosRepository->findHistoricoSismos();
+            $tipo = 1;
+        }
+
+        // Itera para agregar el epicentro calculado a cada registro
         foreach ($masDatos as &$dato) {
             $dato['epi'] = $this->CalculaEpicentro($dato['latitudEvento'], $dato['longitudEvento']);
         }
 
-        //Devuelvo todo el entity, lo que me permite usarlo en el twigg
-        return $this->render('index.html.twig',
-            ['title'=> $nombre, 'datos'=>$masDatos, 'salida'=>$salida] );
+        // Devuelve la vista Twig con los datos y el parámetro 'tipo' reenviado
+        return $this->render('index.html.twig', [
+            'title'  => $nombre,
+            'datos'  => $masDatos,
+            'salida' => $salida,
+            'tipo'   => $tipo, // reenviado al Twig
+        ]);
     }
 
     /*

@@ -31,10 +31,18 @@
 
     <div class="container-fluid">
         <div class="row mt-3">
-            <h2 class="text-center">
-                <a href="{{ path('homepage') }}" class="badge rounded-pill text-bg-danger">Sismos con Informe</a>
-                <a href="{{ path('todos') }}" class="badge rounded-pill text-bg-primary">Todos los Sismos</a>
+            <h2 class="text-center my-3">
+                <a href="{{ path('homepage', {'tipo': 1}) }}"
+                   class="badge rounded-pill {% if tipo == 1 %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
+                    Sismos con Informe
+                </a>
+
+                <a href="{{ path('homepage', {'tipo': 2}) }}"
+                   class="badge rounded-pill {% if tipo == 2 %}text-bg-primary{% else %}text-bg-secondary{% endif %}">
+                    Todos los Sismos
+                </a>
             </h2>
+
         </div>
 
         <div class="row g-3 mt-2">
@@ -45,13 +53,16 @@
                         {% set _id = 'evt_' ~ (dato.idEvento|default(loop.index)) %}
                         <div class="accordion-item card-hover" data-lat="{{ dato.latitudEvento|default('') }}"
                              data-lon="{{ dato.longitudEvento|default('') }}" data-mag="{{ dato.magnitudEvento|default('') }}"
-                             data-epi="{{ dato.epi|default('Epicentro no disponible') }}" data-id="{{ dato.idEvento }}" data-fecha="{{ dato.fechaEvento }}">
+                             data-epi="{{ dato.epi|default('Epicentro no disponible') }}" data-id="{{ dato.idEvento }}"
+                             data-fecha="{{ dato.fechaEvento|date("d/m/Y H:i:s")  }}"
+                                data-fecha-cr="{{ dato.fechaEvento|date("d/m/Y H:i:s", "America/Costa_Rica")  }}">
                             <h2 class="accordion-header" id="heading_{{ _id }}">
                                 <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ _id }}" aria-expanded="false" aria-controls="collapse_{{ _id }}">
                                     <div class="w-100 d-flex align-items-center justify-content-between">
                                         <div class="me-2">
                                             <div class="fw-semibold">{{ dato.epi|default('Epicentro no disponible') }}</div>
-                                            <small class="text-muted">{{ dato.fechaEvento|default('') }}</small>
+                                            <small class="text-muted">{{ dato.fechaEvento|default('')|date("d/m/Y H:i:s") }} UTC</small><br>
+                                            <small class="text-muted">{{ dato.fechaEvento|date("d/m/Y H:i:s", "America/Costa_Rica") }} Local</small>
                                         </div>
                                         <div class="text-end">
                                             <span class="badge text-bg-danger badge-mag">M {{ '%.1f'|format((dato.magnitudEvento|default(0))|round(1)) }}</span>
@@ -108,6 +119,7 @@
                 const epi = it.getAttribute('data-epi') || '';
                 const pga = it.getAttribute('data-pga') || '';
                 const id = it.getAttribute('data-id') || '';
+                const fechaCR = it.getAttribute('data-fecha-cr') || '';
                 if (!isNaN(lat) && !isNaN(lon)) {
                     const m = L.circleMarker([lat, lon], { radius: 8, color: '#0033cc', fillColor: '#3399ff', fillOpacity: 1, weight: 2 }).addTo(map);
                     // Popup con datos y botón "Ver informe"
@@ -116,7 +128,7 @@
                     const popupHtml = `
 <div style="min-width:240px">
 <div><strong>${epi || 'Epicentro no disponible'}</strong></div>
-<div><small>${fecha}</small></div>
+<div><small>${fecha.toString()} UTC -- ${fechaCR.toLocaleString()} Local</small></div>
 <div>Magnitud: <strong>${magTxt}</strong></div>
 ${pgaTxt ? `<div>Máx. aceleración: <strong>${pgaTxt}</strong></div>` : ''}
 <div class="mt-2">
