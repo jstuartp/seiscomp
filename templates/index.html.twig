@@ -3,13 +3,32 @@
 {% block head_extra %}
     <meta http-equiv="refresh" content="1800">
     <style>
-        /* Contenedor de la columna izquierda con scroll independiente */
+        /* ====== Layout general ====== */
+        .lis-layout { min-height: 100vh; }
+
+        /* Columna izquierda (tarjetas) con scroll independiente */
         .cards-pane {
-            height: calc(100vh - 200px);
+            /* Ajuste según su cabecera fija; si no la hay, puede usar 100vh directamente */
+            max-height: calc(100vh - 16px);
             overflow: auto;
+            padding-right: 6px;
         }
-        /* Altura del mapa en escritorio */
-        #map { height: calc(100vh - 200px); }
+        .cards-pane::-webkit-scrollbar { width: 10px; }
+        .cards-pane::-webkit-scrollbar-thumb { border-radius: 8px; background: rgba(0,0,0,.15); }
+        .cards-pane::-webkit-scrollbar-track { background: transparent; }
+
+        /* Columna derecha: contenedor sticky para el mapa */
+        .map-sticky {
+            position: sticky;
+            top: 8px;
+            height: calc(100vh - 16px);
+            display: flex;
+            flex-direction: column;
+        }
+        /* El mapa ocupa todo el alto disponible de su contenedor sticky */
+        #map { flex: 1 1 auto; width: 100%; }
+
+        /* Estilos utilitarios previos */
         .card-header button { text-align: left; width: 100%; }
         .badge-mag { min-width: 3.2rem; }
         .card-hover:hover { background: #f8fbff; }
@@ -19,6 +38,7 @@
 {% block body %}
 
     <script>
+        // Envío a la ruta 'informe' preservando datos del evento
         function enviaDatos (id, fecha, mag, lat, long_, informe, epi) {
             var theForm = document.createElement('form');
             theForm.action = '{{ path('informe') }}';
@@ -42,30 +62,50 @@
                     Todos los Sismos
                 </a>
             </h2>
-
         </div>
 
-        <div class="row g-3 mt-2">
-            {# IZQUIERDA: tarjetas colapsables (accordion), una por sismo #}
-            <div class="col-12 col-md-3">
-                <div id="sismosAccordion" class="accordion cards-pane">
+        <div class="row g-3 mt-2 lis-layout">
+
+            {# ====== Bloque de controles de ordenamiento ====== #}
+            <div class="col-12 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <label for="ordenarPor" class="form-label mb-0">Ordenar por:</label>
+                    <select id="ordenarPor" class="form-select form-select-sm w-auto">
+                        <option value="fecha_desc" selected>Fecha (más nuevos primero)</option>
+                        <option value="mag_desc">Magnitud (mayor a menor)</option>
+                    </select>
+                </div>
+            </div>
+
+            {# ====== IZQUIERDA: tarjetas colapsables con scroll ====== #}
+            <div class="col-12 col-md-3 cards-pane">
+                <div id="sismosAccordion" class="accordion">
                     {% for dato in datos|slice(0,20) %}
                         {% set _id = 'evt_' ~ (dato.idEvento|default(loop.index)) %}
-                        <div class="accordion-item card-hover" data-lat="{{ dato.latitudEvento|default('') }}"
-                             data-lon="{{ dato.longitudEvento|default('') }}" data-mag="{{ dato.magnitudEvento|default('') }}"
-                             data-epi="{{ dato.epi|default('Epicentro no disponible') }}" data-id="{{ dato.idEvento }}"
-                             data-fecha="{{ dato.fechaEvento|date("d/m/Y H:i:s")  }}"
-                                data-fecha-cr="{{ dato.fechaEvento|date("d/m/Y H:i:s", "America/Costa_Rica")  }}">
+                        <div class="accordion-item card-hover"
+                             data-lat="{{ dato.latitudEvento|default('') }}"
+                             data-lon="{{ dato.longitudEvento|default('') }}"
+                             data-mag="{{ dato.magnitudEvento|default('') }}"
+                             data-epi="{{ dato.epi|default('Epicentro no disponible') }}"
+                             data-id="{{ dato.idEvento }}"
+                             data-fecha="{{ dato.fechaEvento|date('d/m/Y H:i:s') }}"
+                             data-fecha-cr="{{ dato.fechaEvento|date('d/m/Y H:i:s', 'America/Costa_Rica') }}"
+                             data-epoch="{{ dato.fechaEvento|date('U') }}"
+                             data-informe="{{ dato.informe }}">
                             <h2 class="accordion-header" id="heading_{{ _id }}">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ _id }}" aria-expanded="false" aria-controls="collapse_{{ _id }}">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#collapse_{{ _id }}"
+                                        aria-expanded="false" aria-controls="collapse_{{ _id }}">
                                     <div class="w-100 d-flex align-items-center justify-content-between">
                                         <div class="me-2">
                                             <div class="fw-semibold">{{ dato.epi|default('Epicentro no disponible') }}</div>
-                                            <small class="text-muted">{{ dato.fechaEvento|default('')|date("d/m/Y H:i:s") }} UTC</small><br>
-                                            <small class="text-muted">{{ dato.fechaEvento|date("d/m/Y H:i:s", "America/Costa_Rica") }} Local</small>
+                                            <small class="text-muted">{{ dato.fechaEvento|default('')|date('d/m/Y H:i:s') }} UTC</small><br>
+                                            <small class="text-muted">{{ dato.fechaEvento|date('d/m/Y H:i:s', 'America/Costa_Rica') }} Local</small>
                                         </div>
                                         <div class="text-end">
-                                            <span class="badge text-bg-danger badge-mag">M {{ '%.1f'|format((dato.magnitudEvento|default(0))|round(1)) }}</span>
+                                            <span class="badge text-bg-danger badge-mag">
+                                                M {{ '%.1f'|format((dato.magnitudEvento|default(0))|round(1)) }}
+                                            </span>
                                             {% set pga = dato.aceleracionEvento is defined ? dato.aceleracionEvento : (dato.pga is defined ? dato.pga : null) %}
                                             {% if pga is not null %}
                                                 <div><small class="text-muted">PGA {{ pga|round(2) }} cm/s²</small></div>
@@ -74,16 +114,33 @@
                                     </div>
                                 </button>
                             </h2>
-                            <div id="collapse_{{ _id }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ _id }}" data-bs-parent="#sismosAccordion">
+                            <div id="collapse_{{ _id }}" class="accordion-collapse collapse"
+                                 aria-labelledby="heading_{{ _id }}" data-bs-parent="#sismosAccordion">
                                 <div class="accordion-body">
                                     <div class="row g-2">
-                                        <div class="col-6"><small class="text-muted">Lat</small><div>{{ dato.latitudEvento|default('') }}</div></div>
-                                        <div class="col-6"><small class="text-muted">Lon</small><div>{{ dato.longitudEvento|default('') }}</div></div>
-                                        <div class="col-6"><small class="text-muted">Profundidad (m)</small><div>{{ '%.1f'|format((dato.profundidadEvento|default(0)) == 0 ? 5 : (dato.profundidadEvento|default(0))|round(1)) }}</div></div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Lat</small>
+                                            <div>{{ dato.latitudEvento|default('') }}</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Lon</small>
+                                            <div>{{ dato.longitudEvento|default('') }}</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <small class="text-muted">Profundidad (m)</small>
+                                            <div>{{ '%.1f'|format((dato.profundidadEvento|default(0)) == 0 ? 5 : (dato.profundidadEvento|default(0))|round(1)) }}</div>
+                                        </div>
                                     </div>
                                     <div class="mt-3 d-flex gap-2">
-                                        <button class="btn btn-sm btn-primary" onclick="enviaDatos('{{ dato.idEvento|default('') }}','{{ dato.fechaEvento|default('') }}','{{ dato.magnitudEvento|default('') }}','{{ dato.latitudEvento|default('') }}','{{ dato.longitudEvento|default('') }}','{{ dato.informe|default('') }}','{{ dato.epi|default('') }}')">Mostrar detalle</button>
-                                        <button class="btn btn-sm btn-outline-secondary btn-centrar" data-lat="{{ dato.latitudEvento|default('') }}" data-lon="{{ dato.longitudEvento|default('') }}">Centrar en mapa</button>
+                                        <button class="btn btn-sm btn-primary"
+                                                onclick="enviaDatos('{{ dato.idEvento|default('') }}','{{ dato.fechaEvento|default('') }}','{{ dato.magnitudEvento|default('') }}','{{ dato.latitudEvento|default('') }}','{{ dato.longitudEvento|default('') }}','{{ dato.informe|default('') }}','{{ dato.epi|default('') }}')">
+                                            Ver informe
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary btn-centrar"
+                                                data-lat="{{ dato.latitudEvento|default('') }}"
+                                                data-lon="{{ dato.longitudEvento|default('') }}">
+                                            Centrar en mapa
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -92,90 +149,182 @@
                 </div>
             </div>
 
-            {# DERECHA: mapa (Leaflet) #}
+            {# ====== DERECHA: mapa sticky ====== #}
             <div class="col-12 col-md-9">
-                <div id="map" class="w-100">MAPA</div>
+                <div class="map-sticky">
+                    <div id="map" class="w-100"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Inicializar el mapa en Costa Rica (bounds aproximados)
+            // ====== Inicialización del mapa en Costa Rica ======
             var map = L.map('map').setView([9.75, -84.0], 7);
             var bounds = L.latLngBounds([7.886, -84.409], [11.019, -82.976]);
             map.fitBounds(bounds);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
             L.control.scale().addTo(map);
 
-            // Crear marcadores desde los items del accordion
-            const items = document.querySelectorAll('#sismosAccordion .accordion-item');
-            const markers = [];
-            items.forEach((it, idx) => {
-                const lat = parseFloat(it.getAttribute('data-lat'));
-                const lon = parseFloat(it.getAttribute('data-lon'));
-                const mag = parseFloat(it.getAttribute('data-mag'));
-                const fecha = it.getAttribute('data-fecha') || '';
-                const epi = it.getAttribute('data-epi') || '';
-                const pga = it.getAttribute('data-pga') || '';
-                const id = it.getAttribute('data-id') || '';
-                const fechaCR = it.getAttribute('data-fecha-cr') || '';
-                if (!isNaN(lat) && !isNaN(lon)) {
-                    const m = L.circleMarker([lat, lon], { radius: 8, color: '#0033cc', fillColor: '#3399ff', fillOpacity: 1, weight: 2 }).addTo(map);
-                    // Popup con datos y botón "Ver informe"
-                    const magTxt = isNaN(mag) ? '' : mag.toFixed(1);
-                    const pgaTxt = pga !== '' && !isNaN(parseFloat(pga)) ? Number(pga).toFixed(2) + ' cm/s²' : '';
-                    const popupHtml = `
+            // Grupo de marcadores para poder limpiar/reconstruir al reordenar
+            var markersGroup = L.layerGroup().addTo(map);
+
+            const accordion   = document.getElementById('sismosAccordion');
+            const selectOrden = document.getElementById('ordenarPor');
+            const cardsPane   = document.querySelector('.cards-pane');
+
+            // (Re)construye marcadores, popups y vínculos de hover/click
+            function buildMarkersAndBindings() {
+                markersGroup.clearLayers();
+
+                // Remover/recrear listeners de headers para evitar duplicados
+                const oldHeaders = accordion.querySelectorAll('.accordion-header');
+                oldHeaders.forEach(h => {
+                    const hClone = h.cloneNode(true);
+                    h.parentNode.replaceChild(hClone, h);
+                });
+
+                const items = accordion.querySelectorAll('.accordion-item');
+
+                items.forEach((it) => {
+                    const lat     = parseFloat(it.getAttribute('data-lat'));
+                    const lon     = parseFloat(it.getAttribute('data-lon'));
+                    const mag     = parseFloat(it.getAttribute('data-mag'));
+                    const fecha   = it.getAttribute('data-fecha')   || '';
+                    const epi     = it.getAttribute('data-epi')     || '';
+                    const id      = it.getAttribute('data-id')      || '';
+                    const fechaCR = it.getAttribute('data-fecha-cr')|| '';
+                    const informe = it.getAttribute('data-informe') || '';
+
+                    let markerRef = null;
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        markerRef = L.circleMarker([lat, lon], {
+                            radius: 8, color: '#0033cc', fillColor: '#3399ff', fillOpacity: 1, weight: 2
+                        }).addTo(markersGroup);
+
+                        const magTxt = isNaN(mag) ? '' : mag.toFixed(1);
+                        const popupHtml = `
 <div style="min-width:240px">
-<div><strong>${epi || 'Epicentro no disponible'}</strong></div>
-<div><small>${fecha.toString()} UTC -- ${fechaCR.toLocaleString()} Local</small></div>
-<div>Magnitud: <strong>${magTxt}</strong></div>
-${pgaTxt ? `<div>Máx. aceleración: <strong>${pgaTxt}</strong></div>` : ''}
-<div class="mt-2">
-<button class="btn btn-sm btn-primary" onclick="enviaDatos('${id}','${fecha}','${mag}','${lat}','${lon}','1','${epi}')">Ver informe</button>
-</div>
+  <div><strong>${epi || 'Epicentro no disponible'}</strong></div>
+  <div><small>${fecha.toString()} UTC -- ${fechaCR.toString()} Local</small></div>
+  <div>Magnitud: <strong>${magTxt}</strong></div>
+  <div class="mt-2">
+    <button class="btn btn-sm btn-primary"
+      onclick="enviaDatos('${id}','${fecha}','${mag}','${lat}','${lon}','${informe}','${epi}')">
+      Ver informe
+    </button>
+  </div>
 </div>`;
-                    m.bindPopup(popupHtml);
-                    m.on('mouseover', function(){ this.setStyle({ color:'#cc0000', fillColor:'#ff3333', weight:3 }); });
-                    m.on('mouseout',  function(){ this.setStyle({ color:'#0033cc', fillColor:'#3399ff', weight:2 }); });
+                        markerRef.bindPopup(popupHtml);
 
-                    markers[idx] = m;
-                } else { markers[idx] = null; }
-            });
+                        markerRef.on('mouseover', function(){ this.setStyle({ color:'#cc0000', fillColor:'#ff3333', weight:3 }); });
+                        markerRef.on('mouseout',  function(){ this.setStyle({ color:'#0033cc', fillColor:'#3399ff', weight:2 }); });
+                    }
 
-            // Vincular hover del header de cada card al marcador correspondiente
-            const headers = document.querySelectorAll('#sismosAccordion .accordion-header');
-            headers.forEach((h, idx) => {
-                h.addEventListener('mouseenter', () => { if (markers[idx]) markers[idx].setStyle({ color:'#cc0000', fillColor:'#ff3333', weight:3 }); });
-                h.addEventListener('mouseleave', () => { if (markers[idx]) markers[idx].setStyle({ color:'#0033cc', fillColor:'#3399ff', weight:2 }); });
-            });
+                    // Guardar referencia del marcador en el propio item
+                    it._marker = markerRef;
 
-            // Botón "Centrar en mapa" de cada card
-            document.querySelectorAll('.btn-centrar').forEach((btn) => {
-                btn.addEventListener('click', function(){
-                    const lat = parseFloat(this.getAttribute('data-lat'));
-                    const lon = parseFloat(this.getAttribute('data-lon'));
-                    if (!isNaN(lat) && !isNaN(lon)) {
-                        map.setView([lat, lon], 10);
+                    // Hover de header → resalta marcador
+                    const header = it.querySelector('.accordion-header');
+                    if (header) {
+                        header.addEventListener('mouseenter', () => {
+                            if (it._marker) it._marker.setStyle({ color:'#cc0000', fillColor:'#ff3333', weight:3 });
+                        });
+                        header.addEventListener('mouseleave', () => {
+                            if (it._marker) it._marker.setStyle({ color:'#0033cc', fillColor:'#3399ff', weight:2 });
+                        });
                     }
                 });
-            });
 
-            // Opcional: centrar al expandir una card
-            document.querySelectorAll('#sismosAccordion .accordion-button').forEach((btn, idx) => {
-                btn.addEventListener('click', function(){
-                    const it = btn.closest('.accordion-item');
-                    const lat = parseFloat(it.getAttribute('data-lat'));
-                    const lon = parseFloat(it.getAttribute('data-lon'));
-                    if (!isNaN(lat) && !isNaN(lon)) {
-                        setTimeout(() => map.setView([lat, lon], 10), 250);
-                    }
+                // Botón "Centrar en mapa" de cada card
+                accordion.querySelectorAll('.btn-centrar').forEach((btn) => {
+                    btn.addEventListener('click', function(){
+                        const lat = parseFloat(this.getAttribute('data-lat'));
+                        const lon = parseFloat(this.getAttribute('data-lon'));
+                        if (!isNaN(lat) && !isNaN(lon)) {
+                            map.setView([lat, lon], 10);
+                        }
+                    });
                 });
-            });
 
-            // Recalcular tamaño del mapa tras posibles reflows
+                // Centrar al expandir una card
+                accordion.querySelectorAll('.accordion-button').forEach((btn) => {
+                    btn.addEventListener('click', function(){
+                        const it = btn.closest('.accordion-item');
+                        const lat = parseFloat(it.getAttribute('data-lat'));
+                        const lon = parseFloat(it.getAttribute('data-lon'));
+                        if (!isNaN(lat) && !isNaN(lon)) {
+                            setTimeout(() => map.setView([lat, lon], 10), 250);
+                        }
+                    });
+                });
+            }
+
+            // Ordena las cards y reconstruye marcadores
+            function sortAccordion(mode) {
+                const items = Array.from(accordion.querySelectorAll('.accordion-item'));
+                items.sort((a, b) => {
+                    const epochA = parseInt(a.getAttribute('data-epoch')) || 0;
+                    const epochB = parseInt(b.getAttribute('data-epoch')) || 0;
+                    const magA   = parseFloat(a.getAttribute('data-mag'));
+                    const magB   = parseFloat(b.getAttribute('data-mag'));
+
+                    if (mode === 'mag_desc') {
+                        const aVal = isNaN(magA) ? -Infinity : magA;
+                        const bVal = isNaN(magB) ? -Infinity : magB;
+                        if (bVal !== aVal) return bVal - aVal;      // Magnitud desc
+                        return epochB - epochA;                     // Desempate por fecha desc
+                    }
+                    // Predeterminado: fecha desc (más nuevos primero)
+                    return epochB - epochA;
+                });
+
+                // Reinsertar en DOM respetando nuevo orden
+                items.forEach(it => accordion.appendChild(it));
+
+                // Reconstruir marcadores y vínculos
+                buildMarkersAndBindings();
+
+                // Ajustar mapa tras el reflow
+                setTimeout(() => map.invalidateSize(), 150);
+            }
+
+            // Inicial: construir con orden predeterminado (fecha desc)
+            buildMarkersAndBindings();
+
+            // Listener del selector de orden
+            if (selectOrden) {
+                selectOrden.addEventListener('change', function () {
+                    sortAccordion(this.value || 'fecha_desc');
+                });
+            }
+
+            // Invalidate size al inicio, en resize y durante el scroll del panel de tarjetas
             setTimeout(() => map.invalidateSize(), 250);
             window.addEventListener('resize', () => { setTimeout(() => map.invalidateSize(), 150); });
+
+            if (cardsPane) {
+                let ticking = false;
+                cardsPane.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            map.invalidateSize();
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                }, { passive: true });
+            }
+
+            // Observa cambios de tamaño en el acordeón (ej. expansiones) y ajusta el mapa
+            const acc = document.getElementById('sismosAccordion');
+            if (acc && 'ResizeObserver' in window) {
+                const ro = new ResizeObserver(() => { setTimeout(() => map.invalidateSize(), 100); });
+                ro.observe(acc);
+            }
         });
     </script>
 

@@ -1,348 +1,337 @@
 {% extends '/base.html.twig' %}
+
 {% block head_extra %}
-    <meta http-equiv="refresh" content="1800"> {# se recarga cada 60 segundos #}
+    <meta http-equiv="refresh" content="1800">
+    <style>
+        /* Contenedor de la columna izquierda con scroll independiente */
+        .cards-pane {
+            height: calc(100vh - 200px);
+            overflow: auto;
+        }
+        /* Altura del mapa en escritorio */
+        #map { height: calc(100vh - 200px); }
+        .card-header button { text-align: left; width: 100%; }
+        .badge-mag { min-width: 3.2rem; }
+        .card-hover:hover { background: #f8fbff; }
+
+        /* Contenedor general de la fila con mapa y tarjetas */
+        .lis-layout {
+            /* asegura que el conjunto ocupe el alto útil de la ventana */
+            min-height: 100vh;
+        }
+
+        /* Columna izquierda (tarjetas) con scroll propio */
+        .cards-pane {
+            /* resta el alto de la cabecera/nav si aplica; ajuste según su layout */
+            /* Si no tiene barra superior fija, puede usar 100vh directamente */
+            max-height: calc(100vh - 16px);
+            overflow: auto;                  /* scroll vertical en tarjetas */
+            padding-right: 6px;              /* evitar que el scroll tape contenido */
+        }
+
+        /* Columna derecha: mapa “pegajoso” (sticky) */
+        .map-sticky {
+            position: sticky;
+            top: 8px;                        /* separación superior opcional */
+            height: calc(100vh - 16px);      /* alto del mapa en relación a la ventana */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .map-sticky #map {
+            flex: 1 1 auto;                  /* el mapa ocupa todo el alto disponible */
+            width: 100%;
+        }
+
+        /* Opcional: estilo para mostrar una sutil sombra en la columna de tarjetas */
+        .cards-pane::-webkit-scrollbar {
+            width: 10px;
+        }
+        .cards-pane::-webkit-scrollbar-thumb {
+            border-radius: 8px;
+            background: rgba(0,0,0,.15);
+        }
+        .cards-pane::-webkit-scrollbar-track {
+            background: transparent;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
 
-    <script >
-
-        document.addEventListener("DOMContentLoaded", function() {
-
-        });
-
-
-        function enviaDatos (id, fecha, mag,lat,long,informe,epi) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6,newInput7;
-            // Start by creating a <form>
-            theForm = document.createElement('form');
+    <script>
+        function enviaDatos (id, fecha, mag, lat, long_, informe, epi) {
+            var theForm = document.createElement('form');
             theForm.action = '{{ path('informe') }}';
             theForm.method = 'post';
-            // Next create the <input>s in the form and give them names and values
-            newInput1 = document.createElement('input');
-            newInput1.type = 'hidden';
-            newInput1.name = 'id';
-            newInput1.value = id;
-            newInput2 = document.createElement('input');
-            newInput2.type = 'hidden';
-            newInput2.name = 'fecha';
-            newInput2.value = fecha;
-            newInput3 = document.createElement('input');
-            newInput3.type = 'hidden';
-            newInput3.name = 'mag';
-            newInput3.value = mag;
-            newInput4 = document.createElement('input');
-            newInput4.type = 'hidden';
-            newInput4.name = 'lat';
-            newInput4.value = lat;
-            newInput5 = document.createElement('input');
-            newInput5.type = 'hidden';
-            newInput5.name = 'long';
-            newInput5.value = long;
-            newInput6 = document.createElement('input');
-            newInput6.type = 'hidden';
-            newInput6.name = 'informe';
-            newInput6.value = informe;
-            newInput7 = document.createElement('input');
-            newInput7.type = 'hidden';
-            newInput7.name = 'epi';
-            newInput7.value = epi;
-            // Now put everything together...
-            theForm.appendChild(newInput1);
-            theForm.appendChild(newInput2);
-            theForm.appendChild(newInput3);
-            theForm.appendChild(newInput4);
-            theForm.appendChild(newInput5);
-            theForm.appendChild(newInput6);
-            theForm.appendChild(newInput7);
-            // ...and it to the DOM...
-            document.getElementById('hidden_form_container').appendChild(theForm);
-            // ...and submit it
-            theForm.submit();
+            function add(name, value){ const i = document.createElement('input'); i.type='hidden'; i.name=name; i.value=value; theForm.appendChild(i); }
+            add('id', id); add('fecha', fecha); add('mag', mag); add('lat', lat); add('long', long_); add('informe', informe); add('epi', epi);
+            document.body.appendChild(theForm); theForm.submit();
         }
-        </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const q = new URLSearchParams(location.search);
-            const id    = q.get('id');
-            const fecha = q.get('fecha');
-            const mag   = q.get('mag');
-            const lat   = q.get('lat');
-            const lon   = q.get('long');
-            const informe = q.get('informe') || '1';
-
-            if (id && fecha && mag && lat && lon && typeof enviaDatos === 'function') {
-                const f = fecha.includes(' ') ? fecha.replace(' ', 'T') : fecha; // opcional
-                enviaDatos(id, f, mag, lat, lon,informe);
-            }
-
-        });
     </script>
 
-    <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
-        <div class="row">
+    <div class="container-fluid">
+        <div class="row mt-3">
+            <h2 class="text-center my-3">
+                <a href="{{ path('homepage', {'tipo': 1}) }}"
+                   class="badge rounded-pill {% if tipo == 1 %}text-bg-danger{% else %}text-bg-secondary{% endif %}">
+                    Sismos con Informe
+                </a>
+
+                <a href="{{ path('homepage', {'tipo': 2}) }}"
+                   class="badge rounded-pill {% if tipo == 2 %}text-bg-primary{% else %}text-bg-secondary{% endif %}">
+                    Todos los Sismos
+                </a>
+            </h2>
+
         </div>
-        <div class="row">
-            <br><h2 align="center">
-                        <a href="{{ path('homepage') }}" class="badge badge-pill badge-danger"> Sismos con Informe </a>
-                <a href="{{ path('todos') }}" class="badge badge-pill badge-primary"> Todos los Sismos</a></h2><br>
-            <div class="col">
 
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 col-md-4" id="tabla-col">
-                <div class="row h-100">
-                    <div class="bs-example" data-example-id="contextual-table" id="tabla-bs-example">
-                        <table class="table table-bordered table-hover table-sm table-striped" id="tabla1" style="font-size: 14px">
-                            <thead class="dt-head-center">
-                            <tr>
-                                <th>Fecha y Hora (UTC)</th>
-                                <th hidden="">Latitud</th>
-                                <th hidden="">Longitud</th>
-                                <th>Magnitud</th>
-                                <th>Profundidad (m)</th>
-                                <th>Mayor Aceleraci&oacute;n<br>(cm/s&sup2)</th>
-                                <th>Epicentro</th>
-                               <!-- <th>Acci&oacute;n</th> -->
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {% for dato in datos %}
-
-                                <tr class="info" onclick="enviaDatos('{{ dato.idEvento }}','{{ dato.fechaEvento }}',
-                                        '{{ dato.magnitudEvento }}','{{ dato.latitudEvento }}','{{ dato.longitudEvento }}','{{ dato.informe }}','{{ dato.epi }}')">
-                                    <td>{{ dato.fechaEvento }}</td>
-                                    <td hidden="">{{ dato.latitudEvento }}</td>
-                                    <td hidden="">{{ dato.longitudEvento }}</td>
-                                    <td>{{ '%.1f'|format(dato.magnitudEvento|round(1)) }}</td>
-                                    <td>{{ '%.1f'|format(dato.profundidadEvento == 0 ? 5 : dato.profundidadEvento | round(1))}}</td>
-                                    <td>{{ dato.aceleracionEvento |round(2)  }}</td>
-                                    <td>{{ dato.epi }}</td>
-                                </tr>
-                            {% endfor %}
-
-                            </tbody>
-                        </table>
-                    </div>
+        <div class="row g-3 mt-2 lis-layout">
+            {# CONTROLES DE ORDENAMIENTO #}
+            <div class="col-12 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <label for="ordenarPor" class="form-label mb-0">Ordenar por:</label>
+                    <select id="ordenarPor" class="form-select form-select-sm w-auto">
+                        <option value="fecha_desc" selected>Fecha (más nuevos primero)</option>
+                        <option value="mag_desc">Magnitud (mayor a menor)</option>
+                    </select>
                 </div>
             </div>
-            <div class="col-12 col-md-8 d-none d-md-block">
-                <div class="row h-100">
-                    <div class="map-wrapper w-100">
-                    <div id="map">MAPA</div>
-                        {# Contenedor destino para la tabla cuando el viewport sea pequeño #}
-                        <div id="tabla-overlay" class="d-md-none"></div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-        <div id="hidden_form_container" style="display:none;"></div>
-
-        <div class="row">
-
-            <br><br><br><br><br><br><br><br><br>
-            <div class="col">
-
-            </div>
-        </div>
-
-    </div>
-
-    <div class="row">
-        <div class="col">
-
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-
-            let mytabla =$('#tabla1').DataTable({
-                responsive: false,
-                retrieve: true,
-                paging: true,       // Habilita paginación
-                ordering: true,
-                order: [[0, "desc"],],
-                lengthMenu: [20, 40, 60], // Opciones de cantidad de filas por página
-                pageLength: 20,      // Número de filas por defecto
-                language: {
-                    processing: "En curso...",
-                    search: "Buscar:",
-                    paginate: {
-                        first: "Primero",
-                        previous: "Anterior",
-                        next: "Siguiente",
-                        last: "Último"
-                    },
-                },
-                layout: {
-                    topStart: {
-                        buttons: ['csv', 'excel']
-                    }
-                }
-
-            });
-
-
-            const isDesktopUp = window.matchMedia('(min-width: 768px)').matches;
-
-            if (isDesktopUp) {
-                // Inicializar el mapa centrado en una posición predeterminada
-                var map = L.map('map').setView([0, 0], 2);
-                let bounds = L.latLngBounds([7.886, -84.409],   // Suroeste (SW)
-                    [11.019, -82.976])   // Noreste (NE)));
-                map.fitBounds(bounds);
-
-                // Agregar capa de mapa base
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
-                }).addTo(map);
-                L.control.scale().addTo(map);
-
-                //matriz con marcadores
-                let marcadores = {};
-
-
-                // Lista de puntos en formato Twig
-                var puntos = [
-                    {% for dato in datos | slice (0,40) %}
-                    {
-                        lat: {{ dato.latitudEvento }}, lng: {{ dato.longitudEvento }},
-                        datos: `Fecha: {{ dato.fechaEvento|date('Y-m-d', false) }} <br>
-                                Hora: {{ dato.fechaEvento|date('H:i:s', 'UTC') }} (UTC) - {{ dato.fechaEvento|date('H:i:s', 'America/Costa_Rica') }} (Local)<br>
-                    Magnitud: {{ dato.magnitudEvento | round(1) }}<br>
-                    <button onclick="enviaDatos(
-                        '{{ dato.idEvento }}',
-                        '{{ dato.fechaEvento }}',
-                        '{{ dato.magnitudEvento }}',
-                        '{{ dato.latitudEvento }}',
-                        '{{ dato.longitudEvento }}',
-                        '{{ dato.informe }}',
-                        '{{ dato.epi }}'
-                    )">Mostrar</button>`,
-                        mag: {{ dato.magnitudEvento }}, index: {{ loop.index0 }} }
-                    {% if not loop.last %},{% endif %}
+            {# IZQUIERDA: tarjetas colapsables (accordion), una por sismo #}
+            <div class="col-12 col-md-3 cards-pane">
+                <div class="accordion" id="sismosAccordion">
+                <div id="sismosAccordion" class="accordion cards-pane">
+                    {% for dato in datos|slice(0,20) %}
+                        {% set _id = 'evt_' ~ (dato.idEvento|default(loop.index)) %}
+                        <div class="accordion-item card-hover" data-lat="{{ dato.latitudEvento|default('') }}"
+                             data-lon="{{ dato.longitudEvento|default('') }}" data-mag="{{ dato.magnitudEvento|default('') }}"
+                             data-epi="{{ dato.epi|default('Epicentro no disponible') }}" data-id="{{ dato.idEvento }}"
+                             data-fecha="{{ dato.fechaEvento|date("d/m/Y H:i:s")  }}"
+                             data-fecha-cr="{{ dato.fechaEvento|date("d/m/Y H:i:s", "America/Costa_Rica")  }}"
+                             data-informe="{{ dato.informe }}"
+                             data-epoch="{{ dato.fechaEvento|date('U') }}">
+                            <h2 class="accordion-header" id="heading_{{ _id }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse_{{ _id }}" aria-expanded="false" aria-controls="collapse_{{ _id }}">
+                                    <div class="w-100 d-flex align-items-center justify-content-between">
+                                        <div class="me-2">
+                                            <div class="fw-semibold">{{ dato.epi|default('Epicentro no disponible') }}</div>
+                                            <small class="text-muted">{{ dato.fechaEvento|default('')|date("d/m/Y H:i:s") }} UTC</small><br>
+                                            <small class="text-muted">{{ dato.fechaEvento|date("d/m/Y H:i:s", "America/Costa_Rica") }} Local</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge text-bg-danger badge-mag">M {{ '%.1f'|format((dato.magnitudEvento|default(0))|round(1)) }}</span>
+                                            {% set pga = dato.aceleracionEvento is defined ? dato.aceleracionEvento : (dato.pga is defined ? dato.pga : null) %}
+                                            {% if pga is not null %}
+                                                <div><small class="text-muted">PGA {{ pga|round(2) }} cm/s²</small></div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="collapse_{{ _id }}" class="accordion-collapse collapse" aria-labelledby="heading_{{ _id }}" data-bs-parent="#sismosAccordion">
+                                <div class="accordion-body">
+                                    <div class="row g-2">
+                                        <div class="col-6"><small class="text-muted">Lat</small><div>{{ dato.latitudEvento|default('') }}</div></div>
+                                        <div class="col-6"><small class="text-muted">Lon</small><div>{{ dato.longitudEvento|default('') }}</div></div>
+                                        <div class="col-6"><small class="text-muted">Profundidad (m)</small><div>{{ '%.1f'|format((dato.profundidadEvento|default(0)) == 0 ? 5 : (dato.profundidadEvento|default(0))|round(1)) }}</div></div>
+                                    </div>
+                                    <div class="mt-3 d-flex gap-2">
+                                        <button class="btn btn-sm btn-primary" onclick="enviaDatos('{{ dato.idEvento|default('') }}','{{ dato.fechaEvento|default('') }}','{{ dato.magnitudEvento|default('') }}','{{ dato.latitudEvento|default('') }}','{{ dato.longitudEvento|default('') }}','{{ dato.informe|default('') }}','{{ dato.epi|default('') }}')">Ver informe</button>
+                                        <button class="btn btn-sm btn-outline-secondary btn-centrar" data-lat="{{ dato.latitudEvento|default('') }}" data-lon="{{ dato.longitudEvento|default('') }}">Centrar en mapa</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     {% endfor %}
-                ];
+                </div>
+                </div>
+            </div>
 
+            {# DERECHA: mapa (Leaflet) #}
+            <div class="col-12 col-md-9">
+                <div class="map-sticky">
+                <div id="map" class="w-100">MAPA</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // ====== MAPA (igual que en su plantilla) ======
+            var map = L.map('map').setView([9.75, -84.0], 7);
+            var bounds = L.latLngBounds([7.886, -84.409], [11.019, -82.976]);
+            map.fitBounds(bounds);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+            L.control.scale().addTo(map);
 
-                // Dibujar los puntos en el mapa
-                puntos.forEach(function (punto) {
-                    i = 0;
-                    let marker = L.circleMarker([punto.lat, punto.lng], {
-                        radius: 8,                 // Tamaño fijo en píxeles
-                        color: '#0033cc',          // Color del borde
-                        fillColor: '#3399ff',      // Color de relleno sólido
-                        fillOpacity: 1,            // Opacidad completa para un color sólido
-                        weight: 2                  // Grosor del borde
-                    }).addTo(map).bindPopup(punto.datos);
-                    marcadores[punto.index] = marker;
-                    i++;
-                    // Cambiar el color cuando el mouse pasa sobre el círculo
-                    marker.on("mouseover", function () {
-                        this.setStyle({color: "#cc0000", fillColor: "#ff3333", weight: 3});
-                        //this.setStyle({ color: "red", weight: 5 }); // Cambia a rojo con mayor grosor
+            const cardsPane = document.querySelector('.cards-pane');
+
+            // Invalidate al inicio (ya lo hacía), tras reordenar y en resize (ya agregado)
+            setTimeout(() => map.invalidateSize(), 250);
+            window.addEventListener('resize', () => { setTimeout(() => map.invalidateSize(), 150); });
+
+            // Invalidate al hacer scroll en el panel de tarjetas
+            if (cardsPane) {
+                let ticking = false;
+                cardsPane.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            map.invalidateSize();
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                }, { passive: true });
+            }
+
+            // Si usa un observador para cambios de altura en el acordeón, puede reforzarse:
+            const acc = document.getElementById('sismosAccordion');
+            if (acc && 'ResizeObserver' in window) {
+                const ro = new ResizeObserver(() => { setTimeout(() => map.invalidateSize(), 100); });
+                ro.observe(acc);
+            }
+
+            // LayerGroup para poder limpiar y reconstruir marcadores al reordenar
+            var markersGroup = L.layerGroup().addTo(map);
+
+            const accordion = document.getElementById('sismosAccordion');
+            const selectOrden = document.getElementById('ordenarPor');
+
+            // Función que (re)construye marcadores + popups y vincula los "hover" de headers
+            function buildMarkersAndBindings() {
+                // Limpiar marcadores previos
+                markersGroup.clearLayers();
+
+                // Quitar manejadores previos (si existiesen) de headers (recrearemos)
+                const oldHeaders = accordion.querySelectorAll('.accordion-header');
+                oldHeaders.forEach(h => {
+                    const hClone = h.cloneNode(true);
+                    h.parentNode.replaceChild(hClone, h);
+                });
+
+                // Para cada item en el orden actual del DOM, crear marcador y vincular
+                const items = accordion.querySelectorAll('.accordion-item');
+
+                items.forEach((it) => {
+                    const lat = parseFloat(it.getAttribute('data-lat'));
+                    const lon = parseFloat(it.getAttribute('data-lon'));
+                    const mag = parseFloat(it.getAttribute('data-mag'));
+                    const fecha = it.getAttribute('data-fecha') || '';
+                    const epi = it.getAttribute('data-epi') || '';
+                    const id = it.getAttribute('data-id') || '';
+                    const fechaCR = it.getAttribute('data-fecha-cr') || '';
+                    const informe = it.getAttribute('data-informe') || '';
+
+                    let markerRef = null;
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        markerRef = L.circleMarker([lat, lon], {
+                            radius: 8, color: '#0033cc', fillColor: '#3399ff', fillOpacity: 1, weight: 2
+                        }).addTo(markersGroup);
+
+                        const magTxt = isNaN(mag) ? '' : mag.toFixed(1);
+                        const popupHtml = `
+<div style="min-width:240px">
+  <div><strong>${epi || 'Epicentro no disponible'}</strong></div>
+  <div><small>${fecha.toString()} UTC -- ${fechaCR.toString()} Local</small></div>
+  <div>Magnitud: <strong>${magTxt}</strong></div>
+  <div class="mt-2">
+    <button class="btn btn-sm btn-primary"
+      onclick="enviaDatos('${id}','${fecha}','${mag}','${lat}','${lon}','${informe}','${epi}')">
+      Ver informe
+    </button>
+  </div>
+</div>`;
+                        markerRef.bindPopup(popupHtml);
+
+                        markerRef.on('mouseover', function(){ this.setStyle({ color:'#cc0000', fillColor:'#ff3333', weight:3 }); });
+                        markerRef.on('mouseout',  function(){ this.setStyle({ color:'#0033cc', fillColor:'#3399ff', weight:2 }); });
+                    }
+
+                    // Guardar referencia del marcador en el propio item para usarla en hovers
+                    it._marker = markerRef;
+
+                    // Vincular hover del header de cada card al marcador correspondiente
+                    const header = it.querySelector('.accordion-header');
+                    if (header) {
+                        header.addEventListener('mouseenter', () => {
+                            if (it._marker) it._marker.setStyle({ color:'#cc0000', fillColor:'#ff3333', weight:3 });
+                        });
+                        header.addEventListener('mouseleave', () => {
+                            if (it._marker) it._marker.setStyle({ color:'#0033cc', fillColor:'#3399ff', weight:2 });
+                        });
+                    }
+                });
+
+                // Botón "Centrar en mapa" de cada card (volver a enlazar)
+                accordion.querySelectorAll('.btn-centrar').forEach((btn) => {
+                    btn.addEventListener('click', function(){
+                        const lat = parseFloat(this.getAttribute('data-lat'));
+                        const lon = parseFloat(this.getAttribute('data-lon'));
+                        if (!isNaN(lat) && !isNaN(lon)) {
+                            map.setView([lat, lon], 10);
+                        }
                     });
+                });
 
-                    // Restaurar el color original cuando el mouse sale
-                    marker.on("mouseout", function () {
-                        this.setStyle({color: "#0033cc", fillColor: "#3399ff", weight: 2});
-                        //this.setStyle({ color: "blue", weight: 3 }); // Vuelve a azul
+                // Centrar al expandir una card (volver a enlazar)
+                accordion.querySelectorAll('.accordion-button').forEach((btn) => {
+                    btn.addEventListener('click', function(){
+                        const it = btn.closest('.accordion-item');
+                        const lat = parseFloat(it.getAttribute('data-lat'));
+                        const lon = parseFloat(it.getAttribute('data-lon'));
+                        if (!isNaN(lat) && !isNaN(lon)) {
+                            setTimeout(() => map.setView([lat, lon], 10), 250);
+                        }
                     });
                 });
             }
 
+            // Función para ordenar las cards según el modo
+            function sortAccordion(mode) {
+                const items = Array.from(accordion.querySelectorAll('.accordion-item'));
+                items.sort((a, b) => {
+                    const epochA = parseInt(a.getAttribute('data-epoch')) || 0;
+                    const epochB = parseInt(b.getAttribute('data-epoch')) || 0;
+                    const magA = parseFloat(a.getAttribute('data-mag'));
+                    const magB = parseFloat(b.getAttribute('data-mag'));
 
-
-
-
-            $('#tabla1 tbody').on('mouseenter', 'tr', function () {
-                let index = mytabla.row(this).index();
-                //alert(mytabla.row(this).index());
-                if (marcadores[index]) {
-                    marcadores[index].setStyle({ color: "red", fillColor: "red" });
-                }
-                $(this).addClass("highlight");
-            });
-
-            $('#tabla1 tbody').on('mouseleave', 'tr', function () {
-                let index = mytabla.row(this).index();
-                if (marcadores[index]) {
-                    marcadores[index].setStyle({ color: "#0033cc", fillColor: "#3399ff", weight: 2 });
-                }
-                $(this).removeClass("highlight");
-            });
-        });
-    </script>
-    <script>
-        // Utilidad simple para "debounce" de eventos resize
-        function debounce(fn, ms) {
-            let t;
-            return function() {
-                clearTimeout(t);
-                t = setTimeout(() => fn.apply(this, arguments), ms);
-            };
-        }
-
-        // Reubica el contenedor que ENVUELVE la tabla, no la tabla sola
-        function recolocarTablaSegunViewport(mapInstance) {
-            const esMovil = window.matchMedia('(max-width: 767.98px)').matches;
-            const tablaWrapper = document.getElementById('tabla-bs-example');   // <div class="bs-example" ...>
-            const tablaCol     = document.getElementById('tabla-col');          // Columna original (desktop)
-            const overlay      = document.getElementById('tabla-overlay');      // Destino overlay (móvil)
-
-            if (!tablaWrapper || !tablaCol || !overlay) return;
-
-            if (esMovil) {
-                if (overlay.contains(tablaWrapper) === false) {
-                    overlay.appendChild(tablaWrapper);
-                    // Ajustar tamaño del mapa tras el reflow
-                    if (mapInstance && mapInstance.invalidateSize) {
-                        setTimeout(() => mapInstance.invalidateSize(), 150);
+                    if (mode === 'mag_desc') {
+                        // Magnitud desc, con desempate por fecha desc
+                        const cmpMag = (isNaN(magB) ? -Infinity : magB) - (isNaN(magA) ? -Infinity : magA);
+                        if (cmpMag !== 0) return cmpMag;
+                        return epochB - epochA;
                     }
-                }
-            } else {
-                // Devolver la tabla a su columna original si no está ahí
-                if (tablaCol.contains(tablaWrapper) === false) {
-                    // Inserte nuevamente respetando la estructura original
-                    const fila = tablaCol.querySelector('.row.h-100') || tablaCol;
-                    fila.appendChild(tablaWrapper);
-                    if (mapInstance && mapInstance.invalidateSize) {
-                        setTimeout(() => mapInstance.invalidateSize(), 150);
-                    }
-                }
+                    // Default: fecha desc (más nuevos primero)
+                    return epochB - epochA;
+                });
+
+                // Reinsertar en el DOM en el nuevo orden
+                items.forEach(it => accordion.appendChild(it));
+
+                // Reconstruir marcadores y enlaces
+                buildMarkersAndBindings();
+
+                // Ajustar el tamaño del mapa tras reflujo
+                setTimeout(() => map.invalidateSize(), 150);
             }
-        }
 
-        document.addEventListener("DOMContentLoaded", function() {
-            // ... su código existente para DataTables ...
+            // Inicial: construir con el orden predeterminado (fecha desc)
+            buildMarkersAndBindings();
 
-            // Inicialice SIEMPRE el mapa (antes solo se iniciaba en desktop)
-            var map = L.map('map').setView([0, 0], 2);
-            let bounds = L.latLngBounds([7.886, -84.409], [11.019, -82.976]);
-            map.fitBounds(bounds);
+            // Listener del selector
+            if (selectOrden) {
+                selectOrden.addEventListener('change', function () {
+                    sortAccordion(this.value || 'fecha_desc');
+                });
+            }
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
-            L.control.scale().addTo(map);
-
-            // ... su código existente para marcadores y eventos hover ...
-
-            // Colocar la tabla correctamente al cargar
-            recolocarTablaSegunViewport(map);
-
-            // Re-colocar al cambiar el tamaño de ventana (con debounce)
-            window.addEventListener('resize', debounce(function() {
-                recolocarTablaSegunViewport(map);
-            }, 150));
-
-            // Invalide el tamaño del mapa tras el primer render en móviles
+            // Recalcular tamaño del mapa tras posibles reflows
             setTimeout(() => map.invalidateSize(), 250);
+            window.addEventListener('resize', () => { setTimeout(() => map.invalidateSize(), 150); });
         });
     </script>
+
+
+
 
 {% endblock %}
