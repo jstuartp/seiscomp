@@ -220,9 +220,14 @@ class mainController extends AbstractController
         //Activo el repositorio para traer los datos de PGA segun el evento
         $datosPga = $this->repository->findPgaByEvento($evento);
 
+        // Filtra los elementos cuyo campo 'estacion' NO termine en 'h' eliminando la CCSS
+        $datosPgaFiltrados = array_filter($datosPga, function ($item) {
+            return !str_ends_with($item['estacion'], 'H');
+        });
+
 
         return $this->render('pga.html.twig',
-            ['fecha' => $fecha,'datos'=>$datosPga,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
+            ['fecha' => $fecha,'datos'=>$datosPgaFiltrados,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
                 'epi_long'=>$epi_long,'epi'=>$epi]);
     }
 
@@ -249,8 +254,14 @@ class mainController extends AbstractController
         $datosJma = $this->jmaRepository->findJmaWithNameByEvent($evento);
 
 
+        // Filtra los elementos cuyo campo 'estacion' NO termine en 'h' eliminando la CCSS
+        $datosJmaFiltrados = array_filter($datosJma, function ($item) {
+            return !str_ends_with($item['estacion'], 'H');
+        });
+
+
         return $this->render('jma.html.twig',
-            ['fecha' => $fecha,'datos'=>$datosJma,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
+            ['fecha' => $fecha,'datos'=>$datosJmaFiltrados,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
                 'epi_long'=>$epi_long,'epi'=>$epi]);
     }
 

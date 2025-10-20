@@ -1,0 +1,236 @@
+{% extends '/base.html.twig' %}
+
+{% block body %}
+
+    <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
+
+        <div class="row">
+            <br><br>
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8">
+                <h2 class="mb-4">{% block page_title %}
+                        Mapa de Estructuras para el sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(UTC)
+                        <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>{% endblock %}
+                </h2>
+            </div>
+            <div class="col-sm-4 text-end">
+                <a href="{{ path('homepage') }}" class="btn btn-dark">
+                    Inicio
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8">
+                <h3 class="mb-4">
+                    {{ epi }}
+                </h3>
+            </div>
+        </div>
+        <div class="row">
+        </div>
+        <div class="row">
+            <br>
+        </div>
+        <div class="row h-100">
+            <div class="col-12 col-md-4">
+                <div class="row h-100">
+                    <div class="col-12 col-md-3 cards-pane">
+                        <div id="sismosAccordion" class="accordion">
+                            {% for dato in datos %}
+                                {% set _id = 'evt_' ~ (dato.id|default(loop.index)) %}
+                                <div class="accordion-item card-hover"
+                                     data-lat="{{ dato.lat_edificio|default('') }}"
+                                     data-lon="{{ dato.long_edificio|default('') }}"
+                                     >
+                                    <h2 class="accordion-header" id="heading_{{ _id }}">
+                                        <button class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapse_{{ _id }}"
+                                                aria-expanded="false" aria-controls="collapse_{{ _id }}">
+                                            <div class="w-100 d-flex align-items-center justify-content-between">
+                                                <div class="me-2">
+                                                    <div class="fw-semibold">{{ dato.nombre_edificio|default('Vacio') }}</div>
+                                                    <small class="text-muted">{{ dato.fechaEvento|default('')|date('d/m/Y H:i:s') }} UTC</small><br>
+                                                </div>
+                                                <div class="text-end">
+                                                    <span class="badge text-bg-info badge-info">
+                                                        Expandir
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="collapse_{{ _id }}" class="accordion-collapse collapse"
+                                         aria-labelledby="heading_{{ _id }}" data-bs-parent="#sismosAccordion">
+                                        <div class="accordion-body">
+                                            <div class="row g-2">
+                                                <div class="col-6">
+                                                    <small class="text-muted">Lat</small>
+                                                    <div> ESTACIONES</div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-3 d-flex gap-2">
+                                                <button class="btn btn-sm btn-primary"
+                                                        onclick="">
+                                                    Ver M&aacute;s
+                                                </button>
+                                                <button class="btn btn-sm btn-outline-secondary btn-centrar"
+                                                        data-lat="{{ dato.latitudEvento|default('') }}"
+                                                        data-lon="{{ dato.longitudEvento|default('') }}">
+                                                    Centrar en mapa
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-md-8 d-none d-md-block">
+                <div class="row h-100">
+                    <div id="map">MAPA</div>
+                </div>
+            </div>
+        </div>
+        <div id="myModal" class="modal">
+            <!-- El contenido del modal (la imagen) -->
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+
+                    <div class="modal-body text-center">
+                        <img class="modal-content" id="img01">
+                    </div>
+                </div>
+            </div>
+            <!-- <span class="close">&times;</span>-->
+
+        </div>
+
+
+    </div>
+
+    <div class="row">
+        <div class="col">
+
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+
+            // --- ICONO PERSONALIZADO: "EDIFICIO" ---
+            // Opción A (por defecto): SVG inline (no requiere librerías externas)
+            function buildingIcon(color = '#0d6efd', sizePx = 22, fillOpacity = 0.9, strokeColor = '#333', strokeWidth = 1.5) {
+                const s = sizePx;
+                // SVG simple estilo rascacielos (24x24 base)
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" aria-label="building">
+                                <rect x="3" y="2" width="8" height="20" rx="1.6" fill="${color}" fill-opacity="${fillOpacity}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>
+                                <rect x="13" y="6" width="8" height="16" rx="1.6" fill="${color}" fill-opacity="${fillOpacity}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>
+                                <rect x="6" y="5" width="2" height="2" fill="#fff"/>
+                                <rect x="6" y="9" width="2" height="2" fill="#fff"/>
+                                <rect x="6" y="13" width="2" height="2" fill="#fff"/>
+                                <rect x="16" y="9" width="2" height="2" fill="#fff"/>
+                                <rect x="16" y="13" width="2" height="2" fill="#fff"/>
+                                <rect x="16" y="17" width="2" height="2" fill="#fff"/>
+                             </svg>`;
+                return L.divIcon({
+                    html: svg,
+                    className: 'building-icon',
+                    iconSize: [s, s],
+                    iconAnchor: [s/2, s] // ancla en la base del ícono
+                });
+            }
+
+            // Opción B (alternativa): usar Bootstrap Icons o Tabler Icons como imagen
+            // Ejemplo con Bootstrap Icons (si carga su CSS/JS de iconos):
+            // const buildingIconBI = L.divIcon({
+            //   html: '<i class="bi bi-building" style="font-size: 28px; line-height: 1; color: #0d6efd;"></i>',
+            //   className: 'building-icon-bi',
+            //   iconSize: [28, 28],
+            //   iconAnchor: [14, 28]
+            // });
+
+            // Icono del epicentro (estrella existente)
+            const starIcon = L.divIcon({
+                html: ' <img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" alt="Estrella" style="width:50%;"> ',
+                className: '',
+                iconSize: [80, 80],
+                iconAnchor: [30, 30]
+            });
+
+            const isDesktopUp = window.matchMedia('(min-width: 768px)').matches;
+
+            if (isDesktopUp) {
+                // Inicializar el mapa centrado en Costa Rica
+                var map = L.map('map').setView([9.75, -84.0], 7);
+                let bounds = L.latLngBounds([7.886, -84.409], [11.019, -82.976]);
+                map.fitBounds(bounds);
+
+                // Capa base
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+                L.control.scale().addTo(map);
+
+                // Epicentro
+                L.marker([ {{ epi_lat }}, {{ epi_long }}], {icon: starIcon})
+                    .addTo(map)
+                    .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1) }}');
+
+                // Función para determinar el color del icono según el valor máximo
+                function getColor(valor) {
+                    if (valor > 60) return "#cc0000";      // Muy Alto
+                    if (valor > 40) return '#cc5200';
+                    if (valor > 20) return '#cc8b00';
+                    if (valor > 10) return '#ccaa00';
+                    if (valor > 5)  return '#88cc00';
+                    if (valor > 1)  return '#00cc03';
+                    return '#0058cc';
+                }
+
+                // Lista de puntos (edificios) desde Twig
+                var puntos = [
+                    {% for dato in datos %}
+                    {
+                        lat: {{ dato.lat_edificio }},
+                        lng: {{ dato.long_edificio }},
+                        datos: `Edificio: {{ (dato.nombre_edificio |e) }} <br>
+
+                               `
+                    }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ];
+
+                // Dibujar los puntos como "edificios"
+                puntos.forEach(function (punto) {
+                    const color = getColor(punto.max);
+                    const icono = buildingIcon(color, 24, 0.9, '#333', 1.25);
+                    L.marker([punto.lat, punto.lng], {icon: icono})
+                        .addTo(map)
+                        .bindPopup(punto.datos);
+                });
+
+                // ---- LEYENDA ----
+                function legendBuilding(color) {
+                    const s = 18;
+                    return `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 6px;">
+                            <rect x="3" y="2" width="8" height="20" rx="1.6" fill="${color}" fill-opacity="0.6" stroke="#333" stroke-width="1"/>
+                            <rect x="13" y="6" width="8" height="16" rx="1.6" fill="${color}" fill-opacity="0.6" stroke="#333" stroke-width="1"/>
+                        </svg>`;
+                }
+
+
+            }
+        });
+    </script>
+
+{% endblock %}
+
