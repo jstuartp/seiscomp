@@ -163,15 +163,15 @@
                 // Función para determinar el color del círculo según el valor numérico
                 function getColor(valor) {
 
-                    if (valor === "6+") return '#a90000';   // Medio
-                    if (valor === "6-") return '#f40001';   // Medio
-                    if (valor === "5+") return '#f77a00';   // Medio
-                    if (valor === "5-") return '#ffff00';   // Medio
-                    if (valor === "4") return '#0bc200';   // Medio
-                    if (valor === "3") return '#00faff';   // Medio
-                    if (valor === "2") return '#0032ff';   // Medio
-                    if (valor === "1") return '#d2d2d2';   // Medio
-                    if (valor === "0") return '#ffffff';   // Medio
+                    if (valor < 6.5 ) return '#a90000';   // Medio
+                    if (valor < 6.0 ) return '#f40001';   // Medio
+                    if (valor < 5.5 ) return '#f77a00';   // Medio
+                    if (valor < 5.0 ) return '#ffff00';   // Medio
+                    if (valor < 4.5) return '#0bc200';   // Medio
+                    if (valor < 3.5) return '#00faff';   // Medio
+                    if (valor < 2.5) return '#0032ff';   // Medio
+                    if (valor < 1.5) return '#d2d2d2';   // Medio
+                    if (valor < 0.5) return '#ffffff';   // Medio
                     return '#640064';                   // Bajo
                 }
 
@@ -179,7 +179,7 @@
                 var puntos = [
                     {% for dato in datos %}
                     {
-                        lat: {{ dato.lat }}, lng: {{ dato.lon }}, max: "{{ dato.jma }}",
+                        lat: {{ dato.lat }}, lng: {{ dato.lon }}, max: {{ dato.truncated }},
                         datos: `Estaci&oacute;n: {{ dato.estacion }} <br>
                             JMA: {{ dato.jma }} <br>`
                     }
