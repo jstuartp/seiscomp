@@ -88,7 +88,8 @@
                              data-mag="{{ dato.magnitudEvento|default('') }}"
                              data-epi="{{ dato.epi|default('Epicentro no disponible') }}"
                              data-id="{{ dato.idEvento }}"
-                             data-fecha="{{ dato.fechaEvento|date('d/m/Y H:i:s') }}"
+                             data-fecha="{{ dato.fechaEvento }}"
+                             data-fechaf="{{ dato.fechaEvento|date('d/m/Y H:i:s') }}"
                              data-fecha-cr="{{ dato.fechaEvento|date('d/m/Y H:i:s', 'America/Costa_Rica') }}"
                              data-epoch="{{ dato.fechaEvento|date('U') }}"
                              data-informe="{{ dato.informe }}">
@@ -194,6 +195,7 @@
                     const lon     = parseFloat(it.getAttribute('data-lon'));
                     const mag     = parseFloat(it.getAttribute('data-mag'));
                     const fecha   = it.getAttribute('data-fecha')   || '';
+                    const fechaf   = it.getAttribute('data-fechaf')   || '';
                     const epi     = it.getAttribute('data-epi')     || '';
                     const id      = it.getAttribute('data-id')      || '';
                     const fechaCR = it.getAttribute('data-fecha-cr')|| '';
@@ -209,7 +211,7 @@
                         const popupHtml = `
 <div style="min-width:240px">
   <div><strong>${epi || 'Epicentro no disponible'}</strong></div>
-  <div><small>${fecha.toString()} UTC -- ${fechaCR.toString()} Local</small></div>
+  <div><small>${fechaf.toString()} UTC -- ${fechaCR.toString()} Local</small></div>
   <div>Magnitud: <strong>${magTxt}</strong></div>
   <div class="mt-2">
     <button class="btn btn-sm btn-primary"
