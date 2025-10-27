@@ -119,16 +119,16 @@
                                  aria-labelledby="heading_{{ _id }}" data-bs-parent="#sismosAccordion">
                                 <div class="accordion-body">
                                     <div class="row g-2">
-                                        <div class="col-6">
-                                            <small class="text-muted">Lat</small>
-                                            <div>{{ dato.latitudEvento|default('') }}</div>
-                                        </div>
+                                        <div class="col-12">
+                                            <small class="text-muted">Ubicaci&oacute;n</small>
+                                            <div>{{ dato.ubicacion|default('') }}</div>
+                                        </div><!--
                                         <div class="col-6">
                                             <small class="text-muted">Lon</small>
                                             <div>{{ dato.longitudEvento|default('') }}</div>
-                                        </div>
-                                        <div class="col-6">
-                                            <small class="text-muted">Profundidad (m)</small>
+                                        </div>-->
+                                        <div class="col-12">
+                                            <small class="text-muted">Profundidad (Km)</small>
                                             <div>{{ '%.1f'|format((dato.profundidadEvento|default(0)) == 0 ? 5 : (dato.profundidadEvento|default(0))|round(1)) }}</div>
                                         </div>
                                     </div>

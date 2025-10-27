@@ -53,17 +53,38 @@ class mainController extends AbstractController
 
         // Itera para agregar el epicentro calculado a cada registro
         foreach ($masDatos as &$dato) {
+            $lat = (float)$dato['latitudEvento'];
+            $lon = (float)$dato['longitudEvento'];
+
             $dato['epi'] = $this->CalculaEpicentro($dato['latitudEvento'], $dato['longitudEvento']);
+            $dato['ubicacion'] = $this->formatoDecimalConHemisferio($lat, $lon, 3, "false");
         }
+        unset($dato);
+
+        $datosfiltro=$this->filtrarPorCR_BBox($masDatos);
+
+
 
         // Devuelve la vista Twig con los datos y el parámetro 'tipo' reenviado
         return $this->render('index.html.twig', [
             'title'  => $nombre,
-            'datos'  => $masDatos,
+            'datos'  => $datosfiltro,
             'salida' => $salida,
             'tipo'   => $tipo, // reenviado al Twig
         ]);
     }
+
+    private function formatoDecimalConHemisferio(float $lat, float $lon, int $precision = 3, bool $html = false): string {
+        $latHem = ($lat >= 0) ? 'N' : 'S';
+        $lonHem = ($lon >= 0) ? 'E' : 'O';
+
+        $latAbs = number_format(abs($lat), $precision, '.', '');
+        $lonAbs = number_format(abs($lon), $precision, '.', '');
+
+        $deg = '°';
+        return "{$latAbs}{$deg}{$latHem} -- {$lonAbs}{$deg}{$lonHem}";
+    }
+
 
     /*
      * Controlador para el template de todos los sismos
@@ -220,10 +241,19 @@ class mainController extends AbstractController
         //Activo el repositorio para traer los datos de PGA segun el evento
         $datosPga = $this->repository->findPgaByEvento($evento);
 
+        // Listado SMHR a excluir de la lista
+        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
+            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
+
+        $datosPgaFiltrados = array_filter($datosPga, function ($item) use ($estacionesExcluir) {
+            // Se excluyen únicamente las estaciones en la lista,
+            return !in_array($item['estacion'], $estacionesExcluir, true);
+        });
+        /*
         // Filtra los elementos cuyo campo 'estacion' NO termine en 'h' eliminando la CCSS
         $datosPgaFiltrados = array_filter($datosPga, function ($item) {
             return !str_ends_with($item['estacion'], 'H');
-        });
+        });*/
 
 
         return $this->render('pga.html.twig',
@@ -231,6 +261,30 @@ class mainController extends AbstractController
                 'epi_long'=>$epi_long,'epi'=>$epi]);
     }
 
+
+
+    /**
+     * Filtrado por “bounding box” (AABB) con margen amplio para Costa Rica.
+     * Mantiene únicamente los puntos dentro del rectángulo [minLat,maxLat] x [minLon,maxLon].
+     */
+    private function filtrarPorCR_BBox(array $datos): array {
+        // Margen amplio alrededor de Costa Rica
+        $bbox = [
+            'minLat' => 7.8,
+            'maxLat' => 11.5,
+            'minLon' => -86.2,
+            'maxLon' => -82.2,
+        ];
+
+        return array_values(array_filter($datos, function ($item) use ($bbox) {
+            if (!isset($item['latitudEvento'], $item['longitudEvento'])) return false;
+            $lat = (float)$item['latitudEvento'];
+            $lon = (float)$item['longitudEvento'];
+
+            return $lat >= $bbox['minLat'] && $lat <= $bbox['maxLat']
+                && $lon >= $bbox['minLon'] && $lon <= $bbox['maxLon'];
+        }));
+    }
 
 
     /**
