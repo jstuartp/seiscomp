@@ -82,7 +82,7 @@ class mainController extends AbstractController
         $lonAbs = number_format(abs($lon), $precision, '.', '');
 
         $deg = '°';
-        return "{$latAbs}{$deg}{$latHem} -- {$lonAbs}{$deg}{$lonHem}";
+        return "{$latAbs}{$deg}{$latHem}  {$lonAbs}{$deg}{$lonHem}";
     }
 
 
