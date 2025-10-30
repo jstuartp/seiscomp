@@ -177,10 +177,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
                 <nav class="navbar navbar-expand-xl" style="background-color: #FFF;">
                     <div class="container-fluid">
                         <a class="navbar-brand" href="https://inii.ucr.ac.cr">
-                            <img src="{{ asset('assets/img/INII.png') }}" alt="INII logo" style="width:80%;">
+                            <img src="{{ asset('assets/img/INII.png') }}" alt="INII logo" >
                         </a>
                         <a class="navbar-brand" href="https://lis.ucr.ac.cr">
-                            <img src="{{ asset('assets/img/LIS.png') }}" alt="LIS logo" style="width:80%;">
+                            <img src="{{ asset('assets/img/LIS.png') }}" alt="LIS logo" >
                         </a>
 
                         <button
@@ -466,47 +466,163 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     </div>
 </body>
         <!-- FIN CUERPO/CONTENIDO -->
-        {% block foot %}
-        <!-- PIE DE PÁGINA -->
-        <footer class="row">
-                <div class="row" style="border-top: 1px solid red;">
-                    <div class="col-12 col-lg-3" style="padding-top:5px; font-size:11px;">
-                        <p>INFORMACIÓN DE CONTACTO</p>
-                        <p><b>Instituto de Investigaciones en Ingeniería</b></p>
-                        <p><b>Laboratorio de Ingeniería Sísmica</b></p>
-                        <p>Ciudad de la Investigación, Universidad de Costa Rica<br/>San Pedro, San José, Costa Rica</br>11501-2060 UCR</p>
-                        <p>Teléfono: (506) 2511-6661</br>Correo electrónico: <a href="mailto: lis.inii@ucr.ac.cr">lis.inii@ucr.ac.cr</a></p>
-                    </div>
+{% block foot %}
+    <!-- PIE DE PÁGINA -->
+    <footer class="mt-4 pt-4 border-top" style="background-color:#f8f9f9;">
+        <div class="container-fluid">
+            <div class="row gy-4">
 
-                    <div class="col-12 col-lg-3" style="padding-top:5px; font-size:11px;">
-                        <div class="d-flex align-items-center">
-                            <ul style="list-style-type: none; padding: 0;">
-                                <li><a href="https://www.facebook.com/lis.ucr.ac.cr"><i class="bi bi-facebook" style="font-size: 1rem;"></i> Facebook</a></li>
-                                <li><a href="https://www.instagram.com/lis.ucr.ac.cr/"><i class="bi bi-instagram" style="font-size: 1rem;"></i> Instagram</a></li>
-                                <li><a href="https://www.youtube.com/@UCRLIS"><i class="bi bi-youtube" style="font-size: 1rem;"></i> YouTube</a></li>
-                                <li><a href="https://x.com/LISUCR"><i class="bi bi-twitter" style="font-size: 1rem;"></i> X (Noticias)</a></li>
-                                <li><a href="https://x.com/MASLISUCR"><i class="bi bi-twitter" style="font-size: 1rem;"></i> X (MAS-LIS)</a></li>
-                                <li><a href="https://t.me/ingenieriasismica"><i class="bi bi-telegram" style="font-size: 1rem;"></i> Telegram (Noticias)</a></li>
-                                <li><a href="https://t.me/maslisucr"><i class="bi bi-telegram" style="font-size: 1rem;"></i> Telegram (MAS-LIS)</a></li>
-                            </ul>
+                {# Columna 1: Identidad institucional y contacto #}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <h6 class="text-uppercase fw-bold text-dark mb-2" style="font-size: .8rem;">
+                        Información de contacto
+                    </h6>
+                    <p class="mb-1" style="font-size:.8rem;">
+                        <strong>Instituto de Investigaciones en Ingeniería</strong><br>
+                        <strong>Laboratorio de Ingeniería Sísmica</strong>
+                    </p>
+                    <p class="mb-1" style="font-size:.8rem;">
+                        Ciudad de la Investigación, Universidad de Costa Rica<br>
+                        San Pedro, San José, Costa Rica<br>
+                        11501-2060 UCR
+                    </p>
+                    <p class="mb-1" style="font-size:.8rem;">
+                        Teléfono: (506) 2511-6661<br>
+                        Correo electrónico:
+                        <a class="link-dark text-decoration-none" href="mailto: lis.inii@ucr.ac.cr">
+                            lis.inii@ucr.ac.cr
+                        </a>
+                    </p>
+                </div>
+
+                {# Columna 2: Presencia digital / redes sociales #}
+                <div class="col-12 col-md-6 col-lg-3">
+                    <h6 class="text-uppercase fw-bold text-dark mb-2" style="font-size: .8rem;">
+                        Canales oficiales
+                    </h6>
+
+                    <ul class="list-unstyled mb-0" style="font-size:.8rem;">
+                        <li class="mb-1 d-flex align-items-start">
+                            <i class="bi bi-facebook me-2"></i>
+                            <a class="link-dark text-decoration-none" href="https://www.facebook.com/lis.ucr.ac.cr" target="_blank" rel="noopener">
+                                Facebook
+                            </a>
+                        </li>
+                        <li class="mb-1 d-flex align-items-start">
+                            <i class="bi bi-instagram me-2"></i>
+                            <a class="link-dark text-decoration-none" href="https://www.instagram.com/lis.ucr.ac.cr/" target="_blank" rel="noopener">
+                                Instagram
+                            </a>
+                        </li>
+                        <li class="mb-1 d-flex align-items-start">
+                            <i class="bi bi-youtube me-2"></i>
+                            <a class="link-dark text-decoration-none" href="https://www.youtube.com/@UCRLIS" target="_blank" rel="noopener">
+                                YouTube
+                            </a>
+                        </li>
+                        <li class="mb-1 d-flex align-items-start">
+                            <i class="bi bi-twitter-x me-2"></i>
+                            <a class="link-dark text-decoration-none" href="https://x.com/LISUCR" target="_blank" rel="noopener">
+                                X (Noticias)
+                            </a>
+                        </li>
+                        <li class="mb-1 d-flex align-items-start">
+                            <i class="bi bi-twitter-x me-2"></i>
+                            <a class="link-dark text-decoration-none" href="https://x.com/MASLISUCR" target="_blank" rel="noopener">
+                                X (MAS-LIS)
+                            </a>
+                        </li>
+                        <li class="mb-1 d-flex align-items-start">
+                            <i class="bi bi-telegram me-2"></i>
+                            <a class="link-dark text-decoration-none" href="https://t.me/ingenieriasismica" target="_blank" rel="noopener">
+                                Telegram (Noticias)
+                            </a>
+                        </li>
+                        <li class="mb-1 d-flex align-items-start">
+                            <i class="bi bi-telegram me-2"></i>
+                            <a class="link-dark text-decoration-none" href="https://t.me/maslisucr" target="_blank" rel="noopener">
+                                Telegram (MAS-LIS)
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                {# Columna 3: Enlaces institucionales #}
+                <div class="col-12 col-md-6 col-lg-3">
+                    <h6 class="text-uppercase fw-bold text-dark mb-2" style="font-size: .8rem;">
+                        Enlaces de interés
+                    </h6>
+                    <ul class="list-unstyled mb-0" style="font-size:.8rem;">
+                        <li class="mb-1">
+                            <a class="link-dark text-decoration-none" href="https://ucr.ac.cr" target="_blank" rel="noopener">
+                                Universidad de Costa Rica
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a class="link-dark text-decoration-none" href="https://rectoria.ucr.ac.cr" target="_blank" rel="noopener">
+                                Rectoría
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a class="link-dark text-decoration-none" href="https://www.sep.ucr.ac.cr/" target="_blank" rel="noopener">
+                                Sistema de Estudios de Posgrado
+                            </a>
+                        </li>
+                        <li class="mb-1">
+                            <a class="link-dark text-decoration-none" href="https://fing.ucr.ac.cr/" target="_blank" rel="noopener">
+                                Facultad de Ingeniería
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                {# Columna 4: Marca institucional / logos #}
+                <div class="col-12 col-md-6 col-lg-2 text-md-start ">
+                    <div class="d-flex flex-column align-items-md-end align-items-left h-100">
+                        <div class="mb-2">
+                            <img
+                                    src="{{ asset('assets/img/INII.png') }}"
+                                    alt="Logo INII"
+                                    class="img-fluid"
+                                    style="max-height:50px;"
+                            >
                         </div>
-                    </div>
-
-                    <div class="col-12 col-lg-3" style="padding-top:5px;font-size:11px;">
-                        <p>ENLACES DE INTERES</p>
-                        <p><a href="https://ucr.ac.cr">Universidad de Costa Rica</a></p>
-                        <p><a href="https://rectoria.ucr.ac.cr">Rectoria</a></p>
-                        <p><a href="https://www.sep.ucr.ac.cr/">Sistema de estudios de Posgrados</a></p>
-                        <p><a href="https://fing.ucr.ac.cr/">Facultad de Ingeniería</a></p>
-                    </div>
-
-                    <div class="col-12 col-lg-3" style="padding-top:5px;">
-                        <img src="{{ asset('assets/img/firma_ucr_negro.png') }}">
+                        <div class="mb-2">
+                            <img
+                                    src="{{ asset('assets/img/LIS.png') }}"
+                                    alt="Logo LIS"
+                                    class="img-fluid"
+                                    style="max-height:50px;"
+                            >
+                        </div>
+                        <div class="mb-2">
+                            <img
+                                    src="{{ asset('assets/img/firma_ucr_negro.png') }}"
+                                    alt="Universidad de Costa Rica"
+                                    class="img-fluid"
+                                    style="max-height:50px;"
+                            >
+                        </div>
                     </div>
                 </div>
 
-        </footer>
-    </div>
+            </div> {# /.row #}
+
+            {# Franja inferior con aviso institucional #}
+            <div class="row mt-4 pt-3 border-top">
+                <div class="col-12 text-center" style="font-size:.7rem; color:#6c757d;">
+                    <span class="d-block">
+                        © {{ "now"|date("Y") }} Instituto de Investigaciones en Ingeniería (INII) · Laboratorio de Ingeniería Sísmica (LIS) · Universidad de Costa Rica
+                    </span>
+                    <span class="d-block">
+                        Uso académico y científico. Reproducción con cita.
+                    </span>
+                </div>
+            </div>
+        </div> {# /.container-fluid #}
+    </footer>
+    <!-- FIN PIE DE PÁGINA -->
+
         <!-- FIN PIE DE PÁGINA -->
             <script>
                 document.addEventListener('DOMContentLoaded', function () {
