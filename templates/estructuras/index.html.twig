@@ -38,7 +38,7 @@
         <div class="row h-100">
             <div class="col-12 col-md-4">
                 <div class="row h-100">
-                    <div class="col-12 col-md-3 cards-pane">
+                    <div class="col-12 col-md-12 cards-pane">
                         <div id="sismosAccordion" class="accordion">
                             {% for dato in datos %}
                                 {% set _id = 'evt_' ~ (dato.id|default(loop.index)) %}
@@ -67,7 +67,7 @@
                                          aria-labelledby="heading_{{ _id }}" data-bs-parent="#sismosAccordion">
                                         <div class="accordion-body">
                                             <div class="row g-2">
-                                                <div class="col-6">
+                                                <div class="col-12">
                                                     <small class="text-muted">Lat</small>
                                                     <div> ESTACIONES</div>
                                                 </div>
@@ -126,36 +126,16 @@
 
 
             // --- ICONO PERSONALIZADO: "EDIFICIO" ---
-            // Opción A (por defecto): SVG inline (no requiere librerías externas)
-            function buildingIcon(color = '#0d6efd', sizePx = 22, fillOpacity = 0.9, strokeColor = '#333', strokeWidth = 1.5) {
-                const s = sizePx;
-                // SVG simple estilo rascacielos (24x24 base)
-                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" aria-label="building">
-                                <rect x="3" y="2" width="8" height="20" rx="1.6" fill="${color}" fill-opacity="${fillOpacity}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>
-                                <rect x="13" y="6" width="8" height="16" rx="1.6" fill="${color}" fill-opacity="${fillOpacity}" stroke="${strokeColor}" stroke-width="${strokeWidth}"/>
-                                <rect x="6" y="5" width="2" height="2" fill="#fff"/>
-                                <rect x="6" y="9" width="2" height="2" fill="#fff"/>
-                                <rect x="6" y="13" width="2" height="2" fill="#fff"/>
-                                <rect x="16" y="9" width="2" height="2" fill="#fff"/>
-                                <rect x="16" y="13" width="2" height="2" fill="#fff"/>
-                                <rect x="16" y="17" width="2" height="2" fill="#fff"/>
-                             </svg>`;
-                return L.divIcon({
-                    html: svg,
-                    className: 'building-icon',
-                    iconSize: [s, s],
-                    iconAnchor: [s/2, s] // ancla en la base del ícono
-                });
-            }
+
 
             // Opción B (alternativa): usar Bootstrap Icons o Tabler Icons como imagen
             // Ejemplo con Bootstrap Icons (si carga su CSS/JS de iconos):
-            // const buildingIconBI = L.divIcon({
-            //   html: '<i class="bi bi-building" style="font-size: 28px; line-height: 1; color: #0d6efd;"></i>',
-            //   className: 'building-icon-bi',
-            //   iconSize: [28, 28],
-            //   iconAnchor: [14, 28]
-            // });
+             const buildingIconBI = L.divIcon({
+               html: '<i class="bi bi-building" style="font-size: 28px; line-height: 1; color: #0d6efd;"></i>',
+               className: 'building-icon-bi',
+               iconSize: [28, 28],
+               iconAnchor: [14, 28]
+             });
 
             // Icono del epicentro (estrella existente)
             const starIcon = L.divIcon({
@@ -211,23 +191,11 @@
                 // Dibujar los puntos como "edificios"
                 puntos.forEach(function (punto) {
                     const color = getColor(punto.max);
-                    const icono = buildingIcon(color, 24, 0.9, '#333', 1.25);
+                    const icono = buildingIconBI;
                     L.marker([punto.lat, punto.lng], {icon: icono})
                         .addTo(map)
                         .bindPopup(punto.datos);
                 });
-
-                // ---- LEYENDA ----
-                function legendBuilding(color) {
-                    const s = 18;
-                    return `
-                        <svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 6px;">
-                            <rect x="3" y="2" width="8" height="20" rx="1.6" fill="${color}" fill-opacity="0.6" stroke="#333" stroke-width="1"/>
-                            <rect x="13" y="6" width="8" height="16" rx="1.6" fill="${color}" fill-opacity="0.6" stroke="#333" stroke-width="1"/>
-                        </svg>`;
-                }
-
-
             }
         });
     </script>
