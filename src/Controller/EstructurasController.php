@@ -36,12 +36,16 @@ final class EstructurasController extends AbstractController
         //Activo el repositorio para traer los datos de PGA segun el evento
         $datos = $this->estructurasRepository->findAllEstructuras();
 
-
-
+        //Extraigo todas las maximas pgas del evento
+        $pgas = $this->estructurasRepository->findMaxPgaFromEvent($evento);
+        $pgasAsociativo = [];
+        foreach ($pgas as $row) {
+            $pgasAsociativo[$row['estacion']] = $row['maximo'];
+        }
 
         return $this->render('estructuras/index.html.twig', ['fecha' => $fecha,'datos'=>$datos,'id'=>$evento,
             'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
-            'epi_long'=>$epi_long,'epi'=>$epi,
+            'epi_long'=>$epi_long,'epi'=>$epi, 'pgas'=>$pgasAsociativo,
             'controller_name' => 'EstructurasController',
         ]);
     }

@@ -19,12 +19,30 @@ class EstructurasRepository extends ServiceEntityRepository
 
 
     /**
-     * Obtener Listado de los Archivos LIS creados
+     * Obtener Listado de las estructuras
      */
     public function findAllEstructuras(): ?array
     {
         $conn = $this->getEntityManager()->getConnection();
         $sql ="select * From estructuras";
+        try {
+            $datos= $conn->executeQuery($sql);
+            return $datos->fetchAllAssociative();
+        }catch (Exception $e){
+            return [];
+        }
+
+
+    }
+
+
+    /**
+     * Obtener Listado de las PGA para cada estructura
+     */
+    public function findMaxPgaFromEvent($evento): ?array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql ="select idpga,estacion,maximo From Pga_estructuras Where nombre_evento = '".$evento."'";
         try {
             $datos= $conn->executeQuery($sql);
             return $datos->fetchAllAssociative();

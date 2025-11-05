@@ -1,15 +1,55 @@
 {% extends '/base.html.twig' %}
 
+{% block head_extra %}
+    <meta http-equiv="refresh" content="1800">
+    <style>
+        /* ====== Layout general ====== */
+        .lis-layout { min-height: 100vh; }
+
+        /* Columna izquierda (tarjetas) con scroll independiente */
+        .cards-pane {
+            /* Ajuste según su cabecera fija; si no la hay, puede usar 100vh directamente */
+            max-height: calc(100vh - 16px);
+            overflow: auto;
+            padding-right: 6px;
+        }
+        .cards-pane::-webkit-scrollbar { width: 10px; }
+        .cards-pane::-webkit-scrollbar-thumb { border-radius: 8px; background: rgba(0,0,0,.15); }
+        .cards-pane::-webkit-scrollbar-track { background: transparent; }
+
+        /* Columna derecha: contenedor sticky para el mapa */
+        .map-sticky {
+            position: sticky;
+            top: 8px;
+            height: calc(100vh - 16px);
+            display: flex;
+            flex-direction: column;
+        }
+        /* El mapa ocupa todo el alto disponible de su contenedor sticky */
+        #map { flex: 1 1 auto; width: 100%; }
+
+        /* Estilos utilitarios previos */
+        .card-header button { text-align: left; width: 100%; }
+        .badge-mag { min-width: 3.2rem; }
+        .card-hover:hover { background: #f8fbff; }
+    </style>
+{% endblock %}
+
 {% block body %}
 
-    <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
+    <script>
+        // Envío a la ruta 'informe' preservando datos del evento
+        function enviaDatos (id, fecha, mag, lat, long_, informe, epi) {
+            var theForm = document.createElement('form');
+            theForm.action = '{{ path('informe') }}';
+            theForm.method = 'post';
+            function add(name, value){ const i = document.createElement('input'); i.type='hidden'; i.name=name; i.value=value; theForm.appendChild(i); }
+            add('id', id); add('fecha', fecha); add('mag', mag); add('lat', lat); add('long', long_); add('informe', informe); add('epi', epi);
+            document.body.appendChild(theForm); theForm.submit();
+        }
+    </script>
 
-        <div class="row">
-            <br><br>
-            <div class="col">
-
-            </div>
-        </div>
+    <div class="container-fluid">
         <div class="row">
             <div class="col-sm-8">
                 <h2 class="mb-4">{% block page_title %}
@@ -18,7 +58,7 @@
                 </h2>
             </div>
             <div class="col-sm-4 text-end">
-                <a href="{{ path('homepage') }}" class="btn btn-dark">
+                <a href="{{ path('homepage') }}" class="btn btn-success">
                     Inicio
                 </a>
             </div>
@@ -30,112 +70,125 @@
                 </h3>
             </div>
         </div>
-        <div class="row">
-        </div>
-        <div class="row">
-            <br>
-        </div>
-        <div class="row h-100">
-            <div class="col-12 col-md-4">
-                <div class="row h-100">
-                    <div class="col-12 col-md-12 cards-pane">
-                        <div id="sismosAccordion" class="accordion">
-                            {% for dato in datos %}
-                                {% set _id = 'evt_' ~ (dato.id|default(loop.index)) %}
-                                <div class="accordion-item card-hover"
-                                     data-lat="{{ dato.lat_edificio|default('') }}"
-                                     data-lon="{{ dato.long_edificio|default('') }}"
-                                     >
-                                    <h2 class="accordion-header" id="heading_{{ _id }}">
-                                        <button class="accordion-button collapsed" type="button"
-                                                data-bs-toggle="collapse" data-bs-target="#collapse_{{ _id }}"
-                                                aria-expanded="false" aria-controls="collapse_{{ _id }}">
-                                            <div class="w-100 d-flex align-items-center justify-content-between">
-                                                <div class="me-2">
-                                                    <div class="fw-semibold">{{ dato.nombre_edificio|default('Vacio') }}</div>
-                                                    <small class="text-muted">{{ dato.fechaEvento|default('')|date('d/m/Y H:i:s') }} UTC</small><br>
-                                                </div>
-                                                <div class="text-end">
-                                                    <span class="badge text-bg-info badge-info">
-                                                        Expandir
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </button>
-                                    </h2>
-                                    <div id="collapse_{{ _id }}" class="accordion-collapse collapse"
-                                         aria-labelledby="heading_{{ _id }}" data-bs-parent="#sismosAccordion">
-                                        <div class="accordion-body">
-                                            <div class="row g-2">
-                                                <div class="col-12">
-                                                    <small class="text-muted">Lat</small>
-                                                    <div> ESTACIONES</div>
-                                                </div>
-                                            </div>
-                                            <div class="mt-3 d-flex gap-2">
-                                                <button class="btn btn-sm btn-primary"
-                                                        onclick="">
-                                                    Ver M&aacute;s
-                                                </button>
-                                                <button class="btn btn-sm btn-outline-secondary btn-centrar"
-                                                        data-lat="{{ dato.latitudEvento|default('') }}"
-                                                        data-lon="{{ dato.longitudEvento|default('') }}">
-                                                    Centrar en mapa
-                                                </button>
-                                            </div>
+
+        <div class="row g-3 mt-2 lis-layout">
+
+            {# ====== Bloque de controles de ordenamiento ====== #}
+            <div class="col-12 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <label for="ordenarPor" class="form-label mb-0">Ordenar por:</label>
+                    <select id="ordenarPor" class="form-select form-select-sm w-auto">
+                        <option value="fecha_desc" selected>Fecha (más nuevos primero)</option>
+                        <option value="mag_desc">Magnitud (mayor a menor)</option>
+                    </select>
+                </div>
+            </div>
+
+            {# ====== IZQUIERDA: tarjetas colapsables con scroll ====== #}
+            <div class="col-12 col-md-3 cards-pane">
+                <div id="sismosAccordion" class="accordion">
+                    {% for dato in datos %}
+                        {% set _id = 'evt_' ~ (dato.idEvento|default(loop.index)) %}
+                        {% set estaciones = dato.estaciones_edificio|split('-') %}
+                        <div class="accordion-item card-hover"
+                             data-lat="{{ dato.lat_edificio|default('') }}"
+                             data-lon="{{ dato.long_edificio|default('') }}"
+                             data-mag="{{ magnitud|default('') }}"
+                             data-epi="{{ dato.nombre_edificio|default('Estructura') }}"
+                             data-id="{{ id }}"
+                             data-fecha="{{ fecha }}"
+                             data-cantEstaciones="{{ estaciones|length }}"
+                             data-fecha-cr="{{ fecha|date('d/m/Y H:i:s', 'America/Costa_Rica') }}"
+                             >
+                            <h2 class="accordion-header" id="heading_{{ _id }}">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse" data-bs-target="#collapse_{{ _id }}"
+                                        aria-expanded="false" aria-controls="collapse_{{ _id }}">
+                                    <div class="w-100 d-flex align-items-center justify-content-between">
+                                        <div class="me-2">
+                                            <div class="fw-semibold">{{ dato.nombre_edificio|default('Vacio') }}</div>
+                                            <small class="text-muted">{{ estaciones|length }} equipos</small>
+                                        </div>
+                                        <div class="text-end">
+
+
+                                            <div><small class="text-muted"></small></div>
                                         </div>
                                     </div>
+                                </button>
+                            </h2>
+                            <div id="collapse_{{ _id }}" class="accordion-collapse collapse"
+                                 aria-labelledby="heading_{{ _id }}" data-bs-parent="#sismosAccordion">
+                                <div class="accordion-body">
+                                    <div class="row g-2">
+                                        <div class="col-12">
+                                            <small class="text-muted">Aceleraciones</small>
+                                            <div><ul>
+                                                    {# inicializar contadores #}
+                                                    {% set max_val = null %}
+                                                    {% set max_est = null %}
+                                                    {% for estacion in estaciones %}
+                                                        <li>{{ estacion }} :
+                                                            {# Mostrar el valor de PGA si existe en el arreglo #}
+                                                            {% if pgas[estacion] is defined %}
+                                                                {{ pgas[estacion]|number_format(2, '.', ',') }} cm/s²
+                                                                {% set valor = pgas[estacion] ?? null %}
+
+                                                                {% if valor is not null %}
+                                                                    {% if max_val is null or valor > max_val %}
+                                                                        {% set max_val = valor %}
+                                                                        {% set max_est = estacion %}
+                                                                    {% endif %}
+                                                                {% endif %}
+
+
+                                                            {% else %}
+                                                                <em>No disponible</em>
+                                                            {% endif %}
+                                                        </li>
+                                                    {% endfor %}
+                                                    <div  data-var="{{ max_val }}"><small>Máximo PGA: {{ max_val }} en la estación {{ max_est }}</small></div>
+                                                </ul></div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 d-flex gap-2">
+                                        <button class="btn btn-sm btn-primary"
+                                                onclick="">
+                                            Ver estructura
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary btn-centrar"
+                                                data-lat="{{ dato.lat_edificio|default('') }}"
+                                                data-lon="{{ dato.long_edificio|default('') }}">
+                                            Centrar en mapa
+                                        </button>
+                                    </div>
                                 </div>
-                            {% endfor %}
+                            </div>
                         </div>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
-            <div class="col-12 col-md-8 d-none d-md-block">
-                <div class="row h-100">
-                    <div id="map">MAPA</div>
+
+            {# ====== DERECHA: mapa sticky ====== #}
+            <div class="col-12 col-md-9">
+                <div class="map-sticky">
+                    <div id="map" class="w-100"></div>
                 </div>
             </div>
-        </div>
-        <div id="myModal" class="modal">
-            <!-- El contenido del modal (la imagen) -->
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-
-                    <div class="modal-body text-center">
-                        <img class="modal-content" id="img01">
-                    </div>
-                </div>
-            </div>
-            <!-- <span class="close">&times;</span>-->
-
-        </div>
-
-
-    </div>
-
-    <div class="row">
-        <div class="col">
-
         </div>
     </div>
-
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener('DOMContentLoaded', function () {
+            // ====== Inicialización del mapa en Costa Rica ======
+            var map = L.map('map').setView([9.75, -84.0], 7);
+            var bounds = L.latLngBounds([7.886, -84.409], [11.019, -82.976]);
+            map.fitBounds(bounds);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+            L.control.scale().addTo(map);
 
-
-            // --- ICONO PERSONALIZADO: "EDIFICIO" ---
-
-
-            // Opción B (alternativa): usar Bootstrap Icons o Tabler Icons como imagen
-            // Ejemplo con Bootstrap Icons (si carga su CSS/JS de iconos):
-             const buildingIconBI = L.divIcon({
-               html: '<i class="bi bi-building" style="font-size: 28px; line-height: 1; color: #0d6efd;"></i>',
-               className: 'building-icon-bi',
-               iconSize: [28, 28],
-               iconAnchor: [14, 28]
-             });
 
             // Icono del epicentro (estrella existente)
             const starIcon = L.divIcon({
@@ -144,61 +197,187 @@
                 iconSize: [80, 80],
                 iconAnchor: [30, 30]
             });
+            // Epicentro
+            L.marker([ {{ epi_lat }}, {{ epi_long }}], {icon: starIcon})
+                .addTo(map)
+                .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1) }}');
 
-            const isDesktopUp = window.matchMedia('(min-width: 768px)').matches;
+            // Grupo de marcadores para poder limpiar/reconstruir al reordenar
+            var markersGroup = L.layerGroup().addTo(map);
 
-            if (isDesktopUp) {
-                // Inicializar el mapa centrado en Costa Rica
-                var map = L.map('map').setView([9.75, -84.0], 7);
-                let bounds = L.latLngBounds([7.886, -84.409], [11.019, -82.976]);
-                map.fitBounds(bounds);
+            const accordion   = document.getElementById('sismosAccordion');
+            const selectOrden = document.getElementById('ordenarPor');
+            const cardsPane   = document.querySelector('.cards-pane');
 
-                // Capa base
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
-                }).addTo(map);
-                L.control.scale().addTo(map);
+            // (Re)construye marcadores, popups y vínculos de hover/click
+            function buildMarkersAndBindings() {
+                markersGroup.clearLayers();
 
-                // Epicentro
-                L.marker([ {{ epi_lat }}, {{ epi_long }}], {icon: starIcon})
-                    .addTo(map)
-                    .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1) }}');
-
-                // Función para determinar el color del icono según el valor máximo
-                function getColor(valor) {
-                    if (valor > 60) return "#cc0000";      // Muy Alto
-                    if (valor > 40) return '#cc5200';
-                    if (valor > 20) return '#cc8b00';
-                    if (valor > 10) return '#ccaa00';
-                    if (valor > 5)  return '#88cc00';
-                    if (valor > 1)  return '#00cc03';
-                    return '#0058cc';
-                }
-
-                // Lista de puntos (edificios) desde Twig
-                var puntos = [
-                    {% for dato in datos %}
-                    {
-                        lat: {{ dato.lat_edificio }},
-                        lng: {{ dato.long_edificio }},
-                        datos: `Edificio: {{ (dato.nombre_edificio |e) }} <br>
-
-                               `
-                    }{% if not loop.last %},{% endif %}
-                    {% endfor %}
-                ];
-
-                // Dibujar los puntos como "edificios"
-                puntos.forEach(function (punto) {
-                    const color = getColor(punto.max);
-                    const icono = buildingIconBI;
-                    L.marker([punto.lat, punto.lng], {icon: icono})
-                        .addTo(map)
-                        .bindPopup(punto.datos);
+                // Remover/recrear listeners de headers para evitar duplicados
+                const oldHeaders = accordion.querySelectorAll('.accordion-header');
+                oldHeaders.forEach(h => {
+                    const hClone = h.cloneNode(true);
+                    h.parentNode.replaceChild(hClone, h);
                 });
+
+                const buildingIconBI = L.divIcon({
+                    html: '<i class="bi bi-building" style="font-size: 28px; line-height: 1; color: #0d6efd;"></i>',
+                    className: 'building-icon-bi',
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 28]
+                });
+
+                const iconEdificio = L.divIcon({
+                    html: ' <img src="{{ asset('assets/imagenes/IconB.png')}}" alt="Estructura" > ',
+                    className: '',
+                    iconSize: [64, 64],
+                    iconAnchor: [16, 32]  // ajustar según el “pin”
+                });
+
+
+
+
+                const items = accordion.querySelectorAll('.accordion-item');
+                //const max = document.getElementById('maxstu');
+
+                items.forEach((it) => {
+                    const lat     = parseFloat(it.getAttribute('data-lat'));
+                    const lon     = parseFloat(it.getAttribute('data-lon'));
+                    const mag     = parseFloat(it.getAttribute('data-mag'));
+                    const fecha   = it.getAttribute('data-fecha')   || '';
+                    const estaciones   = it.getAttribute('data-cantEstaciones')   || '';
+                    const epi     = it.getAttribute('data-epi')     || '';
+                    const id      = it.getAttribute('data-id')      || '';
+                    const max1 = it.getAttribute('data-var')      || '';
+                    const icono = buildingIconBI;
+
+                    let markerRef = null;
+                    if (!isNaN(lat) && !isNaN(lon)) {
+                        markerRef = L.marker([lat, lon], {
+                            icon: iconEdificio
+                        }).addTo(markersGroup);
+
+                        const magTxt = isNaN(mag) ? '' : mag.toFixed(1);
+                        const popupHtml = `
+                                            <div style="min-width:240px">
+                                              <div><strong>${epi || 'Epicentro no disponible'}</strong></div>
+                                              <div><small>${estaciones} equipos </small></div>
+                                              <div>M&aacute;ximo PGA: <strong>${max1}</strong></div>
+                                              <div class="mt-2">
+                                                <button class="btn btn-sm btn-primary"
+                                                  onclick="">
+                                                  Ver estructura
+                                                </button>
+                                              </div>
+                                            </div>`;
+                        markerRef.bindPopup(popupHtml);
+
+                        //markerRef.on('mouseover', function(){ this.setStyle({ color:'#cc0000', fillColor:'#ff3333', weight:3 }); });
+                        //markerRef.on('mouseout',  function(){ this.setStyle({ color:'#0033cc', fillColor:'#3399ff', weight:2 }); });
+                    }
+
+                    // Guardar referencia del marcador en el propio item
+                    it._marker = markerRef;
+
+                    // Hover de header → resalta marcador
+                    const header = it.querySelector('.accordion-header');
+                    if (header) {
+                        header.addEventListener('mouseenter', () => {
+                            //if (it._marker) it._marker.setStyle({ color:'#cc0000', fillColor:'#ff3333', weight:3 });
+                        });
+                        header.addEventListener('mouseleave', () => {
+                            //if (it._marker) it._marker.setStyle({ color:'#0033cc', fillColor:'#3399ff', weight:2 });
+                        });
+                    }
+                });
+
+                // Botón "Centrar en mapa" de cada card
+                accordion.querySelectorAll('.btn-centrar').forEach((btn) => {
+                    btn.addEventListener('click', function(){
+                        const lat = parseFloat(this.getAttribute('data-lat'));
+                        const lon = parseFloat(this.getAttribute('data-lon'));
+                        if (!isNaN(lat) && !isNaN(lon)) {
+                            map.setView([lat, lon], 20);
+                        }
+                    });
+                });
+
+                // Centrar al expandir una card
+                accordion.querySelectorAll('.accordion-button').forEach((btn) => {
+                    btn.addEventListener('click', function(){
+                        const it = btn.closest('.accordion-item');
+                        const lat = parseFloat(it.getAttribute('data-lat'));
+                        const lon = parseFloat(it.getAttribute('data-lon'));
+                        if (!isNaN(lat) && !isNaN(lon)) {
+                            setTimeout(() => map.setView([lat, lon], 15), 250);
+                        }
+                    });
+                });
+            }
+
+            // Ordena las cards y reconstruye marcadores
+            function sortAccordion(mode) {
+                const items = Array.from(accordion.querySelectorAll('.accordion-item'));
+                items.sort((a, b) => {
+                    const epochA = parseInt(a.getAttribute('data-epoch')) || 0;
+                    const epochB = parseInt(b.getAttribute('data-epoch')) || 0;
+                    const magA   = parseFloat(a.getAttribute('data-mag'));
+                    const magB   = parseFloat(b.getAttribute('data-mag'));
+
+                    if (mode === 'mag_desc') {
+                        const aVal = isNaN(magA) ? -Infinity : magA;
+                        const bVal = isNaN(magB) ? -Infinity : magB;
+                        if (bVal !== aVal) return bVal - aVal;      // Magnitud desc
+                        return epochB - epochA;                     // Desempate por fecha desc
+                    }
+                    // Predeterminado: fecha desc (más nuevos primero)
+                    return epochB - epochA;
+                });
+
+                // Reinsertar en DOM respetando nuevo orden
+                items.forEach(it => accordion.appendChild(it));
+
+                // Reconstruir marcadores y vínculos
+                buildMarkersAndBindings();
+
+                // Ajustar mapa tras el reflow
+                setTimeout(() => map.invalidateSize(), 150);
+            }
+
+            // Inicial: construir con orden predeterminado (fecha desc)
+            buildMarkersAndBindings();
+
+            // Listener del selector de orden
+            if (selectOrden) {
+                selectOrden.addEventListener('change', function () {
+                    sortAccordion(this.value || 'fecha_desc');
+                });
+            }
+
+            // Invalidate size al inicio, en resize y durante el scroll del panel de tarjetas
+            setTimeout(() => map.invalidateSize(), 250);
+            window.addEventListener('resize', () => { setTimeout(() => map.invalidateSize(), 150); });
+
+            if (cardsPane) {
+                let ticking = false;
+                cardsPane.addEventListener('scroll', () => {
+                    if (!ticking) {
+                        window.requestAnimationFrame(() => {
+                            map.invalidateSize();
+                            ticking = false;
+                        });
+                        ticking = true;
+                    }
+                }, { passive: true });
+            }
+
+            // Observa cambios de tamaño en el acordeón (ej. expansiones) y ajusta el mapa
+            const acc = document.getElementById('sismosAccordion');
+            if (acc && 'ResizeObserver' in window) {
+                const ro = new ResizeObserver(() => { setTimeout(() => map.invalidateSize(), 100); });
+                ro.observe(acc);
             }
         });
     </script>
 
 {% endblock %}
-
