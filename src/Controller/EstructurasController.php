@@ -49,4 +49,27 @@ final class EstructurasController extends AbstractController
             'controller_name' => 'EstructurasController',
         ]);
     }
+
+
+    #[Route('/estructuras/estructura', name: 'estructura', methods: ['POST','GET','PUT'])]
+    public function estructuraAction(Request $request): Response
+    {
+
+        if ($request->isMethod('POST')) {
+            $evento = $request->request->get('id');
+            $fecha = $request->request->get('fecha');
+            $magnitud = $request->request->get('mag');
+            $epi = $request->request->get('epi');
+        }else{echo "NO HAY NADA";}
+        $datos ="HOLA";
+
+
+
+        return $this->render('estructuras/estructura.html.twig', ['fecha' => $fecha,'datos'=>$datos,'id'=>$evento,
+            'magnitud'=>$magnitud,'epi'=>$epi,
+            'controller_name' => 'EstructurasController',
+        ]);
+    }
+
+
 }

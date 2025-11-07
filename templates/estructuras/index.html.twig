@@ -39,12 +39,12 @@
 
     <script>
         // Envío a la ruta 'informe' preservando datos del evento
-        function enviaDatos (id, fecha, mag, lat, long_, informe, epi) {
+        function enviaDatos (id, fecha, mag, epi, estructura) {
             var theForm = document.createElement('form');
-            theForm.action = '{{ path('informe') }}';
+            theForm.action = '{{ path('estructura') }}';
             theForm.method = 'post';
             function add(name, value){ const i = document.createElement('input'); i.type='hidden'; i.name=name; i.value=value; theForm.appendChild(i); }
-            add('id', id); add('fecha', fecha); add('mag', mag); add('lat', lat); add('long', long_); add('informe', informe); add('epi', epi);
+            add('id', id); add('fecha', fecha); add('mag', mag); add('epi', epi); add('estructura', estructura);
             document.body.appendChild(theForm); theForm.submit();
         }
     </script>
@@ -147,13 +147,13 @@
                                                             {% endif %}
                                                         </li>
                                                     {% endfor %}
-                                                    <div  data-var="{{ max_val }}"><small>Máximo PGA: {{ max_val }} en la estación {{ max_est }}</small></div>
+
                                                 </ul></div>
                                         </div>
                                     </div>
                                     <div class="mt-3 d-flex gap-2">
                                         <button class="btn btn-sm btn-primary"
-                                                onclick="">
+                                                onclick="enviaDatos('{{ id }}', '{{ fecha }}', '{{ magnitud }}', '{{ epi }}', '{{ dato.nombre_edificio }}')">
                                             Ver estructura
                                         </button>
                                         <button class="btn btn-sm btn-outline-secondary btn-centrar"
@@ -238,7 +238,8 @@
 
 
                 const items = accordion.querySelectorAll('.accordion-item');
-                //const max = document.getElementById('maxstu');
+
+
 
                 items.forEach((it) => {
                     const lat     = parseFloat(it.getAttribute('data-lat'));
@@ -248,8 +249,8 @@
                     const estaciones   = it.getAttribute('data-cantEstaciones')   || '';
                     const epi     = it.getAttribute('data-epi')     || '';
                     const id      = it.getAttribute('data-id')      || '';
-                    const max1 = it.getAttribute('data-var')      || '';
                     const icono = buildingIconBI;
+
 
                     let markerRef = null;
                     if (!isNaN(lat) && !isNaN(lon)) {
@@ -262,7 +263,7 @@
                                             <div style="min-width:240px">
                                               <div><strong>${epi || 'Epicentro no disponible'}</strong></div>
                                               <div><small>${estaciones} equipos </small></div>
-                                              <div>M&aacute;ximo PGA: <strong>${max1}</strong></div>
+
                                               <div class="mt-2">
                                                 <button class="btn btn-sm btn-primary"
                                                   onclick="">
