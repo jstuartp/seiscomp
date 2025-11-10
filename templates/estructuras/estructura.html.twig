@@ -16,21 +16,45 @@
 {% block body %}
 
     <script>
+        //Activa formas de onda
+        function abrirFormasOnda() {
+            alert('Abrir Formas de Onda');
+            // Aquí puedes cargar un modal, hacer fetch(), cambiar vista, etc.
+        }
+
+        //Activa espectros
+        function abrirEspectros() {
+            alert('Abrir Espectros');
+        }
+
+        //Activa Fourier
+        function abrirFourier() {
+            alert('Abrir Espectro de Fourier');
+        }
+
+        //Activa cocientes
+        function abrirCocientes() {
+            alert('Abrir Cocientes Espectrales');
+        }
 
     </script>
-    <div class="container-xxl my-3">
+    <div class="container-fluid">
 
         {# FILA SUPERIOR: col 1 (izquierda) + col 2 (derecha) #}
-        <div class="row g-3 align-items-stretch">
+        <div class="row  align-items-stretch">
             <div class="col-12 col-lg-4">
                 <div class="  d-flex  text-muted">
-                    <span class="fw-semibold">Informacion edificio</span>
+                    <span class="fw-semibold">Estructura: {{ estructura.nombre_edificio }}, {{ estructura.provincia }}
+                    , {{ estructura.canton }}, {{ estructura.distrito }}
+                    </span>
                 </div>
             </div>
             <div class="col-12 col-lg-8">
                 <div class="  d-flex  justify-content-center text-muted">
-                    <span class="fw-semibold">col 2</span>
+                    <span class="fw-semibold">Sismo del {{ fecha|date("d-m-Y H:i:s ") }} con epicentro  {{ epi }} </span>
+                    <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>
                 </div>
+
             </div>
         </div>
 
@@ -40,67 +64,119 @@
         {# SECCIÓN INFERIOR: IZQUIERDA (composite card) + DERECHA (grid 2×2 de tarjetas) #}
         <div class="row g-4">
             {# COLUMNA IZQUIERDA #}
-            <div class="col-12 col-lg-5">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body">
-                        <div class="row g-3">
-                            {# Subcolumna izquierda: imagen, texto breve, botones #}
-                            <div class="col-12 col-md-5 d-flex flex-column">
-                                {# Placeholder de imagen 320x200 #}
-                                <svg class="bd-placeholder-img w-100 rounded border" style="aspect-ratio: 16/10;" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Imagen"
-                                     preserveAspectRatio="xMidYMid slice" focusable="false">
-                                    <title>imagen</title>
-                                    <rect width="100%" height="100%" fill="#e9ecef"></rect>
-                                    <text x="50%" y="50%" fill="#6c757d" dy=".3em" text-anchor="middle">imagen</text>
-                                </svg>
+            <div class="col-12 col-lg-3">
+                <div class="card h-100 border rounded p-3">
+                    <div class="row g-3 h-100">
+                        {# Subcolumna izquierda: imagen, texto breve, botones inferiores #}
+                        <div class="col-12 col-md-5 d-flex flex-column">
+                            {% if datos.id %}
+                                <img
+                                        class="img-fluid rounded"
+                                        style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
+                                        src="{{ asset('assets/imagenes/edificios/edificio_' ~ datos.id ~ '.jpg') }}"
+                                        alt="Edificio {{ datos.id }}">
+                            {% else %}
+                                <img
+                                        class="img-fluid rounded"
+                                        style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
+                                        src="{{ asset('assets/imagenes/edificios/default.jpg') }}"
+                                        alt="Imagen no disponible">
+                            {% endif %}
+                        </div>
 
-                                <p class="mt-3 mb-2 small text-muted flex-shrink-0">
-                                    texto
-                                </p>
+                        {# Subcolumna derecha: listado de estaciones como botones #}
+                        <div class="col-12 col-md-7">
+                            <div class="h-100 rounded  p-3 d-flex flex-column">
+                                <h6 class="text-muted mb-2 text-center text-md-start">
+                                    Estaciones en edificio
+                                </h6>
 
-                                <div class="mt-auto d-flex gap-2">
-                                    <a href="#" class="btn btn-primary btn-sm">boton</a>
-                                    <a href="#" class="btn btn-outline-secondary btn-sm">boton</a>
-                                </div>
+                                {% set estaciones = datos.estaciones_edificio|split('-') %}
+
+                                {% if estaciones is not empty %}
+                                    <div class="d-flex flex-wrap gap-2">
+                                        {# Opción 1: estaciones es un arreglo simple de strings #}
+                                        {#  por ejemplo: ['EST01', 'EST02', 'EST03'] #}
+                                        {% for est in estaciones %}
+                                            <button type="button"
+                                                    class="btn btn-outline-primary btn-sm"
+                                                    data-bs-toggle="popover"
+                                                    onclick="openModal('{{asset('assets/waves/'~ dato.grafica~'.png')}}')">
+                                                {{ est }}
+                                            </button>
+                                        {% endfor %}
+
+                                        {# Opción 2 (comentar la anterior y usar esta):
+                               estaciones es un arreglo de objetos/diccionarios
+                               por ejemplo: [{ nombre: 'EST01' }, { nombre: 'EST02' }]
+                                        #}
+                                        {#
+                                        {% for est in estaciones %}
+                                            <button type="button"
+                                                    class="btn btn-outline-primary btn-sm">
+                                                {{ est.nombre }}
+                                            </button>
+                                        {% endfor %}
+                                        #}
+                                    </div>
+                                {% else %}
+                                    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                            <span class="text-muted small text-center">
+                                No hay estaciones registradas para este edificio.
+                            </span>
+                                    </div>
+                                {% endif %}
                             </div>
-
-                            {# Subcolumna derecha: área de texto amplia #}
-                            <div class="col-12 col-md-7">
-                                <div class="h-100 border rounded bg-light p-3 d-flex align-items-center justify-content-center text-muted">
-                                    <span class="text-center">texto</span>
-                                </div>
-                            </div>
-                        </div> {# /row #}
-                    </div> {# /card-body #}
+                        </div>
+                    </div> {# /row #}
                 </div> {# /card #}
             </div>
+
 
             {# COLUMNA DERECHA: GRID 2×2 DE TARJETAS #}
             <div class="col-12 col-lg-7">
                 <div class="row row-cols-1 row-cols-sm-2 g-4">
-                    <div class="col">
-                        <div class="card h-100 border rounded d-flex align-items-center justify-content-center p-4">
-                            <div class="text-muted">tarjeta 1</div>
+                    {% set tarjetas = [
+                        { titulo: 'Formas de Onda', texto: 'PGA, Velocidad y Desplazamiento',
+                            icono: 'bi bi-activity' , accion: 'abrirFormasOnda' },
+                        { titulo: 'Espectros', texto: 'Aceleración, Velocidad y Desplazamiento',
+                            icono: 'bi-graph-down text-warning' , accion: 'abrirEspectros' },
+                        { titulo: 'Espectro de Fourier', texto: 'Texto', icono: 'bi-lightning-charge text-info' ,
+                            accion: 'abrirFourier'},
+                        { titulo: 'Cocientes Espectrales', texto: 'Texto', icono: 'bi-diagram-2 text-success' ,
+                            accion: 'abrirCocientes'}
+                    ] %}
+
+                    {% for tarjeta in tarjetas %}
+                        <div class="col">
+                            <div class="card shadow-sm position-relative h-100">
+                                <div class="card-body text-center">
+                                    <div class="mb-3">
+                                        <i class="bi {{ tarjeta.icono }} fs-2 text-primary"></i>
+                                    </div>
+                                    <h5 class="card-title">{{ tarjeta.titulo }}</h5>
+                                    <p class="card-text">{{ tarjeta.texto }}</p>
+                                    <a href="javascript:void(0);" onclick="{{ tarjeta.accion }}()" class="stretched-link"></a>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col">
-                        <div class="card h-100 border rounded d-flex align-items-center justify-content-center p-4">
-                            <div class="text-muted">tarjeta 2</div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="card h-100 border rounded d-flex align-items-center justify-content-center p-4">
-                            <div class="text-muted">tarjeta 3</div>
-                        </div>
-                    </div>
-                    <div class="col">
-                        <div class="card h-100 border rounded d-flex align-items-center justify-content-center p-4">
-                            <div class="text-muted">tarjeta 4</div>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
         </div> {# /row inferior #}
+    </div>
+
+    <div id="myModal" class="modal">
+        <!-- El contenido del modal (la imagen) -->
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-body text-center">
+                    <img class="modal-content" id="img01">
+                </div>
+            </div>
+        </div>
+        <!-- <span class="close">&times;</span>-->
 
     </div>
 

@@ -60,13 +60,15 @@ final class EstructurasController extends AbstractController
             $fecha = $request->request->get('fecha');
             $magnitud = $request->request->get('mag');
             $epi = $request->request->get('epi');
+            $estructura = $request->request->get('estructura');
         }else{echo "NO HAY NADA";}
-        $datos ="HOLA";
+        $datos = $this->estructurasRepository->findUbicacionEstructura($estructura);
+        //print_r($datos);
 
 
 
         return $this->render('estructuras/estructura.html.twig', ['fecha' => $fecha,'datos'=>$datos,'id'=>$evento,
-            'magnitud'=>$magnitud,'epi'=>$epi,
+            'magnitud'=>$magnitud,'epi'=>$epi, 'estructura'=>$datos,
             'controller_name' => 'EstructurasController',
         ]);
     }

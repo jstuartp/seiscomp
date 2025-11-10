@@ -53,6 +53,23 @@ class EstructurasRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     * Obtener provincia, canton y distito para una estructura
+     */
+    public function findUbicacionEstructura($id): ?array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql ="select * From estructuras Where id = '".$id."'";
+        try {
+            $datos= $conn->executeQuery($sql);
+            return $datos->fetchAssociative();
+        }catch (Exception $e){
+            return [];
+        }
+
+
+    }
+
 
 
     //    /**
