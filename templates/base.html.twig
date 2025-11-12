@@ -18,12 +18,15 @@
         <link rel="stylesheet" href={{ asset('assets/Buttons-3.2.5/css/buttons.bootstrap5.css')}} />
         <link rel="stylesheet" href={{ asset('assets/Buttons-3.2.5/css/buttons.dataTables.css')}} />
     <link rel="stylesheet" href="{{ asset('assets/css/layout.css') }}">
+        <link href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" rel="stylesheet">
+
 
 
     {% endblock %}
     <!-- Google Tag Manager (Con manejo de errores) -->
     {% block scripts %}
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-SWFBVM2C07"></script>
+
     <script nonce="{{ nonce|default('') }}">
         try {
             window.dataLayer = window.dataLayer || [];
@@ -34,6 +37,7 @@
             console.warn("Google Tag Manager bloqueado por el navegador o AdBlock.");
         }
     </script>
+
     {% endblock %}
     {% block javascripts %}
                 {{ encore_entry_script_tags('app') }}
@@ -662,6 +666,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
             <!--tablas personalisadas -->
             <script type="text/javascript" src=" {{ asset('assets/js/mytable.js?a=0')}} "></script>
+    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+    <script>
+        const lightbox = GLightbox({ selector: '.glightbox' });
+    </script>
 
         {% endblock %}
 </html>

@@ -70,11 +70,13 @@
                         {# Subcolumna izquierda: imagen, texto breve, botones inferiores #}
                         <div class="col-12 col-md-5 d-flex flex-column">
                             {% if datos.id %}
+                            <a href="{{ asset('assets/imagenes/edificios/edificio_' ~ datos.id ~ '.jpg') }}" class="glightbox">
                                 <img
                                         class="img-fluid rounded"
-                                        style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
+                                        style="width: 100%; height: 100%; object-fit: cover; object-position: center; cursor: zoom-in;"
                                         src="{{ asset('assets/imagenes/edificios/edificio_' ~ datos.id ~ '.jpg') }}"
                                         alt="Edificio {{ datos.id }}">
+                            </a>
                             {% else %}
                                 <img
                                         class="img-fluid rounded"
@@ -94,17 +96,30 @@
                                 {% set estaciones = datos.estaciones_edificio|split('-') %}
 
                                 {% if estaciones is not empty %}
+
                                     <div class="d-flex flex-wrap gap-2">
                                         {# Opción 1: estaciones es un arreglo simple de strings #}
                                         {#  por ejemplo: ['EST01', 'EST02', 'EST03'] #}
-                                        {% for est in estaciones %}
+                                        {% for estacion in estaciones %}
+                                            {% set mygrafica = null %}
+                                            {% if grafica[estacion] is defined %}
+                                                {%  set mygrafica = asset('assets/waves/'~grafica[estacion]~'.png') %}
+                                            {% else %}
+                                                {%  set mygrafica = asset('assets/imagenes/noimage.png') %}
+                                            {% endif %}
                                             <button type="button"
                                                     class="btn btn-outline-primary btn-sm"
                                                     data-bs-toggle="popover"
-                                                    onclick="openModal('{{asset('assets/waves/'~ dato.grafica~'.png')}}')">
-                                                {{ est }}
+                                                    {% if grafica[estacion] is defined %}
+                                                        onclick="openModal('{{mygrafica}}')"
+                                                    {% else %}
+                                                        disabled
+                                                    {% endif %}
+                                            >
+                                                {{ estacion }}
                                             </button>
                                         {% endfor %}
+
 
                                         {# Opción 2 (comentar la anterior y usar esta):
                                estaciones es un arreglo de objetos/diccionarios

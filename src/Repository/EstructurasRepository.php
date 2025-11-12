@@ -54,6 +54,26 @@ class EstructurasRepository extends ServiceEntityRepository
     }
 
     /**
+     * Obtener Listado de las graficas de pga por evento
+     */
+    public function findGraficaFromEvent($evento): ?array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql ="select idpga,estacion,rutaWaveform as grafica From Pga_estructuras Where nombre_evento = '".$evento."'";
+        try {
+            $datos= $conn->executeQuery($sql);
+            return $datos->fetchAllAssociative();
+        }catch (Exception $e){
+            return [];
+        }
+
+
+    }
+
+
+
+
+    /**
      * Obtener provincia, canton y distito para una estructura
      */
     public function findUbicacionEstructura($id): ?array
