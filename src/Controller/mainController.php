@@ -332,15 +332,15 @@ class mainController extends AbstractController
     public function informeAction(Request $request, EntityManagerInterface $em): Response
     {
         //Chequeo los datos que llegan por post del ID y la Fecha
-        //if ($request->isMethod('POST')) {
+
         if ($request->isMethod('POST') or $request->isMethod('GET')) {
-            $evento = $request->request->get('id');
-            $fecha = $request->request->get('fecha');
-            $mag = $request->request->get('mag');
-            $lat = $request->request->get('lat');
-            $long = $request->request->get('long');
-            $informe = $request->request->get('informe');
-            $epi = $request->request->get('epi');
+            $evento = $request->get('id');
+            $fecha = $request->get('fecha');
+            $mag = $request->get('mag');
+            $lat = $request->get('lat');
+            $long = $request->get('long');
+            $informe = $request->get('informe');
+            $epi = $request->get('epi');
         }else{echo "NO HAY NADA";}
 
         return $this->render('informe.html.twig',
