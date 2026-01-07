@@ -71,6 +71,23 @@ class EstructurasRepository extends ServiceEntityRepository
     }
 
 
+    /**
+     * Obtener Listado de las graficas generales por evento y estacion
+     */
+    public function findGraficaFromEventandStation($evento,$estacion): ?array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql ="select idpga,rutaWaveform as grafica From Pga_estructuras 
+                Where nombre_evento = '".$evento."' and estacion = '".$estacion."'";
+        try {
+            $datos= $conn->executeQuery($sql);
+            return $datos->fetchAllAssociative();
+        }catch (Exception $e){
+            return [];
+        }
+
+
+    }
 
 
     /**

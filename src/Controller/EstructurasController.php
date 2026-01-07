@@ -82,4 +82,35 @@ final class EstructurasController extends AbstractController
     }
 
 
+
+    #[Route('/estructuras/formasonda', name: 'formasonda', methods: ['POST','GET','PUT'])]
+    public function formasondaAction(Request $request): Response
+    {
+
+        if ($request->isMethod('POST')) {
+            $evento = $request->request->get('id');
+            $fecha = $request->request->get('fecha');
+            $magnitud = $request->request->get('mag');
+            $epi = $request->request->get('epi');
+            $estructura = $request->request->get('estructura');
+        }else{echo "NO HAY NADA";}
+        $datos = $this->estructurasRepository->findUbicacionEstructura($estructura);
+
+        //Extraigo todas las graficas  del evento
+        $graficas = $this->estructurasRepository->findGraficaFromEvent($evento);
+        dump($graficas);
+        $graficasAsociativo = [];
+
+        foreach ($graficas as $row) {
+            $graficasAsociativo[$row['estacion']] = $row['grafica'];
+        }
+
+
+
+        return $this->render('estructuras/formasonda.html.twig', ['fecha' => $fecha,'datos'=>$datos,'id'=>$evento,
+            'magnitud'=>$magnitud,'epi'=>$epi, 'estructura'=>$datos, 'grafica' => $graficasAsociativo,
+            'controller_name' => 'EstructurasController',
+        ]);
+    }
+
 }

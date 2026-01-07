@@ -17,8 +17,15 @@
 
     <script>
         //Activa formas de onda
-        function abrirFormasOnda() {
+        function abrirFormasOnda(id, fecha, mag, epi, estructura) {
             alert('Abrir Formas de Onda');
+            var theForm = document.createElement('form');
+            theForm.action = '{{ path('formasonda') }}';
+            theForm.method = 'post';
+            function add(name, value){ const i = document.createElement('input'); i.type='hidden'; i.name=name; i.value=value; theForm.appendChild(i); }
+            add('id', id); add('fecha', fecha); add('mag', mag); add('epi', epi); add('estructura', estructura);
+            document.body.appendChild(theForm); theForm.submit();
+
             // Aquí puedes cargar un modal, hacer fetch(), cambiar vista, etc.
         }
 
@@ -103,7 +110,7 @@
                                         {% for estacion in estaciones %}
                                             {% set mygrafica = null %}
                                             {% if grafica[estacion] is defined %}
-                                                {%  set mygrafica = asset('assets/waves/'~grafica[estacion]~'.png') %}
+                                                {%  set mygrafica = asset('assets/waves/'~grafica[estacion]~'_acc.png') %}
                                             {% else %}
                                                 {%  set mygrafica = asset('assets/imagenes/noimage.png') %}
                                             {% endif %}
@@ -171,7 +178,7 @@
                                     </div>
                                     <h5 class="card-title">{{ tarjeta.titulo }}</h5>
                                     <p class="card-text">{{ tarjeta.texto }}</p>
-                                    <a href="javascript:void(0);" onclick="{{ tarjeta.accion }}()" class="stretched-link"></a>
+                                    <a href="javascript:void(0);" onclick="{{ tarjeta.accion }}('{{ id }}', '{{ fecha }}', '{{ magnitud }}', '{{ epi }}', '{{ estructura.id }}')" class="stretched-link"></a>
                                 </div>
                             </div>
                         </div>

@@ -1,0 +1,137 @@
+{% extends '/base.html.twig' %}
+
+{% block head_extra %}
+    <meta http-equiv="refresh" content="1800">
+    <style>
+        /* ====== Layout general ====== */
+        .lis-layout { min-height: 100vh; }
+
+        /* Estilos utilitarios previos */
+        .card-header button { text-align: left; width: 100%; }
+        .badge-mag { min-width: 3.2rem; }
+        .card-hover:hover { background: #f8fbff; }
+    </style>
+{% endblock %}
+
+{% block body %}
+
+    <script>
+        //Activa formas de onda
+        function abrirFormasOnda() {
+            alert('Abrir Formas de Onda');
+            // Aquí puedes cargar un modal, hacer fetch(), cambiar vista, etc.
+        }
+
+        //Activa espectros
+        function abrirEspectros() {
+            alert('Abrir Espectros');
+        }
+
+        //Activa Fourier
+        function abrirFourier() {
+            alert('Abrir Espectro de Fourier');
+        }
+
+        //Activa cocientes
+        function abrirCocientes() {
+            alert('Abrir Cocientes Espectrales');
+        }
+
+    </script>
+    <div class="container-fluid">
+
+        {# FILA SUPERIOR: col 1 (izquierda) + col 2 (derecha) #}
+        <div class="row  align-items-stretch">
+            <div class="col-12 col-lg-4">
+                <div class="  d-flex  text-muted">
+                    <span class="fw-semibold">Estructura: {{ estructura.nombre_edificio }}, {{ estructura.provincia }}
+                    , {{ estructura.canton }}, {{ estructura.distrito }}
+                    </span>
+                </div>
+            </div>
+            <div class="col-12 col-lg-8">
+                <div class="  d-flex  justify-content-center text-muted">
+                    <span class="fw-semibold">Sismo del {{ fecha|date("d-m-Y H:i:s ") }} con epicentro  {{ epi }} </span>
+                    <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>
+                </div>
+
+            </div>
+        </div>
+
+        {# SEPARADOR VISUAL #}
+        <hr class="my-4">
+
+        {# SECCIÓN INFERIOR: IZQUIERDA (composite card) + DERECHA (grid 2×2 de tarjetas) #}
+        <div class="row g-4">
+            {# COLUMNA IZQUIERDA #}
+            <div class="col-12 col-lg-12">
+                {% set estaciones = datos.estaciones_edificio|split('-') %}
+
+                {% if estaciones is not empty %}
+
+                    <div class="d-flex flex-wrap gap-2">
+                        {# Opción 1: estaciones es un arreglo simple de strings #}
+                        {#  por ejemplo: ['EST01', 'EST02', 'EST03'] #}
+                        {% for estacion in estaciones %}
+                            {% set mygrafica = null %}
+                            {% if grafica[estacion] is defined %}
+                                {%  set mygrafica = asset('assets/waves/'~grafica[estacion]~'_acc.png') %}
+                            {% else %}
+                                {%  set mygrafica = asset('assets/imagenes/noimage.png') %}
+                            {% endif %}
+                            <button type="button"
+                                    class="btn btn-outline-primary btn-sm"
+                                    data-bs-toggle="popover"
+                                    {% if grafica[estacion] is defined %}
+                                        onclick="openModal('{{mygrafica}}')"
+                                    {% else %}
+                                        disabled
+                                    {% endif %}
+                            >
+                                {{ estacion }}
+                            </button>
+                        {% endfor %}
+
+
+                        {# Opción 2 (comentar la anterior y usar esta):
+                               estaciones es un arreglo de objetos/diccionarios
+                               por ejemplo: [{ nombre: 'EST01' }, { nombre: 'EST02' }]
+                        #}
+                        {#
+                        {% for est in estaciones %}
+                            <button type="button"
+                                    class="btn btn-outline-primary btn-sm">
+                                {{ est.nombre }}
+                            </button>
+                        {% endfor %}
+                        #}
+                    </div>
+                {% else %}
+                    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+                            <span class="text-muted small text-center">
+                                No hay estaciones registradas para este edificio.
+                            </span>
+                    </div>
+                {% endif %}
+            </div>
+
+
+        </div> {# /row inferior #}
+    </div>
+
+    <div id="myModal" class="modal">
+        <!-- El contenido del modal (la imagen) -->
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+                <div class="modal-body text-center">
+                    <img class="modal-content" id="img01">
+                </div>
+            </div>
+        </div>
+        <!-- <span class="close">&times;</span>-->
+
+    </div>
+
+
+{% endblock %}
