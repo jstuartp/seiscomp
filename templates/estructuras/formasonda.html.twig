@@ -75,21 +75,60 @@
                         {% for estacion in estaciones %}
                             {% set mygrafica = null %}
                             {% if grafica[estacion] is defined %}
-                                {%  set mygrafica = asset('assets/waves/'~grafica[estacion]~'_acc.png') %}
+                                {%  set mygrafica_acc = asset('assets/waves/'~grafica[estacion]~'_acc.png') %}
+                                {%  set mygrafica_vel = asset('assets/waves/'~grafica[estacion]~'_vel.png') %}
+                                {%  set mygrafica_des = asset('assets/waves/'~grafica[estacion]~'_des.png') %}
                             {% else %}
-                                {%  set mygrafica = asset('assets/imagenes/noimage.png') %}
+                                {%  set mygrafica_acc = asset('assets/imagenes/noimage.png') %}
+                                {%  set mygrafica_vel = asset('assets/imagenes/noimage.png') %}
+                                {%  set mygrafica_des = asset('assets/imagenes/noimage.png') %}
                             {% endif %}
-                            <button type="button"
-                                    class="btn btn-outline-primary btn-sm"
-                                    data-bs-toggle="popover"
-                                    {% if grafica[estacion] is defined %}
-                                        onclick="openModal('{{mygrafica}}')"
-                                    {% else %}
-                                        disabled
-                                    {% endif %}
-                            >
-                                {{ estacion }}
-                            </button>
+
+                            <div class="matrix-container">
+                                <table class="seismic-table">
+                                    <thead>
+                                    <tr>
+                                        <th class="row-title">Medición / Estación</th>
+
+                                                <th class="station-header">{{ estacion }}</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                        <td class="row-title">Aceleración</td>
+
+                                            <td>
+                                                <img src="{{ mygrafica_acc }}"
+                                                     alt="Acc {{ estacion }}"
+                                                     style="max-width: 20%; height: auto;"
+                                                     class="wave-img"
+                                                     loading="lazy">
+                                            </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="row-title">Velocidad</td>
+                                            <td>
+                                                <img src="{{ mygrafica_vel }}"
+                                                     alt="Vel {{ estacion }}"
+                                                     style="max-width: 20%; height: auto;"
+                                                     class="wave-img"
+                                                     loading="lazy">
+                                            </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="row-title">Desplazamiento</td>
+                                            <td>
+                                                <img src="{{ mygrafica_des }}"
+                                                     alt="Disp {{ estacion }}"
+                                                     style="max-width: 20%; height: auto;"
+                                                     class="wave-img"
+                                                     loading="lazy">
+                                            </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
                         {% endfor %}
 
 
@@ -132,6 +171,29 @@
         <!-- <span class="close">&times;</span>-->
 
     </div>
+    <script>
+        function openTab(evt, tabId, cardId) {
+            // 1. Obtener la tarjeta específica donde se hizo click
+            var card = document.getElementById(cardId);
 
+            // 2. Ocultar todos los contenidos de ESA tarjeta
+            var tabContents = card.getElementsByClassName("tab-content");
+            for (var i = 0; i < tabContents.length; i++) {
+                tabContents[i].style.display = "none";
+                tabContents[i].classList.remove("active-content");
+            }
+
+            // 3. Quitar la clase "active" de los botones de ESA tarjeta
+            var tabLinks = card.getElementsByClassName("tab-btn");
+            for (var i = 0; i < tabLinks.length; i++) {
+                tabLinks[i].className = tabLinks[i].className.replace(" active", "");
+            }
+
+            // 4. Mostrar el contenido actual y activar el botón clickeado
+            document.getElementById(tabId).style.display = "block";
+            document.getElementById(tabId).classList.add("active-content");
+            evt.currentTarget.className += " active";
+        }
+    </script>
 
 {% endblock %}
