@@ -1,0 +1,143 @@
+{% extends '/base.html.twig' %}
+
+{% block body %}
+
+    <div class="container-fluid">
+
+        <div class="row mt-4">
+            <div class="col-sm-8">
+                <h2 class="mb-4">{% block page_title %}
+                        Aceleraciones Máximas del sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(UTC)
+                        <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>{% endblock %}
+                </h2>
+            </div>
+            <div class="col-sm-4 text-end">
+                <a href="{{ path('homepage') }}" class="btn btn-success">Inicio</a>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12">
+                <h3 class="mb-4">{{ epi }}</h3>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="bs-example" data-example-id="contextual-table">
+                    <table class="table table-bordered table-hover table-striped dt-responsive nowrap" id="tabla_pga" style="width:100%">
+                        <thead class="table-dark">
+                        <tr>
+                            <th style="width: 20%;">Estación</th>
+                            <th style="width: 20%;">Máximo (cm/s²)</th>
+                            <th style="width: 30%;">Espectro CSCR</th>
+                            <th style="width: 30%;">Espectro</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for dato in datos %}
+                            <tr>
+                                <td class="align-middle fw-bold">{{ dato.estacion }}</td>
+
+                                <td class="align-middle">{{ dato.maximo | round(2) }}</td>
+
+                                <td class="text-center align-middle">
+                                    <div class="ratio ratio-16x9 border rounded overflow-hidden" style="width: 150px; cursor: pointer; margin: 0 auto;" onclick="openModal('{{ asset('assets/waves/' ~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}')">
+                                        <img src="{{ asset('assets/waves/' ~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}" alt="Previo CSCR" style="object-fit: cover;">
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Ver Detalle</small>
+                                </td>
+
+                                <td class="text-center align-middle">
+                                    <div class="ratio ratio-16x9 border rounded overflow-hidden" style="width: 150px; cursor: pointer; margin: 0 auto;" onclick="openModal('{{ asset('assets/waves/' ~ dato.grafica ~ '_RotD100_loglog.png') }}')">
+                                        <img src="{{ asset('assets/waves/' ~ dato.grafica ~ '_RotD100_loglog.png') }}" alt="Previo Espectro" style="object-fit: cover;">
+                                    </div>
+                                    <small class="text-muted d-block mt-1">Ver Detalle</small>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="myModal" class="modal" tabindex="-1">
+            <div class="modal-dialog modal-xl modal-dialog-centered"> <div class="modal-content bg-transparent border-0">
+                    <div class="modal-body text-center p-0 position-relative">
+                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" onclick="closeModal()" aria-label="Close"></button>
+
+                        <img class="img-fluid rounded shadow-lg" id="img01" style="max-height: 90vh;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // Inicialización de DataTable (Simplificada sin mapa)
+            let mytabla = $('#tabla_pga').DataTable({
+                columnDefs: [
+                    { targets: '_all', className: 'dt-head-center dt-body-center' }
+                ],
+                responsive: true,
+                paging: true,
+                ordering: true,
+                order: [[1, "desc"]], // Ordenar por columna "Máximo" (índice 1) descendente
+                lengthMenu: [15, 30, 60],
+                pageLength: 15,
+                language: {
+                    processing: "Procesando...",
+                    search: "Buscar Estación:",
+                    lengthMenu: "Mostrar _MENU_ registros",
+                    info: "Mostrando _START_ a _END_ de _TOTAL_ estaciones",
+                    paginate: {
+                        first: "Primero",
+                        previous: "Anterior",
+                        next: "Siguiente",
+                        last: "Último"
+                    },
+                },
+            });
+        });
+
+        // Lógica del Modal
+        var modal = document.getElementById("myModal");
+        var modalImg = document.getElementById("img01");
+
+        function openModal(src) {
+            modal.style.display = "block";
+            // Pequeño timeout para permitir la animación de entrada si usas fade (opcional)
+            modalImg.src = src;
+            document.body.style.overflow = 'hidden'; // Evitar scroll de fondo
+        }
+
+        function closeModal() {
+            modal.style.display = "none";
+            document.body.style.overflow = 'auto'; // Restaurar scroll
+        }
+
+        // Cerrar modal al hacer clic fuera de la imagen
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+
+    <style>
+        .modal {
+            background-color: rgba(0,0,0,0.85); /* Fondo oscuro semitransparente */
+        }
+        /* Ajuste para que las thumbnails tengan efecto hover */
+        .ratio:hover {
+            opacity: 0.8;
+            border-color: #0d6efd !important; /* Borde azul al pasar mouse */
+            transition: all 0.2s;
+        }
+    </style>
+
+{% endblock %}

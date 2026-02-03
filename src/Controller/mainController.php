@@ -261,6 +261,44 @@ class mainController extends AbstractController
                 'epi_long'=>$epi_long,'epi'=>$epi]);
     }
 
+    /**
+     * @Route("/pga/", name="pga")
+     */
+    #[Route('/espectros/', name:'espectros', methods: ['POST','GET','PUT'])]
+    public function espectrosAction(Request $request, EntityManagerInterface $em): Response
+    {
+        //Chequeo los datos que llegan por post del ID y la Fecha
+        if ($request->isMethod('POST')) {
+            $evento = $request->request->get('id');
+            $fecha = $request->request->get('fecha');
+            $magnitud = $request->request->get('mag');
+            $epi_lat = $request->request->get('lat');
+            $epi_long = $request->request->get('long');
+            $epi = $request->request->get('epi');
+        }else{echo "NO HAY NADA";}
+
+        //Activo el repositorio para traer los datos de PGA segun el evento
+        $datosPga = $this->repository->findPgaByEvento($evento);
+
+        // Listado SMHR a excluir de la lista
+        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
+            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
+
+        $datosPgaFiltrados = array_filter($datosPga, function ($item) use ($estacionesExcluir) {
+            // Se excluyen únicamente las estaciones en la lista,
+            return !in_array($item['estacion'], $estacionesExcluir, true);
+        });
+        /*
+        // Filtra los elementos cuyo campo 'estacion' NO termine en 'h' eliminando la CCSS
+        $datosPgaFiltrados = array_filter($datosPga, function ($item) {
+            return !str_ends_with($item['estacion'], 'H');
+        });*/
+
+
+        return $this->render('espectros.html.twig',
+            ['fecha' => $fecha,'datos'=>$datosPgaFiltrados,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
+                'epi_long'=>$epi_long,'epi'=>$epi]);
+    }
 
 
     /**
