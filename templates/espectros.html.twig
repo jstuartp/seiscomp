@@ -37,7 +37,7 @@
                         <tbody>
                         {% for dato in datos %}
                             <tr>
-                                <td class="align-middle fw-bold">{{ dato.estacion }}</td>
+                                <td class="align-middle fw-bold">{{ dato.nombre }} ({{ dato.estacion }})</td>
 
                                 <td class="align-middle">{{ dato.maximo | round(2) }}</td>
 

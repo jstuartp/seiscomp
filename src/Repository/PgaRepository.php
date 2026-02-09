@@ -43,7 +43,7 @@ class PgaRepository extends ServiceEntityRepository
 
 
     /**
-     * Obtener Todos los sismos registrados en el Seiscomp
+     * Obtener Todas las pga de un evento particular
      */
     public function findPgaByEvento($evento): ?array
     {
@@ -58,6 +58,43 @@ class PgaRepository extends ServiceEntityRepository
         }catch (Exception $e){
             return [];
         }
+
+
+    }
+
+
+    /**
+     * Obtener Todas las pga de un evento particular
+     */
+    public function findPgaByEventoconNombre($evento): ?array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = "
+        SELECT DISTINCT 
+            Pga.idpga as id, 
+            Pga.estacion, 
+            E.nombre as nombre,
+            ROUND(Pga.latitud,3) as latitud, 
+            ROUND(Pga.longitud,3) as longitud, 
+            ROUND(Pga.hne_pga,4) as hne, 
+            ROUND(Pga.hnn_pga,4) as hnn, 
+            ROUND(Pga.hnz_pga,4) as hnz,
+            ROUND(Pga.maximo,4) as maximo, 
+            Pga.rutaWaveform as grafica
+        FROM 
+            Pga 
+        LEFT JOIN 
+            lis.estaciones E ON E.estacion = Pga.estacion
+        WHERE 
+            Pga.tipo_estacion != 2 
+            AND Pga.nombre_evento = :evento
+    ";
+
+        // Ejecutamos usando parámetros para evitar SQL Injection
+        $resultSet = $conn->executeQuery($sql, ['evento' => $evento]);
+
+        // Devuelve un array asociativo
+        return $resultSet->fetchAllAssociative();
 
 
     }

@@ -165,7 +165,7 @@
             var map = L.map('map').setView([9.75, -84.0], 7);
             var bounds = L.latLngBounds([7.886, -84.409], [11.019, -82.976]);
             map.fitBounds(bounds);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
                 attribution: '&copy; OpenStreetMap contributors'
             }).addTo(map);
             L.control.scale().addTo(map);

@@ -239,7 +239,7 @@ class mainController extends AbstractController
         }else{echo "NO HAY NADA";}
 
         //Activo el repositorio para traer los datos de PGA segun el evento
-        $datosPga = $this->repository->findPgaByEvento($evento);
+        $datosPga = $this->repository->findPgaByEventoconNombre($evento);
 
         // Listado SMHR a excluir de la lista
         $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
@@ -278,7 +278,7 @@ class mainController extends AbstractController
         }else{echo "NO HAY NADA";}
 
         //Activo el repositorio para traer los datos de PGA segun el evento
-        $datosPga = $this->repository->findPgaByEvento($evento);
+        $datosPga = $this->repository->findPgaByEventoconNombre($evento);
 
         // Listado SMHR a excluir de la lista
         $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',

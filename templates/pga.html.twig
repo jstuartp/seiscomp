@@ -49,7 +49,7 @@
                             <tbody>
                             {% for dato in datos %}
                                 <tr>
-                                    <td class="fw-bold">{{ dato.estacion }}</td>
+                                    <td>{{ dato.estacion }}</td>
                                     <td>{{ dato.hne|round(2) }}</td>
                                     <td>{{ dato.hnn|round(2) }}</td>
                                     <td>{{ dato.hnz|round(2) }}</td>
@@ -215,8 +215,8 @@
                 map.fitBounds(bounds);
 
                 // Agregar capa de mapa base
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: ''
                 }).addTo(map);
                 L.control.scale().addTo(map);
                 // Agregar el marcador con estrella
@@ -243,7 +243,7 @@
                         lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo }},
                         datos: `Estaci&oacute;n: {{ dato.estacion }} <br>
                             M&aacute;ximo: {{ dato.maximo | round(2) }} cm/s&sup2<br>
-                <button onclick="openModal('{{ asset('assets/waves/'~ dato.grafica~'.png') }}')">Onda</button>`,
+                <button onclick="cargarGrafica('{{ asset('assets/waves/' ~ dato.grafica~'.json') }}', '{{ dato.estacion }}')">Onda</button>`,
                     }
                     {% if not loop.last %},{% endif %}
                     {% endfor %}
@@ -346,31 +346,87 @@
         }
 
         function dibujarPlotlyTabs(json) {
-            // 1. Procesar Tiempo
-            const rawTime = json.meta.start_time;
-            const isoTime = rawTime.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})$/, '$1-$2-$3T$4:$5:$6');
-            const startTime = new Date(isoTime).getTime();
+            // 1. Procesar Tiempo (Igual que antes)
+            // Nota: Asumimos que el string de tiempo viene formato 'YYYYMMDDThhmmss' o similar según tu regex
+            // Si tu json ya trae ISO estándar, podrías usar new Date(json.meta.start_time) directo.
+            let startTime;
+            try {
+                const rawTime = json.meta.start_time;
+                // Ajuste de seguridad por si el regex falla o el formato varía
+                const isoTime = rawTime.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}).*$/, '$1-$2-$3T$4:$5:$6');
+                startTime = new Date(isoTime).getTime();
+            } catch (e) {
+                console.error("Error parseando tiempo", e);
+                startTime = new Date().getTime(); // Fallback
+            }
+
             const dt = 1000 / json.meta.sample_rate;
 
-            // Datos (Validando que existan)
-            const dataHNE = json.data.HNE || [];
-            const dataHNN = json.data.HNN || [];
-            const dataHNZ = json.data.HNZ || [];
+            // 2. Procesar Datos y Convertir Unidades
+            // Asumimos que json.data viene en METROS/SEGUNDO^2 (m/s^2)
 
-            const nPts = dataHNZ.length > 0 ? dataHNZ.length : dataHNE.length;
+            const processData = (rawData) => {
+                if (!rawData || rawData.length === 0) return { cm: [], g: [] };
+
+                // Creamos dos versiones de los datos
+                const cmData = rawData.map(val => val * 100);      // m/s² a cm/s² (Gal)
+                const gData = rawData.map(val => ((val*100) / 980)*100);   // m/s² a g (aprox 9.81)
+
+                return { cm: cmData, g: gData };
+            };
+
+            const hnzProcessed = processData(json.data.HNZ);
+            const hnnProcessed = processData(json.data.HNN);
+            const hneProcessed = processData(json.data.HNE);
+
+            // Generar eje X
+            const nPts = hnzProcessed.cm.length || hneProcessed.cm.length;
             const xValues = new Array(nPts);
-
             for (let i = 0; i < nPts; i++) {
                 xValues[i] = new Date(startTime + (i * dt)).toISOString();
             }
 
-            // 2. Configuración Común para las 3 gráficas
-            const commonLayout = {
-                height: 500,
-                margin: { t: 40, b: 40, l: 60, r: 20 },
-                showlegend: false, // No hace falta leyenda si la pestaña ya dice qué es
-                xaxis: { title: 'Tiempo (UTC)' },
-                yaxis: { title: 'Aceleración (cm/s²)' }
+            // 3. Configuración del Botón (Selector)
+            // Esta función genera el layout específico para cada gráfica con sus propios datos alternativos
+            const createLayoutWithMenu = (title, dataCm, dataG) => {
+                return {
+                    height: 500,
+                    margin: { t: 40, b: 40, l: 60, r: 20 },
+                    showlegend: false,
+                    title: title,
+                    xaxis: { title: 'Tiempo (UTC)' },
+                    yaxis: { title: 'Aceleración (cm/s²)' }, // Título inicial por defecto
+
+                    // Aquí está la magia: Menús de actualización
+                    updatemenus: [{
+                        type: 'buttons',
+                        direction: 'left',
+                        pad: { 'r': 10, 't': 10 },
+                        showactive: true,
+                        x: 0.0, // Posición del botón en X
+                        xanchor: 'left',
+                        y: 1.15, // Posición del botón en Y (encima de la gráfica)
+                        yanchor: 'top',
+                        buttons: [
+                            {
+                                label: 'cm/s²',
+                                method: 'update', // 'update' modifica data y layout a la vez
+                                args: [
+                                    { y: [dataCm] }, // Nuevos datos
+                                    { 'yaxis.title': 'Aceleración (cm/s²)' } // Nuevo layout
+                                ]
+                            },
+                            {
+                                label: 'g',
+                                method: 'update',
+                                args: [
+                                    { y: [dataG] }, // Nuevos datos
+                                    { 'yaxis.title': 'Aceleración (%g)' } // Nuevo layout
+                                ]
+                            }
+                        ]
+                    }]
+                };
             };
 
             const config = {
@@ -380,19 +436,20 @@
                 modeBarButtonsToRemove: ['lasso2d', 'select2d']
             };
 
-            // 3. Dibujar Gráfica Z
-            const layoutZ = { ...commonLayout, title: 'Componente Vertical (HNZ)' };
-            const traceZ = { x: xValues, y: dataHNZ, type: 'scatter', line: { width: 1, color: 'black' } };
+            // 4. Dibujar Gráfica Z
+            // Inicializamos con dataCm por defecto
+            const layoutZ = createLayoutWithMenu('Componente Vertical (HNZ)', hnzProcessed.cm, hnzProcessed.g);
+            const traceZ = { x: xValues, y: hnzProcessed.cm, type: 'scatter', line: { width: 1, color: 'black' } };
             Plotly.newPlot('plotDivZ', [traceZ], layoutZ, config);
 
-            // 4. Dibujar Gráfica N
-            const layoutN = { ...commonLayout, title: 'Componente Norte (HNN)' };
-            const traceN = { x: xValues, y: dataHNN, type: 'scatter', line: { width: 1, color: 'blue' } };
+            // 5. Dibujar Gráfica N
+            const layoutN = createLayoutWithMenu('Componente Norte (HNN)', hnnProcessed.cm, hnnProcessed.g);
+            const traceN = { x: xValues, y: hnnProcessed.cm, type: 'scatter', line: { width: 1, color: 'blue' } };
             Plotly.newPlot('plotDivN', [traceN], layoutN, config);
 
-            // 5. Dibujar Gráfica E
-            const layoutE = { ...commonLayout, title: 'Componente Este (HNE)' };
-            const traceE = { x: xValues, y: dataHNE, type: 'scatter', line: { width: 1, color: 'red' } };
+            // 6. Dibujar Gráfica E
+            const layoutE = createLayoutWithMenu('Componente Este (HNE)', hneProcessed.cm, hneProcessed.g);
+            const traceE = { x: xValues, y: hneProcessed.cm, type: 'scatter', line: { width: 1, color: 'red' } };
             Plotly.newPlot('plotDivE', [traceE], layoutE, config);
         }
     </script>
