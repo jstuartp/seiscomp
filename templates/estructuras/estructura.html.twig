@@ -17,13 +17,13 @@
 
     <script>
         //Activa formas de onda
-        function abrirFormasOnda(id, fecha, mag, epi, estructura) {
+        function abrirFormasOnda(id, fecha, mag, epi, estructuraid,estructuraNombre) {
             alert('Abrir Formas de Onda');
             var theForm = document.createElement('form');
             theForm.action = '{{ path('formasonda') }}';
             theForm.method = 'post';
             function add(name, value){ const i = document.createElement('input'); i.type='hidden'; i.name=name; i.value=value; theForm.appendChild(i); }
-            add('id', id); add('fecha', fecha); add('mag', mag); add('epi', epi); add('estructura', estructura);
+            add('id', id); add('fecha', fecha); add('mag', mag); add('epi', epi); add('estructuraid', estructuraid);add('estructuraNombre', estructuraNombre)
             document.body.appendChild(theForm); theForm.submit();
 
             // Aquí puedes cargar un modal, hacer fetch(), cambiar vista, etc.
@@ -178,7 +178,8 @@
                                     </div>
                                     <h5 class="card-title">{{ tarjeta.titulo }}</h5>
                                     <p class="card-text">{{ tarjeta.texto }}</p>
-                                    <a href="javascript:void(0);" onclick="{{ tarjeta.accion }}('{{ id }}', '{{ fecha }}', '{{ magnitud }}', '{{ epi }}', '{{ estructura.id }}')" class="stretched-link"></a>
+                                    <a href="javascript:void(0);" onclick="{{ tarjeta.accion }}('{{ id }}', '{{ fecha }}', '{{ magnitud }}'
+                                            , '{{ epi }}', '{{ estructura.id }}', '{{ estructura.nombre_edificio }}')" class="stretched-link"></a>
                                 </div>
                             </div>
                         </div>

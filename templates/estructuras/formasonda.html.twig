@@ -1,199 +1,153 @@
-{% extends '/base.html.twig' %}
+{% extends 'base.html.twig' %}
 
-{% block head_extra %}
-    <meta http-equiv="refresh" content="1800">
-    <style>
-        /* ====== Layout general ====== */
-        .lis-layout { min-height: 100vh; }
-
-        /* Estilos utilitarios previos */
-        .card-header button { text-align: left; width: 100%; }
-        .badge-mag { min-width: 3.2rem; }
-        .card-hover:hover { background: #f8fbff; }
-    </style>
-{% endblock %}
+{% block title %}Sismogramas - {{ estructura.nombre_edificio }}{% endblock %}
 
 {% block body %}
+    <div class="container mt-4">
+        <h2>Sismogramas: {{ estructura.nombre_edificio }}</h2>
+        <span class="fw-semibold">Sismo del {{ fecha|date("d-m-Y H:i:s ") }} con epicentro  {{ epi }} </span>
+        <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>
 
-    <script>
-        //Activa formas de onda
-        function abrirFormasOnda() {
-            alert('Abrir Formas de Onda');
-            // Aquí puedes cargar un modal, hacer fetch(), cambiar vista, etc.
-        }
+        <div class="row">
+            {% for grafica in graficas %}
+                {# Usamos grafica.grafica como nombre base del archivo, asumiendo que no tiene extensión #}
+                {% set base_file = grafica.rutaWaveform %}
 
-        //Activa espectros
-        function abrirEspectros() {
-            alert('Abrir Espectros');
-        }
+                <div class="col-12 mb-5">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Estación: {{ grafica.estacion }}</h5>
+                        </div>
 
-        //Activa Fourier
-        function abrirFourier() {
-            alert('Abrir Espectro de Fourier');
-        }
+                        <div class="card-body">
+                            {# Pestañas de navegación #}
+                            <ul class="nav nav-tabs" id="tabs-{{ loop.index }}" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active btn-plot" data-bs-toggle="tab" data-bs-target="#acc-{{ loop.index }}" type="button" role="tab"
+                                            data-url="{{ asset('assets/waves/' ~ id ~'/edificio/'~ base_file ~ '_ACC.json') }}"
+                                            data-target="plot-acc-{{ loop.index }}" data-unit="cm/s²" data-title="Aceleración">
+                                        Aceleración
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link btn-plot" data-bs-toggle="tab" data-bs-target="#vel-{{ loop.index }}" type="button" role="tab"
+                                            data-url="{{ asset('assets/waves/'~ id ~'/edificio/'~ base_file ~ '_VEL.json') }}"
+                                            data-target="plot-vel-{{ loop.index }}" data-unit="cm/s" data-title="Velocidad">
+                                        Velocidad
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link btn-plot" data-bs-toggle="tab" data-bs-target="#disp-{{ loop.index }}" type="button" role="tab"
+                                            data-url="{{ asset('assets/waves/' ~ id ~'/edificio/' ~ base_file ~ '_DISP.json') }}"
+                                            data-target="plot-disp-{{ loop.index }}" data-unit="cm" data-title="Desplazamiento">
+                                        Desplazamiento
+                                    </button>
+                                </li>
+                            </ul>
 
-        //Activa cocientes
-        function abrirCocientes() {
-            alert('Abrir Cocientes Espectrales');
-        }
-
-    </script>
-    <div class="container-fluid">
-
-        {# FILA SUPERIOR: col 1 (izquierda) + col 2 (derecha) #}
-        <div class="row  align-items-stretch">
-            <div class="col-12 col-lg-4">
-                <div class="  d-flex  text-muted">
-                    <span class="fw-semibold">Estructura: {{ estructura.nombre_edificio }}, {{ estructura.provincia }}
-                    , {{ estructura.canton }}, {{ estructura.distrito }}
-                    </span>
-                </div>
-            </div>
-            <div class="col-12 col-lg-8">
-                <div class="  d-flex  justify-content-center text-muted">
-                    <span class="fw-semibold">Sismo del {{ fecha|date("d-m-Y H:i:s ") }} con epicentro  {{ epi }} </span>
-                    <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>
-                </div>
-
-            </div>
-        </div>
-
-        {# SEPARADOR VISUAL #}
-        <hr class="my-4">
-
-        {# SECCIÓN INFERIOR: IZQUIERDA (composite card) + DERECHA (grid 2×2 de tarjetas) #}
-        <div class="row g-4">
-            {# COLUMNA IZQUIERDA #}
-            <div class="col-12 col-lg-12">
-                {% set estaciones = datos.estaciones_edificio|split('-') %}
-
-                {% if estaciones is not empty %}
-
-                    <div class="d-flex flex-wrap gap-2">
-                        {# Opción 1: estaciones es un arreglo simple de strings #}
-                        {#  por ejemplo: ['EST01', 'EST02', 'EST03'] #}
-                        {% for estacion in estaciones %}
-                            {% set mygrafica = null %}
-                            {% if grafica[estacion] is defined %}
-                                {%  set mygrafica_acc = asset('assets/waves/'~grafica[estacion]~'_acc.png') %}
-                                {%  set mygrafica_vel = asset('assets/waves/'~grafica[estacion]~'_vel.png') %}
-                                {%  set mygrafica_des = asset('assets/waves/'~grafica[estacion]~'_des.png') %}
-                            {% else %}
-                                {%  set mygrafica_acc = asset('assets/imagenes/noimage.png') %}
-                                {%  set mygrafica_vel = asset('assets/imagenes/noimage.png') %}
-                                {%  set mygrafica_des = asset('assets/imagenes/noimage.png') %}
-                            {% endif %}
-
-                            <div class="matrix-container">
-                                <table class="seismic-table">
-                                    <thead>
-                                    <tr>
-                                        <th class="row-title">Medición / Estación</th>
-
-                                                <th class="station-header">{{ estacion }}</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                    <tr>
-                                        <td class="row-title">Aceleración</td>
-
-                                            <td>
-                                                <img src="{{ mygrafica_acc }}"
-                                                     alt="Acc {{ estacion }}"
-                                                     style="max-width: 20%; height: auto;"
-                                                     class="wave-img"
-                                                     loading="lazy">
-                                            </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="row-title">Velocidad</td>
-                                            <td>
-                                                <img src="{{ mygrafica_vel }}"
-                                                     alt="Vel {{ estacion }}"
-                                                     style="max-width: 20%; height: auto;"
-                                                     class="wave-img"
-                                                     loading="lazy">
-                                            </td>
-                                    </tr>
-                                    <tr>
-                                        <td class="row-title">Desplazamiento</td>
-                                            <td>
-                                                <img src="{{ mygrafica_des }}"
-                                                     alt="Disp {{ estacion }}"
-                                                     style="max-width: 20%; height: auto;"
-                                                     class="wave-img"
-                                                     loading="lazy">
-                                            </td>
-                                    </tr>
-                                    </tbody>
-                                </table>
+                            {# Contenido de las pestañas (Los contenedores para Plotly) #}
+                            <div class="tab-content border border-top-0 p-3" id="tabContent-{{ loop.index }}">
+                                <div class="tab-pane fade show active" id="acc-{{ loop.index }}" role="tabpanel">
+                                    <div id="plot-acc-{{ loop.index }}" style="width:100%; height:400px;">
+                                        <div class="text-center mt-5"><div class="spinner-border text-primary" role="status"></div><p>Cargando datos...</p></div>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="vel-{{ loop.index }}" role="tabpanel">
+                                    <div id="plot-vel-{{ loop.index }}" style="width:100%; height:400px;"></div>
+                                </div>
+                                <div class="tab-pane fade" id="disp-{{ loop.index }}" role="tabpanel">
+                                    <div id="plot-disp-{{ loop.index }}" style="width:100%; height:400px;"></div>
+                                </div>
                             </div>
-
-                        {% endfor %}
-
-
-                        {# Opción 2 (comentar la anterior y usar esta):
-                               estaciones es un arreglo de objetos/diccionarios
-                               por ejemplo: [{ nombre: 'EST01' }, { nombre: 'EST02' }]
-                        #}
-                        {#
-                        {% for est in estaciones %}
-                            <button type="button"
-                                    class="btn btn-outline-primary btn-sm">
-                                {{ est.nombre }}
-                            </button>
-                        {% endfor %}
-                        #}
+                        </div>
                     </div>
-                {% else %}
-                    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
-                            <span class="text-muted small text-center">
-                                No hay estaciones registradas para este edificio.
-                            </span>
-                    </div>
-                {% endif %}
-            </div>
-
-
-        </div> {# /row inferior #}
-    </div>
-
-    <div id="myModal" class="modal">
-        <!-- El contenido del modal (la imagen) -->
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-
-                <div class="modal-body text-center">
-                    <img class="modal-content" id="img01">
                 </div>
-            </div>
+            {% endfor %}
         </div>
-        <!-- <span class="close">&times;</span>-->
-
     </div>
     <script>
-        function openTab(evt, tabId, cardId) {
-            // 1. Obtener la tarjeta específica donde se hizo click
-            var card = document.getElementById(cardId);
+        document.addEventListener('DOMContentLoaded', function() {
 
-            // 2. Ocultar todos los contenidos de ESA tarjeta
-            var tabContents = card.getElementsByClassName("tab-content");
-            for (var i = 0; i < tabContents.length; i++) {
-                tabContents[i].style.display = "none";
-                tabContents[i].classList.remove("active-content");
+            // Función asíncrona para descargar JSON y dibujar la gráfica
+            async function loadAndPlot(url, containerId, title, unit) {
+                const container = document.getElementById(containerId);
+
+                try {
+                    // Mostrar spinner (opcional) si está vacío
+                    if (container.innerHTML === "") {
+                        container.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-primary" role="status"></div><p>Cargando datos...</p></div>';
+                    }
+
+                    // Descargar el archivo JSON crudo generado por tu script de Python
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error("No se encontró el archivo JSON");
+                    const payload = await response.json();
+
+                    // Magia Sismológica: Crear el eje X (Tiempo en segundos)
+                    // Sabemos el sample_rate (ej. 200) y npts (ej. 7000)
+                    const dt = 1.0 / payload.meta.sample_rate;
+                    const timeArray = Array.from({ length: payload.meta.npts }, (_, i) => i * dt);
+
+                    // Preparar los 3 trazos para Plotly
+                    const traces = [];
+                    const colores = { 'HNN': 'red', 'HNE': 'blue', 'HNZ': 'green' };
+
+                    for (const [canal, datos] of Object.entries(payload.data)) {
+                        traces.push({
+                            x: timeArray,
+                            y: datos,
+                            type: 'scatter',
+                            mode: 'lines',
+                            name: canal,
+                            line: { color: colores[canal] || 'black', width: 1 }
+                        });
+                    }
+
+                    // Configurar el diseño (Layout)
+                    const layout = {
+                        title: `${title} - Estación: ${payload.meta.station}`,
+                        xaxis: { title: 'Tiempo (segundos)', showgrid: true },
+                        yaxis: { title: `Amplitud (${unit})`, showgrid: true },
+                        hovermode: 'x unified', // Muestra los 3 valores al pasar el mouse
+                        margin: { l: 60, r: 20, t: 40, b: 40 },
+                        legend: { orientation: "h", y: -0.2 } // Leyenda horizontal abajo
+                    };
+
+                    // Dibujar la gráfica (Plotly reemplazará el spinner automáticamente)
+                    Plotly.newPlot(containerId, traces, layout, {responsive: true});
+
+                } catch (error) {
+                    console.error("Error cargando la gráfica:", error);
+                    container.innerHTML = `<div class="alert alert-danger">Error cargando los datos de ${title}. ¿Ya fueron procesados?</div>`;
+                }
             }
 
-            // 3. Quitar la clase "active" de los botones de ESA tarjeta
-            var tabLinks = card.getElementsByClassName("tab-btn");
-            for (var i = 0; i < tabLinks.length; i++) {
-                tabLinks[i].className = tabLinks[i].className.replace(" active", "");
-            }
+            // --- Lógica de Interfaz ---
 
-            // 4. Mostrar el contenido actual y activar el botón clickeado
-            document.getElementById(tabId).style.display = "block";
-            document.getElementById(tabId).classList.add("active-content");
-            evt.currentTarget.className += " active";
-        }
+            // 1. Al cargar la página, dibujar automáticamente la pestaña "Aceleración" de todas las estaciones
+            document.querySelectorAll('.tab-pane.active .spinner-border').forEach(spinner => {
+                // Buscar el botón correspondiente a esta pestaña para obtener los atributos data-*
+                const targetId = spinner.closest('.tab-pane').id;
+                const btn = document.querySelector(`button[data-bs-target="#${targetId}"]`);
+                if(btn) {
+                    loadAndPlot(btn.dataset.url, btn.dataset.target, btn.dataset.title, btn.dataset.unit);
+                }
+            });
+
+            // 2. Escuchar clics en el resto de pestañas para dibujar a demanda (Lazy Load)
+            const triggerTabList = document.querySelectorAll('.btn-plot');
+            triggerTabList.forEach(triggerEl => {
+                triggerEl.addEventListener('click', function (event) {
+                    const btn = event.target;
+                    const container = document.getElementById(btn.dataset.target);
+
+                    // Si el contenedor no tiene un SVG de plotly adentro, significa que no se ha cargado aún
+                    if (!container.querySelector('.js-plotly-plot')) {
+                        loadAndPlot(btn.dataset.url, btn.dataset.target, btn.dataset.title, btn.dataset.unit);
+                    }
+                });
+            });
+        });
     </script>
-
 {% endblock %}
+

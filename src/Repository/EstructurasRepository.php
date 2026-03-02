@@ -107,6 +107,31 @@ class EstructurasRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     * Obtener todas las estaciones de un edificio
+     */
+    public function findEstacionByEdificio(string $nombreEdificio): ?array
+    {
+        // Optimizamos seleccionando SOLO la columna que necesitamos
+        $resultado = $this->createQueryBuilder('e')
+            ->select('e.estaciones_edificio')
+            ->andWhere('e.nombre_edificio = :nombre')
+            ->setParameter('nombre', $nombreEdificio)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        // Si no existe el edificio o la columna está vacía, devolvemos un arreglo vacío
+        if (!$resultado || empty($resultado['estaciones_edificio'])) {
+            return [];
+        }
+
+        // PHP hace la magia de separar la cadena instantáneamente
+        return explode('-', $resultado['estaciones_edificio']);
+
+
+    }
+
+
 
 
     //    /**

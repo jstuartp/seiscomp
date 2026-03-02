@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Intensidad JMA – Visualización Macroscópica</title>
+
+    <!-- Leaflet CSS -->
+    <link
+            rel="stylesheet"
+            href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+            integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+            crossorigin=""
+    />
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            width: 100%;
+            height: 100vh;
+        }
+
+        /* Contenedor de la leyenda */
+        .info.legend{
+            background: rgba(255,255,255,0.9);
+            padding: 8px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        .legend-title{
+            font-weight: 600;
+            margin-bottom: 6px;
+            text-align: center;
+            background: rgba(255,255,255,0.85);
+            border-radius: 6px;
+            padding: 4px 8px;
+            box-shadow: 0 0 4px rgba(0,0,0,0.1);
+            font-size: 13px;
+        }
+        .legend-row{
+            display: flex;
+            align-items: center;
+            margin-bottom: 3px;
+        }
+        .legend-color-box{
+            width: 18px;
+            height: 10px;
+            margin-right: 6px;
+            border: 1px solid #777;
+            border-radius: 3px;
+        }
+        .legend-label{
+            flex: 1;
+        }
+
+        /* Icono del epicentro (estrella SVG) */
+        .epicenter-icon {
+            width: 22px;
+            height: 22px;
+            background: transparent;
+            transform: translate(-11px, -11px);
+        }
+    </style>
+</head>
+<body>
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin="">
+</script>
+
+<script>
+    // Inicialización del mapa
+    const map = L.map('map', {
+        preferCanvas: true,
+        zoomControl: true
+    });
+
+    // Capa base (OSM)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap colaboradores'
+    }).addTo(map);
+
+    // --- Funciones auxiliares para JMA ---
+
+    // Parsea valores JMA que pueden venir como "5-", "5+", "6-", "6+", "3", etc.
+    function parseJMA(raw) {
+        const n = Number(raw);
+        if (!Number.isNaN(n)) return n;
+        const s = String(raw).trim();
+        const base = parseInt(s, 10);
+        if (Number.isNaN(base)) return 0;
+        if (s.includes('+')) return base + 0.33;
+        if (s.includes('-')) return base - 0.33;
+        return base;
+    }
+
+    // Asigna un color discreto en función de la intensidad JMA
+    function colorJMA(v) {
+        if (v < 0.5) return "#ffffff";   // 0
+        if (v < 1.5) return "#d2d2d2";   // 1
+        if (v < 2.5) return "#0032ff";   // 2
+        if (v < 3.5) return "#00faff";   // 3
+        if (v < 4.5) return "#0bc200";   // 4
+        if (v < 5.33) return "#ffff00";  // 5-
+        if (v < 5.66) return "#f77a00";  // 5+
+        if (v < 6.33) return "#f40001";  // 6-
+        if (v < 6.66) return "#a90000";  // 6+
+        return "#640064";                // 7
+    }
+
+    // --- Datos provenientes de Twig ---
+    // Se espera que "datos" contenga objetos con: lat, lon, jma, (opcionalmente nombre de estación, etc.)
+    const rawPoints = [
+        {% for dato in datos %}
+        {
+            lat: {{ dato.lat }},
+            lon: {{ dato.lon }},
+            jma: `{{ dato.jma }}`,
+            {% if dato.nombre is defined %}
+            nombre: `{{ dato.nombre|e('js') }}`
+            {% else %}
+            nombre: ``
+            {% endif %}
+        }
+        {% if not loop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    // --- Visualización macroscópica por extensión radial ---
+    const bounds = [];
+
+    rawPoints.forEach(p => {
+        const jmaVal = parseJMA(p.jma);
+        const color = colorJMA(jmaVal);
+
+        // Radio en metros: ajústelo según el alcance esperado de la representación visual
+        // Por ejemplo: 15 km
+        const radiusMeters = 15000;
+
+        const circle = L.circle([p.lat, p.lon], {
+            radius: radiusMeters,
+            fillColor: color,
+            fillOpacity: 0.35,
+            stroke: false,
+            interactive: true
+        }).addTo(map);
+
+        let popupHtml = `<b>Intensidad JMA:</b> ${p.jma}`;
+        if (p.nombre) {
+            popupHtml = `<b>${p.nombre}</b><br>` + popupHtml;
+        }
+        circle.bindPopup(popupHtml);
+
+        bounds.push([p.lat, p.lon]);
+    });
+
+    // --- Epicentro ---
+    const epiLat = {{ epi_lat|default(9.75) }};
+    const epiLng = {{ epi_long|default(-84.0) }};
+
+    const epicenterIcon = L.divIcon({
+        className: 'epicenter-icon',
+        html: `
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="#e60000" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2l2.39 6.95H22l-5.7 4.14 2.17 6.91L12 16.9l-6.47 3.1 2.17-6.91L2 8.95h7.61L12 2z"/>
+        </svg>
+      `,
+        iconSize: [22, 22],
+        iconAnchor: [11, 11]
+    });
+
+    const epicenterMarker = L.marker([epiLat, epiLng], { icon: epicenterIcon })
+        .addTo(map)
+        .bindPopup('Epicentro');
+
+    if (bounds.length > 0) {
+        bounds.push([epiLat, epiLng]);
+        map.fitBounds(bounds, { padding: [20, 20] });
+    } else {
+        map.setView([epiLat, epiLng], 7);
+    }
+
+    // --- Leyenda discreta JMA ---
+    const legend = L.control({ position: 'topright' });
+
+    legend.onAdd = function () {
+        const div = L.DomUtil.create('div', 'info legend');
+
+        div.innerHTML = `
+        <div class="legend-title">Intensidad JMA</div>
+
+        <div class="legend-row">
+          <div class="legend-color-box" style="background:#ffffff;"></div>
+          <div class="legend-label">0</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-color-box" style="background:#d2d2d2;"></div>
+          <div class="legend-label">1</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-color-box" style="background:#0032ff;"></div>
+          <div class="legend-label">2</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-color-box" style="background:#00faff;"></div>
+          <div class="legend-label">3</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-color-box" style="background:#0bc200;"></div>
+          <div class="legend-label">4</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-color-box" style="background:#ffff00;"></div>
+          <div class="legend-label">5−</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-color-box" style="background:#f77a00;"></div>
+          <div class="legend-label">5+</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-color-box" style="background:#f40001;"></div>
+          <div class="legend-label">6−</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-color-box" style="background:#a90000;"></div>
+          <div class="legend-label">6+</div>
+        </div>
+        <div class="legend-row">
+          <div class="legend-color-box" style="background:#640064;"></div>
+          <div class="legend-label">7</div>
+        </div>
+      `;
+
+        return div;
+    };
+
+    legend.addTo(map);
+</script>
+</body>
+</html>

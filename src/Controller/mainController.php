@@ -311,7 +311,7 @@ class mainController extends AbstractController
             'minLat' => 7.8,
             'maxLat' => 11.5,
             'minLon' => -86.2,
-            'maxLon' => -82.2,
+            'maxLon' => -81.6,
         ];
 
         return array_values(array_filter($datos, function ($item) use ($bbox) {

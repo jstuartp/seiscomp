@@ -7,15 +7,18 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Repository\EstructurasRepository;
+use App\Repository\PgaEstructurasRepository;
 
 
 final class EstructurasController extends AbstractController
 {
     private EstructurasRepository $estructurasRepository;
+    private PgaEstructurasRepository $pgaEstructurasRepository;
 
-    public function __construct(EstructurasRepository $estructurasRepository)
+    public function __construct(EstructurasRepository $estructurasRepository, PgaEstructurasRepository $PgaEstructurasRepository)
     {
-        $this->estructurasRepository = $estructurasRepository;
+        $this->estructurasRepository = $estructurasRepository; //control para el repositorio de la tabla estructuras
+        $this->PgaEstructurasRepository = $PgaEstructurasRepository; //control para el repositorio de la tabla PGAEstructuras
 
     }
 
@@ -92,23 +95,22 @@ final class EstructurasController extends AbstractController
             $fecha = $request->request->get('fecha');
             $magnitud = $request->request->get('mag');
             $epi = $request->request->get('epi');
-            $estructura = $request->request->get('estructura');
+            $estructuraid = $request->request->get('estructuraid');
+            $estructuraNombre = $request->request->get('estructuraNombre');
         }else{echo "NO HAY NADA";}
-        $datos = $this->estructurasRepository->findUbicacionEstructura($estructura);
+        $datos = $this->estructurasRepository->findUbicacionEstructura($estructuraid);
 
+        //Traigo las estaciones que tiene el edificio
+        $estacionesArray = $this->estructurasRepository->findEstacionByEdificio($estructuraNombre);
+        #dd($estacionesArray);
         //Extraigo todas las graficas  del evento
-        $graficas = $this->estructurasRepository->findGraficaFromEvent($evento);
-        dump($graficas);
-        $graficasAsociativo = [];
-
-        foreach ($graficas as $row) {
-            $graficasAsociativo[$row['estacion']] = $row['grafica'];
-        }
+        $graficasEdificio = $this->PgaEstructurasRepository->findGraficasByEventoYEstaciones($evento, $estacionesArray);
+        //dd($graficasEdificio);
 
 
 
         return $this->render('estructuras/formasonda.html.twig', ['fecha' => $fecha,'datos'=>$datos,'id'=>$evento,
-            'magnitud'=>$magnitud,'epi'=>$epi, 'estructura'=>$datos, 'grafica' => $graficasAsociativo,
+            'magnitud'=>$magnitud,'epi'=>$epi, 'estructura'=>$datos, 'graficas' => $graficasEdificio,
             'controller_name' => 'EstructurasController',
         ]);
     }
