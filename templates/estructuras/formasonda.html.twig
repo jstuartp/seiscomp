@@ -65,89 +65,93 @@
             {% endfor %}
         </div>
     </div>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
+{% endblock %}
+{% block endscrips %}
+    {{ parent() }}
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
 
-            // Función asíncrona para descargar JSON y dibujar la gráfica
-            async function loadAndPlot(url, containerId, title, unit) {
-                const container = document.getElementById(containerId);
+        // Función asíncrona para descargar JSON y dibujar la gráfica
+        async function loadAndPlot(url, containerId, title, unit) {
+            const container = document.getElementById(containerId);
 
-                try {
-                    // Mostrar spinner (opcional) si está vacío
-                    if (container.innerHTML === "") {
-                        container.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-primary" role="status"></div><p>Cargando datos...</p></div>';
-                    }
+            try {
+                // Mostrar spinner (opcional) si está vacío
+                //if (container.innerHTML === "") {
+                //    container.innerHTML = '<div class="text-center mt-5"><div class="spinner-border text-primary" role="status"></div><p>Cargando datos...</p></div>';
+                //}
 
-                    // Descargar el archivo JSON crudo generado por tu script de Python
-                    const response = await fetch(url);
-                    if (!response.ok) throw new Error("No se encontró el archivo JSON");
-                    const payload = await response.json();
+                // Descargar el archivo JSON crudo generado por tu script de Python
+                const response = await fetch(url);
+                if (!response.ok) throw new Error("No se encontró el archivo JSON");
+                const payload = await response.json();
 
-                    // Magia Sismológica: Crear el eje X (Tiempo en segundos)
-                    // Sabemos el sample_rate (ej. 200) y npts (ej. 7000)
-                    const dt = 1.0 / payload.meta.sample_rate;
-                    const timeArray = Array.from({ length: payload.meta.npts }, (_, i) => i * dt);
+                // Magia Sismológica: Crear el eje X (Tiempo en segundos)
+                // Sabemos el sample_rate (ej. 200) y npts (ej. 7000)
+                const dt = 1.0 / payload.meta.sample_rate;
+                const timeArray = Array.from({ length: payload.meta.npts }, (_, i) => i * dt);
 
-                    // Preparar los 3 trazos para Plotly
-                    const traces = [];
-                    const colores = { 'HNN': 'red', 'HNE': 'blue', 'HNZ': 'green' };
+                // Preparar los 3 trazos para Plotly
+                const traces = [];
+                const colores = { 'HNN': 'red', 'HNE': 'blue', 'HNZ': 'green' };
 
-                    for (const [canal, datos] of Object.entries(payload.data)) {
-                        traces.push({
-                            x: timeArray,
-                            y: datos,
-                            type: 'scatter',
-                            mode: 'lines',
-                            name: canal,
-                            line: { color: colores[canal] || 'black', width: 1 }
-                        });
-                    }
-
-                    // Configurar el diseño (Layout)
-                    const layout = {
-                        title: `${title} - Estación: ${payload.meta.station}`,
-                        xaxis: { title: 'Tiempo (segundos)', showgrid: true },
-                        yaxis: { title: `Amplitud (${unit})`, showgrid: true },
-                        hovermode: 'x unified', // Muestra los 3 valores al pasar el mouse
-                        margin: { l: 60, r: 20, t: 40, b: 40 },
-                        legend: { orientation: "h", y: -0.2 } // Leyenda horizontal abajo
-                    };
-
-                    // Dibujar la gráfica (Plotly reemplazará el spinner automáticamente)
-                    Plotly.newPlot(containerId, traces, layout, {responsive: true});
-
-                } catch (error) {
-                    console.error("Error cargando la gráfica:", error);
-                    container.innerHTML = `<div class="alert alert-danger">Error cargando los datos de ${title}. ¿Ya fueron procesados?</div>`;
+                for (const [canal, datos] of Object.entries(payload.data)) {
+                    traces.push({
+                        x: timeArray,
+                        y: datos,
+                        type: 'scatter',
+                        mode: 'lines',
+                        name: canal,
+                        line: { color: colores[canal] || 'black', width: 1 }
+                    });
                 }
+
+                // Configurar el diseño (Layout)
+                const layout = {
+                    title: `${title} - Estación: ${payload.meta.station}`,
+                    xaxis: { title: 'Tiempo (segundos)', showgrid: true },
+                    yaxis: { title: `Amplitud (${unit})`, showgrid: true },
+                    hovermode: 'x unified', // Muestra los 3 valores al pasar el mouse
+                    margin: { l: 60, r: 20, t: 40, b: 40 },
+                    legend: { orientation: "h", y: -0.2 } // Leyenda horizontal abajo
+                };
+
+                // Dibujar la gráfica (Plotly reemplazará el spinner automáticamente)
+                container.innerHTML = '';
+                Plotly.newPlot(containerId, traces, layout, {responsive: true});
+
+            } catch (error) {
+                console.error("Error cargando la gráfica:", error);
+                container.innerHTML = `<div class="alert alert-danger">Error cargando los datos de ${title}. ¿Ya fueron procesados?</div>`;
             }
+        }
 
-            // --- Lógica de Interfaz ---
+        // --- Lógica de Interfaz ---
 
-            // 1. Al cargar la página, dibujar automáticamente la pestaña "Aceleración" de todas las estaciones
-            document.querySelectorAll('.tab-pane.active .spinner-border').forEach(spinner => {
-                // Buscar el botón correspondiente a esta pestaña para obtener los atributos data-*
-                const targetId = spinner.closest('.tab-pane').id;
-                const btn = document.querySelector(`button[data-bs-target="#${targetId}"]`);
-                if(btn) {
+        // 1. Al cargar la página, dibujar automáticamente la pestaña "Aceleración" de todas las estaciones
+        document.querySelectorAll('.tab-pane.active .spinner-border').forEach(spinner => {
+            // Buscar el botón correspondiente a esta pestaña para obtener los atributos data-*
+            const targetId = spinner.closest('.tab-pane').id;
+            const btn = document.querySelector(`button[data-bs-target="#${targetId}"]`);
+            if(btn) {
+                loadAndPlot(btn.dataset.url, btn.dataset.target, btn.dataset.title, btn.dataset.unit);
+            }
+        });
+
+        // 2. Escuchar clics en el resto de pestañas para dibujar a demanda (Lazy Load)
+        const triggerTabList = document.querySelectorAll('.btn-plot');
+        triggerTabList.forEach(triggerEl => {
+            triggerEl.addEventListener('click', function (event) {
+                const btn = event.target;
+                const container = document.getElementById(btn.dataset.target);
+
+                // Si el contenedor no tiene un SVG de plotly adentro, significa que no se ha cargado aún
+                if (!container.querySelector('.js-plotly-plot')) {
                     loadAndPlot(btn.dataset.url, btn.dataset.target, btn.dataset.title, btn.dataset.unit);
                 }
             });
-
-            // 2. Escuchar clics en el resto de pestañas para dibujar a demanda (Lazy Load)
-            const triggerTabList = document.querySelectorAll('.btn-plot');
-            triggerTabList.forEach(triggerEl => {
-                triggerEl.addEventListener('click', function (event) {
-                    const btn = event.target;
-                    const container = document.getElementById(btn.dataset.target);
-
-                    // Si el contenedor no tiene un SVG de plotly adentro, significa que no se ha cargado aún
-                    if (!container.querySelector('.js-plotly-plot')) {
-                        loadAndPlot(btn.dataset.url, btn.dataset.target, btn.dataset.title, btn.dataset.unit);
-                    }
-                });
-            });
         });
-    </script>
+    });
+</script>
 {% endblock %}
-
