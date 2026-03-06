@@ -18,7 +18,7 @@
     <script>
         //Activa formas de onda
         function abrirFormasOnda(id, fecha, mag, epi, estructuraid,estructuraNombre) {
-            alert('Abrir Formas de Onda');
+            //alert('Abrir Formas de Onda');
             var theForm = document.createElement('form');
             theForm.action = '{{ path('formasonda') }}';
             theForm.method = 'post';
@@ -71,86 +71,61 @@
         {# SECCIÓN INFERIOR: IZQUIERDA (composite card) + DERECHA (grid 2×2 de tarjetas) #}
         <div class="row g-4">
             {# COLUMNA IZQUIERDA #}
-            <div class="col-12 col-lg-3">
-                <div class="card h-100 border rounded p-3">
-                    <div class="row g-3 h-100">
-                        {# Subcolumna izquierda: imagen, texto breve, botones inferiores #}
-                        <div class="col-12 col-md-5 d-flex flex-column">
-                            {% if datos.id %}
+            <div class="col-12 col-lg-5">
+                {# Convertimos la tarjeta en una columna flex (flex-column) #}
+                <div class="card h-100 border rounded p-3 d-flex flex-column">
+
+                    {# 1. Contenedor de la imagen (Alineada estrictamente a la izquierda) #}
+                    <div class="text-start mb-4">
+                        {% if datos.id %}
                             <a href="{{ asset('assets/imagenes/edificios/edificio_' ~ datos.id ~ '.jpg') }}" class="glightbox">
-                                <img
-                                        class="img-fluid rounded"
-                                        style="width: 100%; height: 100%; object-fit: cover; object-position: center; cursor: zoom-in;"
-                                        src="{{ asset('assets/imagenes/edificios/edificio_' ~ datos.id ~ '.jpg') }}"
-                                        alt="Edificio {{ datos.id }}">
+                                <img class="img-fluid rounded shadow-sm"
+                                     style="max-width: 100%; max-height: 280px; width: auto; height: auto; object-fit: contain; cursor: zoom-in;"
+                                     src="{{ asset('assets/imagenes/edificios/edificio_' ~ datos.id ~ '.jpg') }}"
+                                     alt="Edificio {{ datos.id }}">
                             </a>
-                            {% else %}
-                                <img
-                                        class="img-fluid rounded"
-                                        style="width: 100%; height: 100%; object-fit: cover; object-position: center;"
-                                        src="{{ asset('assets/imagenes/edificios/default.jpg') }}"
-                                        alt="Imagen no disponible">
-                            {% endif %}
-                        </div>
+                        {% else %}
+                            <img class="img-fluid rounded shadow-sm"
+                                 style="max-width: 100%; max-height: 280px; width: auto; height: auto; object-fit: contain;"
+                                 src="{{ asset('assets/imagenes/default.jpg') }}"
+                                 alt="Imagen no disponible">
+                        {% endif %}
+                    </div>
 
-                        {# Subcolumna derecha: listado de estaciones como botones #}
-                        <div class="col-12 col-md-7">
-                            <div class="h-100 rounded  p-3 d-flex flex-column">
-                                <h6 class="text-muted mb-2 text-center text-md-start">
-                                    Estaciones en edificio
-                                </h6>
+                    {# 2. Contenedor de las estaciones (Siempre al final gracias a mt-auto) #}
+                    <div class="mt-auto text-start">
+                        <hr class="text-muted opacity-25">
+                        <h6 class="text-muted mb-3">
+                            Ubicación de sensores en estructura
+                        </h6>
 
-                                {% set estaciones = datos.estaciones_edificio|split('-') %}
+                        {% set estaciones = datos.estaciones_edificio|split('-') %}
 
-                                {% if estaciones is not empty %}
+                        {% if estaciones is not empty %}
+                            <div class="d-flex flex-wrap gap-2 justify-content-start">
+                                {% for estacion in estaciones %}
+                                    {#
+                                    Construimos la ruta a la imagen del plano estructural.
+                                    Ejemplo resultante: assets/imagenes/planos/edificio_1_HNE.jpg
+                                    (Asegúrate de ajustar 'planos/' a la carpeta real que uses)
+                                    #}
+                                    {% set imagen_plano = asset('assets/imagenes/planos/edificio_' ~ datos.id ~ '_' ~ estacion ~ '.jpg') %}
 
-                                    <div class="d-flex flex-wrap gap-2">
-                                        {# Opción 1: estaciones es un arreglo simple de strings #}
-                                        {#  por ejemplo: ['EST01', 'EST02', 'EST03'] #}
-                                        {% for estacion in estaciones %}
-                                            {% set mygrafica = null %}
-                                            {% if grafica[estacion] is defined %}
-                                                {%  set mygrafica = asset('assets/waves/'~grafica[estacion]~'_acc.png') %}
-                                            {% else %}
-                                                {%  set mygrafica = asset('assets/imagenes/noimage.png') %}
-                                            {% endif %}
-                                            <button type="button"
-                                                    class="btn btn-outline-primary btn-sm"
-                                                    data-bs-toggle="popover"
-                                                    {% if grafica[estacion] is defined %}
-                                                        onclick="openModal('{{mygrafica}}')"
-                                                    {% else %}
-                                                        disabled
-                                                    {% endif %}
-                                            >
-                                                {{ estacion }}
-                                            </button>
-                                        {% endfor %}
-
-
-                                        {# Opción 2 (comentar la anterior y usar esta):
-                               estaciones es un arreglo de objetos/diccionarios
-                               por ejemplo: [{ nombre: 'EST01' }, { nombre: 'EST02' }]
-                                        #}
-                                        {#
-                                        {% for est in estaciones %}
-                                            <button type="button"
-                                                    class="btn btn-outline-primary btn-sm">
-                                                {{ est.nombre }}
-                                            </button>
-                                        {% endfor %}
-                                        #}
-                                    </div>
-                                {% else %}
-                                    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
-                            <span class="text-muted small text-center">
-                                No hay estaciones registradas para este edificio.
-                            </span>
-                                    </div>
-                                {% endif %}
+                                    <button type="button"
+                                            class="btn btn-outline-success btn-sm"
+                                            onclick="openModal('{{ imagen_plano }}')"
+                                            title="Ver ubicación en el plano">
+                                        <i class="bi bi-geo-alt-fill"></i> {{ estacion }}
+                                    </button>
+                                {% endfor %}
                             </div>
-                        </div>
-                    </div> {# /row #}
+                        {% else %}
+                            <div class="text-muted small mt-2">
+                                No hay estaciones registradas para este edificio.
+                            </div>
+                        {% endif %}
+                    </div>
+
                 </div> {# /card #}
             </div>
 
