@@ -1,0 +1,154 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Espectros de Fourier - {{ estructura.nombre_edificio }}{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h2>Espectros de Fourier: {{ estructura.nombre_edificio }}</h2>
+        <span class="fw-semibold">Sismo del {{ fecha|date("d-m-Y H:i:s ") }} con epicentro  {{ epi }} </span>
+        <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>
+
+        <div class="row mt-4">
+            {% for grafica in graficas %}
+                {# Usamos grafica.grafica como nombre base del archivo #}
+                {% set base_file = grafica.rutaWaveform %}
+
+                <div class="col-12 mb-5">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Estación: {{ grafica.estacion }}</h5>
+                        </div>
+
+                        <div class="card-body">
+                            {# Contenedor único para el gráfico de Fourier #}
+                            <div class="fourier-plot-container"
+                                 id="plot-{{ loop.index }}"
+                                 data-url="{{ asset('assets/waves/' ~ id ~'/edificio/fourier/' ~ base_file ~ '_fourier.json') }}"
+                                 data-title="Espectro de Fourier - Estación {{ grafica.estacion }}"
+                                 style="height: 500px; width: 100%;">
+
+                                {# Spinner de carga mientras Plotly procesa #}
+                                <div class="d-flex justify-content-center align-items-center h-100">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Cargando espectro...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            async function loadAndPlotFourier(url, containerId, title) {
+                const container = document.getElementById(containerId);
+
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+
+                    const traces = [];
+                    const colors = { 'HNE': '#1f77b4', 'HNN': '#ff7f0e', 'HNZ': '#2ca02c' };
+
+                    // Recorremos las componentes (llaves) que vienen en el JSON
+                    for (const componente in data) {
+                        if (data[componente].frecuencias_hz && data[componente].amplitudes) {
+                            traces.push({
+                                x: data[componente].frecuencias_hz,
+                                y: data[componente].amplitudes,
+                                type: 'scatter',
+                                mode: 'lines',
+                                name: `Componente ${componente}`,
+                                line: {
+                                    width: 1.5,
+                                    color: colors[componente] || '#000000'
+                                },
+                                opacity: 0.8
+                            });
+                        }
+                    }
+
+                    // Configuración del gráfico simulando Matplotlib
+                    const layout = {
+                        title: {
+                            text: `<b>${title}</b>`,
+                            font: { size: 14 }
+                        },
+                        xaxis: {
+                            title: 'Frecuencia (Hz)',
+                            type: 'log',
+                            // Limitar de 0.1 a 50 Hz. Plotly requiere el log10 del valor para los rangos.
+                            range: [Math.log10(0.1), Math.log10(50)],
+                            exponentformat: 'power', // Muestra potencias de 10
+                            gridcolor: '#d3d3d3',
+                            griddash: 'dash',
+                            minor: {
+                                showgrid: true,
+                                gridcolor: '#e5e5e5',
+                                griddash: 'dash'
+                            }
+                        },
+                        yaxis: {
+                            title: 'Amplitud de Fourier (m/s)',
+                            type: 'log',
+                            autorange: true,
+                            exponentformat: 'power', // Muestra potencias de 10
+                            gridcolor: '#d3d3d3',
+                            griddash: 'dash',
+                            minor: {
+                                showgrid: true,
+                                gridcolor: '#e5e5e5',
+                                griddash: 'dash'
+                            }
+                        },
+                        margin: { l: 60, r: 30, t: 50, b: 50 },
+                        showlegend: true,
+                        legend: {
+                            x: 1,
+                            xanchor: 'right',
+                            y: 1,
+                            bgcolor: 'rgba(255, 255, 255, 0.8)',
+                            bordercolor: '#d3d3d3',
+                            borderwidth: 1
+                        },
+                        plot_bgcolor: '#ffffff', // Fondo blanco como en matplotlib
+                        paper_bgcolor: '#ffffff'
+                    };
+
+                    const config = {
+                        responsive: true,
+                        displayModeBar: true,
+                        modeBarButtonsToRemove: ['lasso2d', 'select2d']
+                    };
+
+                    // Dibujar el gráfico reemplazando el spinner
+                    container.innerHTML = '';
+                    Plotly.newPlot(container, traces, layout, config);
+
+                } catch (error) {
+                    console.error("Error cargando el JSON:", error);
+                    container.innerHTML = `<div class="alert alert-danger m-3">Error cargando los datos del espectro. Verifique que el archivo <strong>_fourier.json</strong> haya sido generado correctamente.</div>`;
+                }
+            }
+
+            document.querySelectorAll('.fourier-plot-container').forEach(container => {
+                loadAndPlotFourier(
+                    container.dataset.url,
+                    container.id,
+                    container.dataset.title
+                );
+            });
+        });
+    </script>
+{% endblock %}

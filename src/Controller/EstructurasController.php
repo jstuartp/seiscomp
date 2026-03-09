@@ -115,4 +115,35 @@ final class EstructurasController extends AbstractController
         ]);
     }
 
+
+
+    #[Route('/estructuras/espectrosF', name: 'espectrosF', methods: ['POST','GET','PUT'])]
+    public function espectrosFAction(Request $request): Response
+    {
+
+        if ($request->isMethod('POST')) {
+            $evento = $request->request->get('id');
+            $fecha = $request->request->get('fecha');
+            $magnitud = $request->request->get('mag');
+            $epi = $request->request->get('epi');
+            $estructuraid = $request->request->get('estructuraid');
+            $estructuraNombre = $request->request->get('estructuraNombre');
+        }else{echo "NO HAY NADA";}
+        $datos = $this->estructurasRepository->findUbicacionEstructura($estructuraid);
+
+        //Traigo las estaciones que tiene el edificio
+        $estacionesArray = $this->estructurasRepository->findEstacionByEdificio($estructuraNombre);
+        #dd($estacionesArray);
+        //Extraigo todas las graficas  del evento
+        $graficasEdificio = $this->PgaEstructurasRepository->findGraficasByEventoYEstaciones($evento, $estacionesArray);
+        //dd($graficasEdificio);
+
+
+
+        return $this->render('estructuras/espectrosF.html.twig', ['fecha' => $fecha,'datos'=>$datos,'id'=>$evento,
+            'magnitud'=>$magnitud,'epi'=>$epi, 'estructura'=>$datos, 'graficas' => $graficasEdificio,
+            'controller_name' => 'EstructurasController',
+        ]);
+    }
+
 }

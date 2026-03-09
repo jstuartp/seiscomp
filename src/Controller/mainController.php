@@ -262,7 +262,7 @@ class mainController extends AbstractController
     }
 
     /**
-     * @Route("/pga/", name="pga")
+     * @Route("/espectros/", name="espectros")
      */
     #[Route('/espectros/', name:'espectros', methods: ['POST','GET','PUT'])]
     public function espectrosAction(Request $request, EntityManagerInterface $em): Response
@@ -428,6 +428,127 @@ class mainController extends AbstractController
         $result = $stmt->executeQuery();
         $return = $result->fetchAllAssociative();
         return ($return);
+    }
+
+    // =========================================================================
+    // NUEVAS FUNCIONES PARA EL SHAKEMAP
+    // =========================================================================
+
+    #[Route('/shakemaps/', name: 'shakemaps', methods: ['POST','GET','PUT'])]
+    public function shakemap(ManagerRegistry $doctrine, Request $request): Response
+    {
+        //Chequeo los datos que llegan por post del ID y la Fecha
+        if ($request->isMethod('POST')) {
+            $evento = $request->request->get('id');
+            $fecha = $request->request->get('fecha');
+            $magnitud = $request->request->get('mag');
+            $epi_lat = $request->request->get('lat');
+            $epi_long = $request->request->get('long');
+            $epi = $request->request->get('epi');
+        }else{echo "NO HAY NADA";}
+
+        // 1. Obtener la información del evento y de las estaciones (Misma lógica que en pga)
+        //$todosSismos = $doctrine->getRepository(\App\Entity\TodosSismos::class)->find($id_evento);
+        $pgaData = $doctrine->getRepository(\App\Entity\Pga::class)->findBy(['nombre_evento' => $evento]);
+        //$pgaData =$this->repository->findPgaByEventoconNombre($evento);
+/*
+        $epi_lat = $todosSismos->getLatitud();
+        $epi_long = $todosSismos->getLongitud();
+        $magnitud = $todosSismos->getMagnitud();
+        $fecha = $todosSismos->getFecha();
+*/
+        // 2. Preparar el arreglo de estaciones para el algoritmo IDW
+        $estaciones = [];
+        foreach ($pgaData as $pga) {
+            $estaciones[] = [
+                'latitud' => (float)$pga->getLatitud(),
+                'longitud' => (float)$pga->getLongitud(),
+                'maximo' => (float)$pga->getMaximo(), // Asumiendo que esta es la aceleración (PGA)
+                'estacion' => $pga->getEstacion()
+            ];
+        }
+
+        // 3. Generar el archivo GeoJSON (malla de interpolación)
+        $shakeMapGeoJson = $this->generateShakeMapData($estaciones, (float)$epi_lat, (float)$epi_long);
+
+        // 4. Renderizar la nueva vista
+        return $this->render('shakemaps.html.twig', [
+            'epi_lat' => $epi_lat,
+            'epi_long' => $epi_long,
+            'magnitud' => $magnitud,
+            'fecha' => $fecha,
+            'pgaData' => $pgaData, // Pasamos las estaciones para dibujar los triángulos
+            'shakemap_json' => json_encode($shakeMapGeoJson), // Pasamos el GeoJSON generado
+            'id_evento' => $evento
+        ]);
+    }
+
+    /**
+     * Genera una colección de polígonos GeoJSON que representan la intensidad del sismo
+     */
+    private function generateShakeMapData(array $estaciones, float $epiLat, float $epiLong): array
+    {
+        // Definimos un margen de grados alrededor del epicentro para crear la malla
+        $margin = 1.2;
+        $minLat = $epiLat - $margin; $maxLat = $epiLat + $margin;
+        $minLng = $epiLong - $margin; $maxLng = $epiLong + $margin;
+
+        $paso = 0.05; // Resolución de la malla (0.05 grados). Si es muy lento, súbelo a 0.1
+        $features = [];
+
+        for ($lat = $minLat; $lat <= $maxLat; $lat += $paso) {
+            for ($lng = $minLng; $lng <= $maxLng; $lng += $paso) {
+
+                $pgaEstimado = $this->calculateIDW($lat, $lng, $estaciones);
+
+                // Omitir zonas donde la aceleración sea prácticamente nula para ahorrar memoria
+                if ($pgaEstimado > 0.5) {
+                    $features[] = [
+                        'type' => 'Feature',
+                        'geometry' => [
+                            'type' => 'Polygon',
+                            'coordinates' => [[
+                                [$lng, $lat],
+                                [$lng + $paso, $lat],
+                                [$lng + $paso, $lat + $paso],
+                                [$lng, $lat + $paso],
+                                [$lng, $lat]
+                            ]]
+                        ],
+                        'properties' => [
+                            'pga' => round($pgaEstimado, 2)
+                        ]
+                    ];
+                }
+            }
+        }
+
+        return [
+            'type' => 'FeatureCollection',
+            'features' => $features
+        ];
+    }
+
+    /**
+     * Algoritmo de Interpolación IDW (Inverse Distance Weighting)
+     */
+    private function calculateIDW(float $lat, float $lng, array $estaciones): float
+    {
+        $numerador = 0;
+        $denominador = 0;
+        $p = 2; // Potencia del peso
+
+        foreach ($estaciones as $est) {
+            $dist = sqrt(pow($lat - $est['latitud'], 2) + pow($lng - $est['longitud'], 2));
+
+            if ($dist < 0.001) return $est['maximo']; // Evitar división por 0 si está sobre la estación
+
+            $peso = 1 / pow($dist, $p);
+            $numerador += $peso * $est['maximo'];
+            $denominador += $peso;
+        }
+
+        return ($denominador == 0) ? 0 : ($numerador / $denominador);
     }
 
 

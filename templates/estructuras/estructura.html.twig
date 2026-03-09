@@ -35,8 +35,14 @@
         }
 
         //Activa Fourier
-        function abrirFourier() {
-            alert('Abrir Espectro de Fourier');
+        function abrirFourier(id, fecha, mag, epi, estructuraid,estructuraNombre) {
+            //alert('Abrir Espectro de Fourier');
+            var theForm = document.createElement('form');
+            theForm.action = '{{ path('espectrosF') }}';
+            theForm.method = 'post';
+            function add(name, value){ const i = document.createElement('input'); i.type='hidden'; i.name=name; i.value=value; theForm.appendChild(i); }
+            add('id', id); add('fecha', fecha); add('mag', mag); add('epi', epi); add('estructuraid', estructuraid);add('estructuraNombre', estructuraNombre)
+            document.body.appendChild(theForm); theForm.submit();
         }
 
         //Activa cocientes

@@ -1,0 +1,145 @@
+{% extends '/base.html.twig' %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div class="row">
+            <br><br>
+        </div>
+
+        {# Encabezado #}
+        <div class="row">
+            <div class="col-sm-8">
+                <h2 class="mb-4">
+                    {% block page_title %}
+                        ShakeMap: Sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(UTC)
+                        <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>
+                    {% endblock %}
+                </h2>
+            </div>
+            <div class="col-sm-4 text-end">
+                <a href="{{ path('homepage') }}" class="btn btn-success">Inicio</a>
+                <a href="{{ path('pga', {'id_evento': id_evento}) }}" class="btn btn-secondary">Ver Tabla PGA</a>
+            </div>
+        </div>
+
+        {# Mapa (Ocupando todo el ancho) #}
+        <div class="row h-100">
+            <div class="col-12">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <div id="map" style="width: 100%; height: 75vh; border: 1px solid #ccc;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+{% block scriptspie %}
+    {{ parent() }}
+{% endblock %}
+{% block endscrips %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            const starIcon = L.divIcon({
+                html: ' <img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" alt="Estrella" style="width:50%;"> ',
+                className: '',
+                iconSize: [80, 80],
+                iconAnchor: [30, 30]
+            });
+
+            // 1. Inicialización del Mapa
+            var map = L.map('map').setView([{{ epi_lat }}, {{ epi_long }}], 8);
+
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+            }).addTo(map);
+
+            // 2. Función de Colores para el PGA (Mantenemos tu lógica original)
+            function getColor(d) {
+                return d > 60  ? '#D73027' :
+                    d > 40  ? '#cc5200' :
+                        d > 20  ? '#cc8b00' :
+                            d > 10  ? '#ccaa00' :
+                                d > 5   ? '#00cc03' :
+                                    d > 1   ? 'rgba(255,255,255,0.71)' :
+                                        'rgba(255,255,255,0.71)';
+            }
+
+            // Agregar el marcador con estrella
+            L.marker([ {{ epi_lat }}, {{ epi_long }}], {icon: starIcon})
+                .addTo(map)
+                .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1) }}');
+
+            // 3. CAPA SHAKEMAP (GeoJSON inyectado desde el Controller)
+            // Se agrega primero para que quede debajo de los marcadores
+            const shakeMapData = {{ shakemap_json|raw }};
+
+            L.geoJson(shakeMapData, {
+                style: function(feature) {
+                    return {
+                        fillColor: getColor(feature.properties.pga),
+                        weight: 0.6, // Borde muy fino para los rectángulos de la malla
+                        opacity: 1,
+                        color: 'white',
+                        fillOpacity: 0.4 // Transparencia para ver el mapa base
+                    };
+                }
+            }).addTo(map);
+
+            // 4. Marcador del Epicentro (Estrella)
+
+
+            // 5. Marcadores de las Estaciones (Triángulos)
+            {% for item in pgaData %}
+            var stationLat = parseFloat('{{ item.latitud }}');
+            var stationLon = parseFloat('{{ item.longitud }}');
+            var pgaValue = parseFloat('{{ item.maximo }}');
+            var stationName = '{{ item.estacion }}';
+            var colorMarker = getColor(pgaValue);
+
+            var svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100">
+                    <polygon points="50,15 90,85 10,85" style="fill:${colorMarker};stroke:black;stroke-width:3" />
+                </svg>`;
+            //var customIcon = triangleIcon(color, /* tamaño px */ 18, /* fillOpacity */ 0.5, /* stroke */ '#333', /* strokeWidth */ 2);
+
+            var customIcon = L.divIcon({
+                className: 'custom-div-icon',
+                html: svgIcon,
+                iconSize: [10, 10],
+                iconAnchor: [5, 5]
+            });
+
+           // L.marker([stationLat, stationLon], { icon: customIcon }).addTo(map)
+           //     .bindPopup("<b>Estación: " + stationName + "</b><br>PGA: " + pgaValue + " cm/s²");
+            {% endfor %}
+
+            // 6. Leyenda (Misma lógica tuya)
+            var legend = L.control({ position: 'bottomright' });
+
+            legend.onAdd = function (map) {
+                var div = L.DomUtil.create('div', 'info legend'),
+                    grades = [0, 1, 5, 10, 20, 40, 60],
+                    labels = [];
+
+                div.style.backgroundColor = 'white';
+                div.style.padding = '15px';
+                div.style.border = '1px solid #ccc';
+                div.style.borderRadius = '5px';
+
+                div.innerHTML += '<strong>PGA (cm/s²)</strong><br><br>';
+
+                for (var i = 0; i < grades.length; i++) {
+                    div.innerHTML +=
+                        '<i style="background:' + getColor(grades[i] + 1) + '; width: 18px; height: 18px; float: left; margin-right: 8px;"></i> ' +
+                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+                }
+                return div;
+            };
+
+            legend.addTo(map);
+        });
+    </script>
+{% endblock %}
