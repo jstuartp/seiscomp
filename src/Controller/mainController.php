@@ -449,7 +449,7 @@ class mainController extends AbstractController
 
         // 1. Obtener la información del evento y de las estaciones (Misma lógica que en pga)
         //$todosSismos = $doctrine->getRepository(\App\Entity\TodosSismos::class)->find($id_evento);
-        $pgaData = $doctrine->getRepository(\App\Entity\Pga::class)->findBy(['nombre_evento' => $evento]);
+        $jmaData = $doctrine->getRepository(\App\Entity\Jma::class)->findBy(['idEvento' => $evento]);
         //$pgaData =$this->repository->findPgaByEventoconNombre($evento);
 /*
         $epi_lat = $todosSismos->getLatitud();
@@ -459,12 +459,12 @@ class mainController extends AbstractController
 */
         // 2. Preparar el arreglo de estaciones para el algoritmo IDW
         $estaciones = [];
-        foreach ($pgaData as $pga) {
+        foreach ($jmaData as $jma) {
             $estaciones[] = [
-                'latitud' => (float)$pga->getLatitud(),
-                'longitud' => (float)$pga->getLongitud(),
-                'maximo' => (float)$pga->getMaximo(), // Asumiendo que esta es la aceleración (PGA)
-                'estacion' => $pga->getEstacion()
+                'latitud' => (float)$jma->getLat(),
+                'longitud' => (float)$jma->getLon(),
+                'maximo' => (float)$jma->getJma(), // Asumiendo que esta es la aceleración (PGA)
+                'estacion' => $jma->getEstacion()
             ];
         }
 
@@ -477,7 +477,7 @@ class mainController extends AbstractController
             'epi_long' => $epi_long,
             'magnitud' => $magnitud,
             'fecha' => $fecha,
-            'pgaData' => $pgaData, // Pasamos las estaciones para dibujar los triángulos
+            'pgaData' => $jmaData, // Pasamos las estaciones para dibujar los triángulos
             'shakemap_json' => json_encode($shakeMapGeoJson), // Pasamos el GeoJSON generado
             'id_evento' => $evento
         ]);

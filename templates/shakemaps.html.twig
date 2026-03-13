@@ -18,7 +18,6 @@
             </div>
             <div class="col-sm-4 text-end">
                 <a href="{{ path('homepage') }}" class="btn btn-success">Inicio</a>
-                <a href="{{ path('pga', {'id_evento': id_evento}) }}" class="btn btn-secondary">Ver Tabla PGA</a>
             </div>
         </div>
 
@@ -59,13 +58,16 @@
 
             // 2. Función de Colores para el PGA (Mantenemos tu lógica original)
             function getColor(d) {
-                return d > 60  ? '#D73027' :
-                    d > 40  ? '#cc5200' :
-                        d > 20  ? '#cc8b00' :
-                            d > 10  ? '#ccaa00' :
-                                d > 5   ? '#00cc03' :
-                                    d > 1   ? 'rgba(255,255,255,0.71)' :
-                                        'rgba(255,255,255,0.71)';
+                return d > 6.5  ? '#a90000' :
+                    d > 6.0  ? '#f40001' :
+                        d > 5.5  ? '#f77a00' :
+                            d > 5.0  ? '#ffff00' :
+                                d > 4.5   ? '#0bc200' :
+                                    d > 3.5   ? '#00faff' :
+                                        d > 2.5   ? '#0032ff' :
+                                            d > 1.5   ? '#d2d2d2' :
+                                                d > 0.5   ? 'rgba(255,255,255,0)' :
+                                        'rgba(255,255,255,0)';
             }
 
             // Agregar el marcador con estrella
@@ -81,7 +83,7 @@
                 style: function(feature) {
                     return {
                         fillColor: getColor(feature.properties.pga),
-                        weight: 0.6, // Borde muy fino para los rectángulos de la malla
+                        weight: 0.001, // Borde muy fino para los rectángulos de la malla
                         opacity: 1,
                         color: 'white',
                         fillOpacity: 0.4 // Transparencia para ver el mapa base
@@ -94,9 +96,9 @@
 
             // 5. Marcadores de las Estaciones (Triángulos)
             {% for item in pgaData %}
-            var stationLat = parseFloat('{{ item.latitud }}');
-            var stationLon = parseFloat('{{ item.longitud }}');
-            var pgaValue = parseFloat('{{ item.maximo }}');
+            var stationLat = parseFloat('{{ item.lat }}');
+            var stationLon = parseFloat('{{ item.lon }}');
+            var pgaValue = parseFloat('{{ item.jma }}');
             var stationName = '{{ item.estacion }}';
             var colorMarker = getColor(pgaValue);
 
@@ -116,28 +118,49 @@
            //     .bindPopup("<b>Estación: " + stationName + "</b><br>PGA: " + pgaValue + " cm/s²");
             {% endfor %}
 
-            // 6. Leyenda (Misma lógica tuya)
-            var legend = L.control({ position: 'bottomright' });
+            // Nueva función para dibujar rectángulos en lugar de triángulos
+            function legendRectangle(color) {
+                const s = 16;
+                // Usamos x="1" y="1" y restamos 2 al ancho/alto para que el borde (stroke) no se corte
+                return `
+        <svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}"
+             style="vertical-align: middle; margin-right: 6px;">
+          <rect x="1" y="1" width="${s-2}" height="${s-2}"
+                fill="${color}" fill-opacity="0.5"
+                stroke="#333" stroke-width="1.5"/>
+        </svg>`;
+            }
 
-            legend.onAdd = function (map) {
-                var div = L.DomUtil.create('div', 'info legend'),
-                    grades = [0, 1, 5, 10, 20, 40, 60],
-                    labels = [];
+// Definición de rangos en el mismo orden que el getColor (Escala JMA)
+            const legendItems = [
+                { label: '7',  color: '#640064' },
+                { label: '6+', color: '#a90000' },
+                { label: '6-', color: '#f40001' },
+                { label: '5+', color: '#f77a00' },
+                { label: '5-', color: '#ffff00' },
+                { label: '4',  color: '#0bc200' },
+                { label: '3',  color: '#00faff' },
+                { label: '2',  color: '#0032ff' },
+                { label: '1',  color: '#d2d2d2' },
+            ];
 
-                div.style.backgroundColor = 'white';
-                div.style.padding = '15px';
-                div.style.border = '1px solid #ccc';
-                div.style.borderRadius = '5px';
+// Control de Leaflet para la leyenda
+            const legend = L.control({ position: 'topright' });
 
-                div.innerHTML += '<strong>PGA (cm/s²)</strong><br><br>';
+            legend.onAdd = function () {
+                const div = L.DomUtil.create('div', 'info legend');
+                div.innerHTML = '<div class="legend-title" style="margin-bottom: 5px;"><strong>Escala JMA</strong></div>';
 
-                for (var i = 0; i < grades.length; i++) {
-                    div.innerHTML +=
-                        '<i style="background:' + getColor(grades[i] + 1) + '; width: 18px; height: 18px; float: left; margin-right: 8px;"></i> ' +
-                        grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
-                }
+                legendItems.forEach(item => {
+                    div.innerHTML += `
+            <div class="legend-item" style="margin-bottom: 3px;">
+                ${legendRectangle(item.color)}<span>${item.label}</span>
+            </div>`;
+                });
+
                 return div;
             };
+
 
             legend.addTo(map);
         });

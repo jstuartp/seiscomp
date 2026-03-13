@@ -13,7 +13,7 @@ class Jma
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(name:'idEvento', length: 100)]
     private ?string $idEvento = null;
 
     #[ORM\Column(length: 10)]
@@ -30,6 +30,13 @@ class Jma
 
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $jma = null;
+
+
+    #[ORM\Column]
+    private ?float $lat = null;
+
+    #[ORM\Column]
+    private ?float $lon = null;
 
     public function getId(): ?int
     {
@@ -111,6 +118,30 @@ class Jma
     public function setJma(?string $jma): static
     {
         $this->jma = $jma;
+
+        return $this;
+    }
+
+    public function getLat(): ?float
+    {
+        return $this->lat;
+    }
+
+    public function setLat(float $lat): static
+    {
+        $this->lat = $lat;
+
+        return $this;
+    }
+
+    public function getLon(): ?float
+    {
+        return $this->lon;
+    }
+
+    public function setLon(float $lon): static
+    {
+        $this->lon = $lon;
 
         return $this;
     }
