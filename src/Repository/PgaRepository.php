@@ -74,6 +74,8 @@ class PgaRepository extends ServiceEntityRepository
             Pga.idpga as id, 
             Pga.estacion, 
             E.nombre as nombre,
+            E.suelo as suelo,
+            E.zona as zona,
             ROUND(Pga.latitud,3) as latitud, 
             ROUND(Pga.longitud,3) as longitud, 
             ROUND(Pga.hne_pga,4) as hne, 

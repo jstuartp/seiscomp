@@ -310,7 +310,7 @@ class mainController extends AbstractController
         $bbox = [
             'minLat' => 7.8,
             'maxLat' => 11.5,
-            'minLon' => -86.2,
+            'minLon' => -86.9,
             'maxLon' => -81.6,
         ];
 

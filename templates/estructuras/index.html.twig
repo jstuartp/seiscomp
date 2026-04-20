@@ -99,6 +99,7 @@
                              data-fecha="{{ fecha }}"
                              data-cantEstaciones="{{ estaciones|length }}"
                              data-fecha-cr="{{ fecha|date('d/m/Y H:i:s', 'America/Costa_Rica') }}"
+                             data-ex-id="{{ dato.id }}"
                              >
                             <h2 class="accordion-header" id="heading_{{ _id }}">
                                 <button class="accordion-button collapsed" type="button"
@@ -249,6 +250,7 @@
                     const estaciones   = it.getAttribute('data-cantEstaciones')   || '';
                     const epi     = it.getAttribute('data-epi')     || '';
                     const id      = it.getAttribute('data-id')      || '';
+                    const id_ex      = it.getAttribute('data-ex-id')      || '';
                     const icono = buildingIconBI;
 
 
@@ -260,17 +262,17 @@
 
                         const magTxt = isNaN(mag) ? '' : mag.toFixed(1);
                         const popupHtml = `
-                                            <div style="min-width:240px">
-                                              <div><strong>${epi || 'Epicentro no disponible'}</strong></div>
-                                              <div><small>${estaciones} equipos </small></div>
+                        <div style="min-width:240px">
+  <div><strong>${epi || 'Epicentro no disponible'}</strong></div>
+ <div><small>${estaciones} equipos </small></div>
+  <div class="mt-2">
+    <button class="btn btn-sm btn-primary"
+      onclick="enviaDatos('${id}','${fecha}','${mag}','${epi}','${id_ex}')">
+      Ver informe
+    </button>
+  </div>
+</div>`;
 
-                                              <div class="mt-2">
-                                                <button class="btn btn-sm btn-primary"
-                                                  onclick="">
-                                                  Ver estructura
-                                                </button>
-                                              </div>
-                                            </div>`;
                         markerRef.bindPopup(popupHtml);
 
                         //markerRef.on('mouseover', function(){ this.setStyle({ color:'#cc0000', fillColor:'#ff3333', weight:3 }); });
