@@ -58,6 +58,19 @@ class HistoricoSismosRepository extends ServiceEntityRepository
 
     }
 
+    /**
+     * Busca un evento específico por su idEvento.
+     * Retorna el objeto HistoricoSismos o null si no se encuentra.
+     */
+    public function findOneByIdEvento(string $idEvento): ?HistoricoSismos
+    {
+        return $this->createQueryBuilder('h')
+            ->andWhere('h.idEvento = :val')
+            ->setParameter('val', $idEvento)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
 
 
     //    /**

@@ -301,6 +301,68 @@ class mainController extends AbstractController
     }
 
 
+
+    /**
+     * @Route("/movil/", name="pga_movil")
+     */
+    #[Route('/movil/pga/', name:'pga_movil', methods: ['POST','GET','PUT'])]
+    public function pgaMobileAction(Request $request, EntityManagerInterface $em): Response
+    {
+        //Chequeo los datos que llegan por post del ID y la Fecha
+
+        $evento = $request->query->get('id');
+
+        //Activo el repositorio para traer todos los datos del evento buscado
+        $MyEvento = $this->historicoSismosRepository->findOneByIdEvento($evento);
+        // 3. Formateamos la respuesta usando los getters de la entidad
+        $datosEvento = [
+            'idEvento'    => $MyEvento->getIdEvento(),
+            'fecha'       => $MyEvento->getFechaEvento()->format('Y-m-d H:i:s'),
+            'latitud'     => $MyEvento->getLatitudEvento(),
+            'longitud'    => $MyEvento->getLongitudEvento(),
+            'magnitud'    => $MyEvento->getMagnitudEvento(),
+            'lugar'       => $this->CalculaEpicentro($MyEvento->getLatitudEvento(),$MyEvento->getLongitudEvento()),
+        ];
+
+        //Activo el repositorio para traer los datos de PGA segun el evento
+        $datosPga = $this->repository->findPgaByEventoconNombre($evento);
+
+        // Listado SMHR a excluir de la lista
+        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
+            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
+
+        $datosPgaFiltrados = array_filter($datosPga, function ($item) use ($estacionesExcluir) {
+            // Se excluyen únicamente las estaciones en la lista,
+            return !in_array($item['estacion'], $estacionesExcluir, true);
+        });
+
+        // 3. Ordenar de mayor a menor PGA y extraer el TOP 5
+        usort($datosPgaFiltrados, function($a, $b) {
+            return $b['maximo'] <=> $a['maximo'];
+        });
+        $top5Pga = array_slice($datosPgaFiltrados, 0, 5);
+
+
+        return $this->render('pga_movil.html.twig', [
+            'id' => $datosEvento['idEvento'],
+            'fecha' => $datosEvento['fecha'],
+            'magnitud' => $datosEvento['magnitud'],
+            'epi_lat' => $datosEvento['latitud'],
+            'epi_long' => $datosEvento['longitud'],
+            'epi' => $datosEvento['lugar'],
+            'datos' => $datosPgaFiltrados, // Todos los datos para mapear
+            'top5' => $top5Pga             // Solo 5 para el listado
+        ]);
+    }
+
+
+
+
+
+
+
+
+
     /**
      * Filtrado por “bounding box” (AABB) con margen amplio para Costa Rica.
      * Mantiene únicamente los puntos dentro del rectángulo [minLat,maxLat] x [minLon,maxLon].
@@ -379,6 +441,11 @@ class mainController extends AbstractController
             $long = $request->get('long');
             $informe = $request->get('informe');
             $epi = $request->get('epi');
+            if (empty($epi)) {
+                // se recalcula el epicentro
+                $epi = $this->CalculaEpicentro($lat, $long);
+            }
+
         }else{echo "NO HAY NADA";}
 
         return $this->render('informe.html.twig',

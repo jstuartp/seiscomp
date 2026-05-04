@@ -14,25 +14,25 @@ class HistoricoSismos
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(name: 'idEvento',length: 100)]
     private ?string $idEvento = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(name: 'fechaEvento',type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $fechaEvento = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: 'latitudEvento')]
     private ?float $latitudEvento = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: 'longitudEvento')]
     private ?float $longitudEvento = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: 'magnitudEvento')]
     private ?float $magnitudEvento = null;
 
-    #[ORM\Column]
+    #[ORM\Column(name: 'aceleracionEvento',)]
     private ?float $aceleracionEvento = null;
 
-    #[ORM\Column(length: 30)]
+    #[ORM\Column(name: 'lugarAceleracion',length: 30)]
     private ?string $lugarAceleracion = null;
 
     public function getId(): ?int

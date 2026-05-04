@@ -1,0 +1,141 @@
+{% extends '/base.html.twig' %}
+
+{% block page_title %}Informe Sísmico - M {{ magnitud|round(1) }}{% endblock %}
+
+{% block body %}
+    <div class="container-fluid p-2" style="max-width: 600px; margin: 0 auto;">
+
+        <!-- Encabezado Resumido -->
+        <div class="text-center mb-3 mt-2">
+            <h4 class="mb-1 fw-bold">Sismo M {{ magnitud|round(1) }}</h4>
+            <div class="text-muted small">{{ fecha|date("d-m-Y H:i:s") }} UTC</div>
+            <div class="mt-2 small fw-semibold text-primary">{{ epi }}</div>
+        </div>
+
+        <!-- Mapa "Estático" -->
+        <div class="card shadow-sm mb-3 border-0">
+            <div id="map" style="width: 100%; height: 350px; border-radius: 8px;"></div>
+        </div>
+
+        <!-- Top 5 Aceleraciones -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white py-2">
+                <h6 class="mb-0 text-center"><i class="bi bi-graph-up-arrow"></i> Top 5 Aceleraciones Máximas</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped mb-0 text-center" style="font-size: 13px;">
+                        <thead>
+                        <tr>
+                            <th>Estación</th>
+                            <th>Z</th>
+                            <th>N</th>
+                            <th>E</th>
+                            <th>Max (cm/s²)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for dato in top5 %}
+                            {% set pga = dato.maximo %}
+                            {% if pga > 60 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
+                            {% elseif pga > 40 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
+                            {% elseif pga > 20 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
+                            {% elseif pga > 10 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
+                            {% elseif pga > 5 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
+                            {% elseif pga > 1 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
+                            {% else %}             {% set color = '#0058cc' %} {% set text_color = 'white' %}
+                            {% endif %}
+
+                            <tr>
+                                <td class="fw-bold">{{ dato.estacion }}</td>
+                                <td>{{ dato.hnz|round(1) }}</td>
+                                <td>{{ dato.hnn|round(1) }}</td>
+                                <td>{{ dato.hne|round(1) }}</td>
+                                <td style="background-color: {{ color }}; color: {{ text_color }}; font-weight: bold;">
+                                    {{ pga|round(2) }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-3 mb-4">
+            <a href="{{ path('informe', {'id': id,
+                'fecha': fecha,
+                'mag': magnitud,
+                'lat': epi_lat,
+                'long': epi_long,
+                'informe': 1}) }}" class="btn btn-outline-primary btn-sm">Ver Informe Completo Interactivo</a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block endscrips %}
+    {{ parent() }}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Se deshabilitan interacciones para que actúe como una imagen estática en el móvil
+            var map = L.map('map', {
+                zoomControl: false,
+                dragging: false,
+                touchZoom: false,
+                scrollWheelZoom: false,
+                doubleClickZoom: false,
+                boxZoom: false,
+                keyboard: false
+            }).setView([0, 0], 2);
+
+            let bounds = L.latLngBounds([7.886, -84.409], [11.019, -82.976]);
+            map.fitBounds(bounds);
+
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: ''
+            }).addTo(map);
+
+            const starIcon = L.divIcon({
+                html: '<img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" alt="Estrella" style="width:30px;">',
+                className: '',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            L.marker([{{ epi_lat }}, {{ epi_long }}], {icon: starIcon}).addTo(map);
+
+            function getColor(valor) {
+                if (valor > 60) return "#cc0000";
+                if (valor > 40) return '#cc5200';
+                if (valor > 20) return '#cc8b00';
+                if (valor > 10) return '#ccaa00';
+                if (valor > 5) return '#88cc00';
+                if (valor > 1) return '#00cc03';
+                return '#0058cc';
+            }
+
+            function triangleIcon(color) {
+                const s = 14;
+                const points = `${s/2},2 ${s-2},${s-2} 2,${s-2}`;
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
+                                <polygon points="${points}" fill="${color}" fill-opacity="0.8" stroke="#333" stroke-width="1" />
+                             </svg>`;
+                return L.divIcon({
+                    html: svg, className: 'triangle-icon', iconSize: [s, s], iconAnchor: [s/2, s/2]
+                });
+            }
+
+            var puntos = [
+                {% for dato in datos %}
+                { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo }} }
+                {% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            puntos.forEach(function (punto) {
+                L.marker([punto.lat, punto.lng], {icon: triangleIcon(getColor(punto.max))}).addTo(map);
+            });
+        });
+    </script>
+{% endblock %}
