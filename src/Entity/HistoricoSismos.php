@@ -35,6 +35,12 @@ class HistoricoSismos
     #[ORM\Column(name: 'lugarAceleracion',length: 30)]
     private ?string $lugarAceleracion = null;
 
+    #[ORM\Column(name: 'profundidadEvento',)]
+    private ?float $profundidadEvento = null;
+
+    #[ORM\Column(name: 'informe',)]
+    private ?float $informe = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -115,6 +121,30 @@ class HistoricoSismos
     public function setAceleracionEvento(float $aceleracionEvento): static
     {
         $this->aceleracionEvento = $aceleracionEvento;
+
+        return $this;
+    }
+
+    public function getProfundidadEvento(): ?float
+    {
+        return $this->profundidadEvento;
+    }
+
+    public function setProfundidadEvento(float $profundidadEvento): static
+    {
+        $this->profundidadEvento = $profundidadEvento;
+
+        return $this;
+    }
+
+    public function getInforme(): ?float
+    {
+        return $this->informe;
+    }
+
+    public function setInforme(float $informe): static
+    {
+        $this->informe = $informe;
 
         return $this;
     }

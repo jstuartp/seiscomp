@@ -314,7 +314,7 @@ class mainController extends AbstractController
 
         //Activo el repositorio para traer todos los datos del evento buscado
         $MyEvento = $this->historicoSismosRepository->findOneByIdEvento($evento);
-        // 3. Formateamos la respuesta usando los getters de la entidad
+        // Formateamos la respuesta usando los getters de la entidad
         $datosEvento = [
             'idEvento'    => $MyEvento->getIdEvento(),
             'fecha'       => $MyEvento->getFechaEvento()->format('Y-m-d H:i:s'),
@@ -433,23 +433,46 @@ class mainController extends AbstractController
     {
         //Chequeo los datos que llegan por post del ID y la Fecha
 
-        if ($request->isMethod('POST') or $request->isMethod('GET')) {
-            $evento = $request->get('id');
-            $fecha = $request->get('fecha');
-            $mag = $request->get('mag');
-            $lat = $request->get('lat');
-            $long = $request->get('long');
-            $informe = $request->get('informe');
-            $epi = $request->get('epi');
+        if ($request->isMethod('POST') ) {
+            $datosEvento = [
+                'idEvento'    => $request->get('id'),
+                'fecha'       => $request->get('fecha'),
+                'latitud'     => $request->get('lat'),
+                'longitud'    => $request->get('long'),
+                'magnitud'    => $request->get('mag'),
+                'informe'     => $request->get('informe'),
+                'lugar'       => $request->get('epi'),
+            ];
             if (empty($epi)) {
                 // se recalcula el epicentro
-                $epi = $this->CalculaEpicentro($lat, $long);
+                $epi = $this->CalculaEpicentro($datosEvento['latitud'], $datosEvento['longitud']);
             }
 
-        }else{echo "NO HAY NADA";}
+        }else if ($request->isMethod('GET')) {
+            $evento = $request->query->get('id');
+            //Activo el repositorio para traer todos los datos del evento buscado
+            $MyEvento = $this->historicoSismosRepository->findOneByIdEvento($evento);
+            // 3. Formateamos la respuesta usando los getters de la entidad
+            $datosEvento = [
+                'idEvento'    => $MyEvento->getIdEvento(),
+                'fecha'       => $MyEvento->getFechaEvento()->format('Y-m-d H:i:s'),
+                'latitud'     => $MyEvento->getLatitudEvento(),
+                'longitud'    => $MyEvento->getLongitudEvento(),
+                'magnitud'    => $MyEvento->getMagnitudEvento(),
+                'informe'     => $MyEvento->getInforme(),
+                'lugar'       => $this->CalculaEpicentro($MyEvento->getLatitudEvento(),$MyEvento->getLongitudEvento()),
+            ];
+        }
 
         return $this->render('informe.html.twig',
-            ['title'=> "Datos del Sismo: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento,'lat'=>$lat,'long'=>$long,'informe'=>$informe,'epi'=>$epi]);
+            ['title'=> "Datos del Sismo: ",
+                'id' => $datosEvento['idEvento'],
+                'fecha' => $datosEvento['fecha'],
+                'magnitud' => $datosEvento['magnitud'],
+                'lat' => $datosEvento['latitud'],
+                'long' => $datosEvento['longitud'],
+                'informe' => $datosEvento['informe'],
+                'epi' => $datosEvento['lugar'],]);
     }
 
 
