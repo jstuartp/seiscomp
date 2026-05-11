@@ -359,6 +359,60 @@ class mainController extends AbstractController
 
 
 
+    /**
+     * @Route("/movil/", name="jma_movil")
+     */
+    #[Route('/movil/jma/', name:'jma_movil', methods: ['POST','GET','PUT'])]
+    public function jmaMobileAction(Request $request, EntityManagerInterface $em): Response
+    {
+        //Chequeo los datos que llegan por post del ID y la Fecha
+
+        $evento = $request->query->get('id');
+
+        //Activo el repositorio para traer todos los datos del evento buscado
+        $MyEvento = $this->historicoSismosRepository->findOneByIdEvento($evento);
+        // Formateamos la respuesta usando los getters de la entidad
+        $datosEvento = [
+            'idEvento'    => $MyEvento->getIdEvento(),
+            'fecha'       => $MyEvento->getFechaEvento()->format('Y-m-d H:i:s'),
+            'latitud'     => $MyEvento->getLatitudEvento(),
+            'longitud'    => $MyEvento->getLongitudEvento(),
+            'magnitud'    => $MyEvento->getMagnitudEvento(),
+            'lugar'       => $this->CalculaEpicentro($MyEvento->getLatitudEvento(),$MyEvento->getLongitudEvento()),
+        ];
+
+        //Activo el repositorio para traer los datos de PGA segun el evento
+        $datosJma = $this->jmaRepository->findJmaWithNameByEvent($evento);
+
+        // Listado SMHR a excluir de la lista
+        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
+            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
+
+        $datosJmaFiltrados = array_filter($datosJma, function ($item) use ($estacionesExcluir) {
+            // Se excluyen únicamente las estaciones en la lista,
+            return !in_array($item['estacion'], $estacionesExcluir, true);
+        });
+
+        // 3. Ordenar de mayor a menor PGA y extraer el TOP 5
+        usort($datosJmaFiltrados, function($a, $b) {
+            return $b['maximo'] <=> $a['maximo'];
+        });
+        $top5Jma = array_slice($datosJmaFiltrados, 0, 5);
+
+
+        return $this->render('jma_movil.html.twig', [
+            'id' => $datosEvento['idEvento'],
+            'fecha' => $datosEvento['fecha'],
+            'magnitud' => $datosEvento['magnitud'],
+            'epi_lat' => $datosEvento['latitud'],
+            'epi_long' => $datosEvento['longitud'],
+            'epi' => $datosEvento['lugar'],
+            'datos' => $datosJmaFiltrados, // Todos los datos para mapear
+            'top5' => $top5Jma             // Solo 5 para el listado
+        ]);
+    }
+
+
 
 
 
