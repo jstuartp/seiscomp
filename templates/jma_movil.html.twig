@@ -86,8 +86,8 @@
             let bounds = L.latLngBounds([8.03, -85.95], [11.22, -82.55]);
             map.fitBounds(bounds);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; UCR-LIS'
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: '&copy; LIS-UCR'
             }).addTo(map);
 
             // Icono para el epicentro (Estrella)
@@ -147,17 +147,24 @@
             });
 
             // Leyenda JMA (Compacta)
-            const legend = L.control({ position: 'topright' });
+            const legend = L.control({ position: 'bottomleft' });
             legend.onAdd = function () {
                 const div = L.DomUtil.create('div', 'info legend');
                 const items = [
-                    { l: '7', c: '#640064' }, { l: '6+', c: '#a90000' },
-                    { l: '5+', c: '#f77a00' }, { l: '4', c: '#0bc200' },
-                    { l: '2', c: '#0032ff' }, { l: '0', c: '#ffffff' }
+                    { label: '7',  color: '#640064' },
+                    { label: '6+', color: '#a90000' },
+                    { label: '6-', color: '#f40001' },
+                    { label: '5+', color: '#f77a00' },
+                    { label: '5-', color: '#ffff00' },
+                    { label: '4',  color: '#0bc200' },
+                    { label: '3',  color: '#00faff' },
+                    { label: '2',  color: '#0032ff' },
+                    { label: '1',  color: '#d2d2d2' },
+                    { label: '0',  color: '#ffffff' }
                 ];
                 div.innerHTML = '<b>Escala JMA</b><br>';
                 items.forEach(i => {
-                    div.innerHTML += `<div class="legend-item"><svg width="10" height="10"><polygon points="5,1 9,9 1,9" fill="${i.c}" stroke="#000"/></svg> ${i.l}</div>`;
+                    div.innerHTML += `<div class="legend-item"><svg width="10" height="10"><polygon points="5,1 9,9 1,9" fill="${i.color}" stroke="#000"/></svg> ${i.label}</div>`;
                 });
                 return div;
             };
