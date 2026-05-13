@@ -97,7 +97,7 @@
                 iconSize: [20, 20],
                 iconAnchor: [10, 10]
             });
-            L.marker([{{ epi_lat }}, {{ epi_long }}], {icon: starIcon}).addTo(map).bindPopup("Epicentro");
+
 
             // Función para dibujar los triángulos de intensidad
             function triangleIcon(color) {
@@ -109,6 +109,22 @@
                 return L.divIcon({
                     html: svg, className: 'triangle-icon', iconSize: [s, s], iconAnchor: [s/2, s/2]
                 });
+            }
+
+            //Funcion para alterar el indice de los triangulos
+            //escribe los mas intesos sobre los menos
+            function getIndex(valor) {
+
+                if (valor < 0.5) return 0;   // Medio
+                else if (valor < 1.5) return 1 * 2000;   // Medio
+                else if (valor < 2.5) return 2 *2000;   // Medio
+                else if (valor < 3.5) return 3*2000;   // Medio
+                else if (valor < 4.5) return 4*2000;   // Medio
+                else if (valor < 5.0 ) return 5*2000;   // Medio
+                else if (valor < 5.5 ) return 6*2000;   // Medio
+                else if (valor < 6.0 ) return 7*2000;   // Medio
+                else if (valor < 6.5 ) return 8*2000;   // Medio
+                else return 9*2000;                   // Bajo
             }
 
             function getColor(valor) {
@@ -139,12 +155,15 @@
 
             puntos.forEach(function (punto) {
                 const color = getColor(punto.max);
-                const icono = triangleIcon(color, /* tamaño px */ 18, /* fillOpacity */ 0.5, /* stroke */ '#333', /* strokeWidth */ 2);
+                const icono = triangleIcon(color, /* tamaño px */ 10, /* fillOpacity */ 10, /* stroke */ '#333', /* strokeWidth */ 2);
 
-                L.marker([punto.lat, punto.lng], {icon: icono})
+                L.marker([punto.lat, punto.lng], {icon: icono, zIndexOffset: getIndex(punto.max)})
                     .addTo(map)
                     .bindPopup(punto.datos);
             });
+
+            //Estrella para marcar el epicentro
+            L.marker([{{ epi_lat }}, {{ epi_long }}], {icon: starIcon, zIndexOffset:50000}).addTo(map).bindPopup("Epicentro");
 
             // Leyenda JMA (Compacta)
             const legend = L.control({ position: 'bottomleft' });

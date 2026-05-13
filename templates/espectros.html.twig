@@ -40,9 +40,12 @@
                         {% for dato in datos %}
                             <tr>
                                 <td class="align-middle fw-bold">{{ dato.nombre }} ({{ dato.estacion }})</td>
-                                <td class="align-middle fw-bold">{{ dato.suelo |replace({'S1': 'Roca', 'S2': 'Firme', 'S3': 'Blando','S4':'Muy Blando'})}} </td>
+                                <td class="align-middle fw-bold">{{ dato.suelo |replace({'S1': 'Roca','s1': 'Roca',
+                                        'S2': 'Firme','s2': 'Firme',
+                                        'S3': 'Blando', 's3': 'Blando','s4':'Muy Blando','S4':'Muy Blando'})}} </td>
                                 <td class="align-middle fw-bold">{{ dato.zona |replace({'zII': 'Zona II (Baja/Media - Caribe)',
-                                        'zIII': 'Zona III (Alta - Centro)', 'zIV': 'Zona IV (Muy Alta - Pacífico)'})}} </td>
+                                        'zIII': 'Zona III (Alta - Centro)', 'z4': 'Zona IV (Muy Alta - Pacífico)',
+                                        'zIV': 'Zona IV (Muy Alta - Pacífico)'})}} </td>
 
                                 <td class="align-middle">{{ dato.maximo | round(2) }}</td>
 

@@ -393,12 +393,16 @@ class mainController extends AbstractController
             return !in_array($item['estacion'], $estacionesExcluir, true);
         });
 
-        // 3. Ordenar de mayor a menor PGA y extraer el TOP 5
+        // Ordenar de mayor a menor JMA y extraer el TOP 5
         usort($datosJmaFiltrados, function($a, $b) {
-            return $b['maximo'] <=> $a['maximo'];
+            return $b['threshold_a0'] <=> $a['threshold_a0'];
         });
         $top5Jma = array_slice($datosJmaFiltrados, 0, 5);
 
+        //se invierte el orden para enviar el arreglo y que se dibuje el mas debil primero
+        usort($datosJmaFiltrados, function($a, $b) {
+            return $a['threshold_a0'] <=> $b['threshold_a0'];
+        });
 
         return $this->render('jma_movil.html.twig', [
             'id' => $datosEvento['idEvento'],
