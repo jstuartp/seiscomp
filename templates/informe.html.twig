@@ -1,523 +1,308 @@
 {% extends 'base.html.twig' %}
 
-
-
 {% block body %}
 
     <script>
-        function enviaDatos (id, fecha, mag,lat,long,epi) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6;
-            // Start by creating a <form>
+        // [Tus funciones originales enviaDatos, intensidadJma, etc. se mantienen igual]
+        function enviaDatos(id, fecha, mag, lat, long, epi) {
+            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5, newInput6;
             theForm = document.createElement('form');
             theForm.action = '{{ path('pga') }}';
             theForm.method = 'post';
-            // Next create the <input>s in the form and give them names and values
-            newInput1 = document.createElement('input');
-            newInput1.type = 'hidden';
-            newInput1.name = 'id';
-            newInput1.value = id;
-            newInput2 = document.createElement('input');
-            newInput2.type = 'hidden';
-            newInput2.name = 'fecha';
-            newInput2.value = fecha;
-            newInput3 = document.createElement('input');
-            newInput3.type = 'hidden';
-            newInput3.name = 'mag';
-            newInput3.value = mag;
-            newInput4 = document.createElement('input');
-            newInput4.type = 'hidden';
-            newInput4.name = 'lat';
-            newInput4.value = lat;
-            newInput5 = document.createElement('input');
-            newInput5.type = 'hidden';
-            newInput5.name = 'long';
-            newInput5.value = long;
-            newInput6 = document.createElement('input');
-            newInput6.type = 'hidden';
-            newInput6.name = 'epi';
-            newInput6.value = epi;
-            // Now put everything together...
-            theForm.appendChild(newInput1);
-            theForm.appendChild(newInput2);
-            theForm.appendChild(newInput3);
-            theForm.appendChild(newInput4);
-            theForm.appendChild(newInput5);
-            theForm.appendChild(newInput6);
-            // ...and it to the DOM...
+            newInput1 = document.createElement('input'); newInput1.type = 'hidden'; newInput1.name = 'id'; newInput1.value = id;
+            newInput2 = document.createElement('input'); newInput2.type = 'hidden'; newInput2.name = 'fecha'; newInput2.value = fecha;
+            newInput3 = document.createElement('input'); newInput3.type = 'hidden'; newInput3.name = 'mag'; newInput3.value = mag;
+            newInput4 = document.createElement('input'); newInput4.type = 'hidden'; newInput4.name = 'lat'; newInput4.value = lat;
+            newInput5 = document.createElement('input'); newInput5.type = 'hidden'; newInput5.name = 'long'; newInput5.value = long;
+            newInput6 = document.createElement('input'); newInput6.type = 'hidden'; newInput6.name = 'epi'; newInput6.value = epi;
+            theForm.appendChild(newInput1); theForm.appendChild(newInput2); theForm.appendChild(newInput3);
+            theForm.appendChild(newInput4); theForm.appendChild(newInput5); theForm.appendChild(newInput6);
             document.getElementById('hidden_form_container').appendChild(theForm);
-            // ...and submit it
             theForm.submit();
         }
 
-        function intensidadJma (id, fecha, mag,lat,long,epi) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6;
-            // Start by creating a <form>
-            theForm = document.createElement('form');
+        function intensidadJma(id, fecha, mag, lat, long, epi) {
+            var theForm = document.createElement('form');
             theForm.action = '{{ path('jma') }}';
             theForm.method = 'post';
-            // Next create the <input>s in the form and give them names and values
-            newInput1 = document.createElement('input');
-            newInput1.type = 'hidden';
-            newInput1.name = 'id';
-            newInput1.value = id;
-            newInput2 = document.createElement('input');
-            newInput2.type = 'hidden';
-            newInput2.name = 'fecha';
-            newInput2.value = fecha;
-            newInput3 = document.createElement('input');
-            newInput3.type = 'hidden';
-            newInput3.name = 'mag';
-            newInput3.value = mag;
-            newInput4 = document.createElement('input');
-            newInput4.type = 'hidden';
-            newInput4.name = 'lat';
-            newInput4.value = lat;
-            newInput5 = document.createElement('input');
-            newInput5.type = 'hidden';
-            newInput5.name = 'long';
-            newInput5.value = long;
-            newInput6 = document.createElement('input');
-            newInput6.type = 'hidden';
-            newInput6.name = 'epi';
-            newInput6.value = epi;
-            // Now put everything together...
-            theForm.appendChild(newInput1);
-            theForm.appendChild(newInput2);
-            theForm.appendChild(newInput3);
-            theForm.appendChild(newInput4);
-            theForm.appendChild(newInput5);
-            theForm.appendChild(newInput6);
-            // ...and it to the DOM...
+            ['id', 'fecha', 'mag', 'lat', 'long', 'epi'].forEach((name, idx) => {
+                let input = document.createElement('input'); input.type = 'hidden'; input.name = name;
+                input.value = [id, fecha, mag, lat, long, epi][idx];
+                theForm.appendChild(input);
+            });
             document.getElementById('hidden_form_container').appendChild(theForm);
-            // ...and submit it
             theForm.submit();
         }
 
-        function edificios (id, fecha, mag,lat,long,epi) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6;
-            // Start by creating a <form>
-            theForm = document.createElement('form');
+        function edificios(id, fecha, mag, lat, long, epi) {
+            var theForm = document.createElement('form');
             theForm.action = '{{ path('app_estructuras') }}';
             theForm.method = 'post';
-            // Next create the <input>s in the form and give them names and values
-            newInput1 = document.createElement('input');
-            newInput1.type = 'hidden';
-            newInput1.name = 'id';
-            newInput1.value = id;
-            newInput2 = document.createElement('input');
-            newInput2.type = 'hidden';
-            newInput2.name = 'fecha';
-            newInput2.value = fecha;
-            newInput3 = document.createElement('input');
-            newInput3.type = 'hidden';
-            newInput3.name = 'mag';
-            newInput3.value = mag;
-            newInput4 = document.createElement('input');
-            newInput4.type = 'hidden';
-            newInput4.name = 'lat';
-            newInput4.value = lat;
-            newInput5 = document.createElement('input');
-            newInput5.type = 'hidden';
-            newInput5.name = 'long';
-            newInput5.value = long;
-            newInput6 = document.createElement('input');
-            newInput6.type = 'hidden';
-            newInput6.name = 'epi';
-            newInput6.value = epi;
-            // Now put everything together...
-            theForm.appendChild(newInput1);
-            theForm.appendChild(newInput2);
-            theForm.appendChild(newInput3);
-            theForm.appendChild(newInput4);
-            theForm.appendChild(newInput5);
-            theForm.appendChild(newInput6);
-            // ...and it to the DOM...
+            ['id', 'fecha', 'mag', 'lat', 'long', 'epi'].forEach((name, idx) => {
+                let input = document.createElement('input'); input.type = 'hidden'; input.name = name;
+                input.value = [id, fecha, mag, lat, long, epi][idx];
+                theForm.appendChild(input);
+            });
             document.getElementById('hidden_form_container').appendChild(theForm);
-            // ...and submit it
             theForm.submit();
         }
 
-        function espectros (id, fecha, mag,lat,long,epi) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6;
-            // Start by creating a <form>
-            theForm = document.createElement('form');
+        function espectros(id, fecha, mag, lat, long, epi) {
+            var theForm = document.createElement('form');
             theForm.action = '{{ path('espectros') }}';
             theForm.method = 'post';
-            // Next create the <input>s in the form and give them names and values
-            newInput1 = document.createElement('input');
-            newInput1.type = 'hidden';
-            newInput1.name = 'id';
-            newInput1.value = id;
-            newInput2 = document.createElement('input');
-            newInput2.type = 'hidden';
-            newInput2.name = 'fecha';
-            newInput2.value = fecha;
-            newInput3 = document.createElement('input');
-            newInput3.type = 'hidden';
-            newInput3.name = 'mag';
-            newInput3.value = mag;
-            newInput4 = document.createElement('input');
-            newInput4.type = 'hidden';
-            newInput4.name = 'lat';
-            newInput4.value = lat;
-            newInput5 = document.createElement('input');
-            newInput5.type = 'hidden';
-            newInput5.name = 'long';
-            newInput5.value = long;
-            newInput6 = document.createElement('input');
-            newInput6.type = 'hidden';
-            newInput6.name = 'epi';
-            newInput6.value = epi;
-            // Now put everything together...
-            theForm.appendChild(newInput1);
-            theForm.appendChild(newInput2);
-            theForm.appendChild(newInput3);
-            theForm.appendChild(newInput4);
-            theForm.appendChild(newInput5);
-            theForm.appendChild(newInput6);
-            // ...and it to the DOM...
+            ['id', 'fecha', 'mag', 'lat', 'long', 'epi'].forEach((name, idx) => {
+                let input = document.createElement('input'); input.type = 'hidden'; input.name = name;
+                input.value = [id, fecha, mag, lat, long, epi][idx];
+                theForm.appendChild(input);
+            });
             document.getElementById('hidden_form_container').appendChild(theForm);
-            // ...and submit it
             theForm.submit();
         }
 
-        function shakemaps (id, fecha, mag,lat,long,epi) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5,newInput6;
-            // Start by creating a <form>
-            theForm = document.createElement('form');
+        function shakemaps(id, fecha, mag, lat, long, epi) {
+            var theForm = document.createElement('form');
             theForm.action = '{{ path('shakemaps') }}';
             theForm.method = 'post';
-            // Next create the <input>s in the form and give them names and values
-            newInput1 = document.createElement('input');
-            newInput1.type = 'hidden';
-            newInput1.name = 'id';
-            newInput1.value = id;
-            newInput2 = document.createElement('input');
-            newInput2.type = 'hidden';
-            newInput2.name = 'fecha';
-            newInput2.value = fecha;
-            newInput3 = document.createElement('input');
-            newInput3.type = 'hidden';
-            newInput3.name = 'mag';
-            newInput3.value = mag;
-            newInput4 = document.createElement('input');
-            newInput4.type = 'hidden';
-            newInput4.name = 'lat';
-            newInput4.value = lat;
-            newInput5 = document.createElement('input');
-            newInput5.type = 'hidden';
-            newInput5.name = 'long';
-            newInput5.value = long;
-            newInput6 = document.createElement('input');
-            newInput6.type = 'hidden';
-            newInput6.name = 'epi';
-            newInput6.value = epi;
-            // Now put everything together...
-            theForm.appendChild(newInput1);
-            theForm.appendChild(newInput2);
-            theForm.appendChild(newInput3);
-            theForm.appendChild(newInput4);
-            theForm.appendChild(newInput5);
-            theForm.appendChild(newInput6);
-            // ...and it to the DOM...
+            ['id', 'fecha', 'mag', 'lat', 'long', 'epi'].forEach((name, idx) => {
+                let input = document.createElement('input'); input.type = 'hidden'; input.name = name;
+                input.value = [id, fecha, mag, lat, long, epi][idx];
+                theForm.appendChild(input);
+            });
             document.getElementById('hidden_form_container').appendChild(theForm);
-            // ...and submit it
             theForm.submit();
         }
 
-        function enviaEpicentro (id, fecha, mag,lat,long,epi) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5, newInput6;
-            // Start by creating a <form>
-            theForm = document.createElement('form');
+        function enviaEpicentro(id, fecha, mag, lat, long, epi) {
+            var theForm = document.createElement('form');
             theForm.action = '{{ path('epicentro') }}';
             theForm.method = 'post';
-            // Next create the <input>s in the form and give them names and values
-            newInput1 = document.createElement('input');
-            newInput1.type = 'hidden';
-            newInput1.name = 'id';
-            newInput1.value = id;
-            newInput2 = document.createElement('input');
-            newInput2.type = 'hidden';
-            newInput2.name = 'fecha';
-            newInput2.value = fecha;
-            newInput3 = document.createElement('input');
-            newInput3.type = 'hidden';
-            newInput3.name = 'mag';
-            newInput3.value = mag;
-            newInput4 = document.createElement('input');
-            newInput4.type = 'hidden';
-            newInput4.name = 'lat';
-            newInput4.value = lat;
-            newInput5 = document.createElement('input');
-            newInput5.type = 'hidden';
-            newInput5.name = 'long';
-            newInput5.value = long;
-            newInput6 = document.createElement('input');
-            newInput6.type = 'hidden';
-            newInput6.name = 'epi';
-            newInput6.value = epi;
-            // Now put everything together...
-            theForm.appendChild(newInput1);
-            theForm.appendChild(newInput2);
-            theForm.appendChild(newInput3);
-            theForm.appendChild(newInput4);
-            theForm.appendChild(newInput5);
-            theForm.appendChild(newInput6);
-            // ...and it to the DOM...
+            ['id', 'fecha', 'mag', 'lat', 'long', 'epi'].forEach((name, idx) => {
+                let input = document.createElement('input'); input.type = 'hidden'; input.name = name;
+                input.value = [id, fecha, mag, lat, long, epi][idx];
+                theForm.appendChild(input);
+            });
             document.getElementById('hidden_form_container').appendChild(theForm);
-            // ...and submit it
-            theForm.submit(); //cambio
+            theForm.submit();
         }
-
     </script>
 
     {% set ruta_actual = app.request.attributes.get('_route') %}
-    <div class="container-fluid h-100" xmlns="http://www.w3.org/1999/html">
 
+    <div class="container-fluid h-100">
+        {# Encabezado #}
+        <div class="row mt-4 mb-3">
+            <div class="col-sm-8">
+                <h2 class="mb-2">{% block page_title %}
+                        Sismo del <strong>{{ fecha|date("d-m-Y") }}</strong> <span class="badge bg-danger">M {{ magnitud | round(1) }} </span> </h2>
+                <h3>
+                        Hora: {{ fecha|date("H:i:s ") }}(UTC) -- {{ fecha|date('H:i:s', 'America/Costa_Rica') }} (Local)
+                        {% endblock %}
+                </h3>
+                <h4 class="text-muted">{{ epi }}</h4>
+                <h4 class="text-muted">Profundidad: {{ profundidad|round(1) }} km</h4>
+            </div>
+            <div class="col-sm-4 text-end">
+                <a href="{{ path('homepage') }}" class="btn btn-success">Inicio</a>
+            </div>
+        </div>
 
+        {# Contenido principal dividido en 2 columnas #}
+        <div class="row">
 
-            <div class="row h-100 flex-nowrap">
-                {# Contenido principal #}
+            {# COLUMNA IZQUIERDA: Tarjetas (Ocupa 8 de 12 columnas en pantallas grandes) #}
+            <div class="col-lg-8 col-md-12 mb-4">
+                <div class="row g-3">
+                    {% block content %}
+                        {% set habilitada = (informe|default(0)) == 1 %}
 
-                <div class="row h-100">
-
-                    <div class="row">
-                        <br><br>
-                        <div class="col">
-
-                        </div>
-                    </div>
-                        <div class="row">
-                            <div class="col-sm-8">
-                                <h2 class="mb-4">{% block page_title %}
-                                    Sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }}</strong>(UTC)
-                                    <span class="badge bg-danger">M {{ magnitud | round(1)}} </span>{% endblock %}
-                                </h2>
+                        {# 1. Epicentro #}
+                        <div class="col-sm-6 col-md-4">
+                            <div class="card shadow-sm position-relative h-100">
+                                <div class="card-body">
+                                    <div class="mb-3"><i class="bi bi-geo-alt-fill fs-2 text-primary"></i></div>
+                                    <h5 class="card-title">Epicentro</h5>
+                                    <p class="card-text small">Mapa de ubicación y lugares cercanos</p>
+                                    <a href="javascript:void(0);" onclick="enviaEpicentro('{{ id }}','{{ fecha }}','{{ magnitud }}','{{ lat }}','{{ long }}','{{ epi|e('js') }}')" class="stretched-link"></a>
+                                </div>
                             </div>
-                            <div class="col-sm-4 text-end">
-                                <a href="{{ path('homepage') }}" class="btn btn-success">
-                                    Inicio
-                                </a>
+                        </div>
+
+                        {# 2. Aceleración Máxima #}
+                        <div class="col-sm-6 col-md-4">
+                            <div id="card-aceleracion" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
+                                <div class="card-body">
+                                    <div class="mb-3"><i class="bi bi-speedometer2 fs-2 text-primary"></i></div>
+                                    <h5 class="card-title">Aceleración Máxima</h5>
+                                    <p class="card-text small">Mapa interactivo y formas de Onda</p>
+                                    <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
+                                            {% if habilitada %} href="javascript:void(0);" onclick="enviaDatos('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                    {% else %} href="#" tabindex="-1" onclick="return false;" {% endif %}></a>
+                                </div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-sm-8">
-                                <h3 class="mb-4">
-                                        {{ epi }}
-                                </h3>
+
+                        {# 3. Intensidad JMA #}
+                        <div class="col-sm-6 col-md-4">
+                            <div id="card-jma" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
+                                <div class="card-body">
+                                    <div class="mb-3"><i class="bi bi-archive fs-2 text-primary"></i></div>
+                                    <h5 class="card-title">Intensidad JMA</h5>
+                                    <p class="card-text small">Distribución de valores máximos</p>
+                                    <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
+                                            {% if habilitada %} href="javascript:void(0);" onclick="intensidadJma('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                    {% else %} href="#" tabindex="-1" onclick="return false;" {% endif %}></a>
+                                </div>
                             </div>
                         </div>
-                    <main class="col-9  p-4 overflow-auto mt-3">
 
-                        <div class="row g-4">
-                            {% block content %}
-                                <div class="col-md-4">
-                                    <div class="card shadow-sm position-relative">
-                                        <div class="card-body" >
-                                            <div class="mb-3">
-                                                <i class="bi bi-geo-alt-fill fs-2 text-primary"></i>
-                                            </div>
-                                            <h5 class="card-title">Epicentro</h5>
-                                            <p class="card-text">Mapa de ubicaci&oacute;n y lugares cercanos</p>
-                                            <a href="javascript:void(0);"
-                                               onclick="enviaEpicentro('{{ id }}','{{ fecha }}','{{ magnitud }}',
-                                                       '{{ lat }}','{{ long }}','{{ epi|e('js') }}')"
-                                               class="stretched-link"></a>
-                                        </div>
-                                    </div>
+                        {# 4. Edificios #}
+                        <div class="col-sm-6 col-md-4">
+                            <div id="card-edificios" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
+                                <div class="card-body">
+                                    <div class="mb-3"><i class="bi bi-building fs-2 text-primary"></i></div>
+                                    <h5 class="card-title">Edificios</h5>
+                                    <p class="card-text small">Impacto del evento en edificaciones</p>
+                                    <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
+                                            {% if habilitada %} href="javascript:void(0);" onclick="edificios('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                    {% else %} href="#" tabindex="-1" onclick="return false;" {% endif %}></a>
                                 </div>
-                                <div class="col-md-4">
-                                    {# Determina si la card debe estar habilitada según "informe" #}
-                                    {% set habilitada = (informe|default(0)) == 1 %}
-
-                                    {# Card: Mapa de Aceleración / Principales valores de aceleración #}
-                                    <div
-                                            id="card-aceleracion"
-                                            class="card shadow-sm position-relative {{ habilitada ? '' : 'opacity-50' }}"
-                                            aria-disabled="{{ habilitada ? 'false' : 'true' }}"
-                                    >
-                                        <div class="card-body">
-                                            <div class="mb-3">
-                                                <i class="bi bi-speedometer2 fs-2 text-primary" aria-hidden="true"></i>
-                                            </div>
-
-                                            <h5 class="card-title">Aceleración M&aacute;xima</h5>
-                                            <p class="card-text">Mapa interactivo y formas de Onda</p>
-
-                                            {# Enlace/activador: sólo permite acción real cuando está habilitada #}
-                                            <a
-                                                    id="card-aceleracion-link"
-                                                    class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
-                                                    {% if habilitada %}
-                                                        href="javascript:void(0);"
-                                                        onclick="enviaDatos('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
-                                                                '{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
-                                                    {% else %}
-                                                        href="#"
-                                                        tabindex="-1"
-                                                        aria-disabled="true"
-                                                        onclick="return false;"
-                                                    {% endif %}
-                                            ></a>
-                                        </div>
-                                    </div>
-
-                                </div>
-                                <div class="col-md-4">
-                                    {# Determina si la card debe estar habilitada según "informe" #}
-                                    {% set habilitada = (informe|default(0)) == 1 %}
-
-                                    {# Card: intensidad JMA #}
-                                    <div
-                                            id="card-jma"
-                                            class="card shadow-sm position-relative {{ habilitada ? '' : 'opacity-50' }}"
-                                            aria-disabled="{{ habilitada ? 'false' : 'true' }}"
-                                    >
-                                        <div class="card-body">
-                                            <div class="mb-3">
-                                                <i class="bi bi-archive fs-2 text-primary" aria-hidden="true"></i>
-                                            </div>
-
-                                            <h5 class="card-title">Intensidad JMA</h5>
-                                            <p class="card-text">Distribuci&oacute;n de valores m&aacute;ximos</p>
-
-                                            {# Enlace/activador: sólo permite acción real cuando está habilitada #}
-                                            <a
-                                                    id="card-intensidad-link"
-                                                    class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
-                                                    {% if habilitada %}
-                                                        href="javascript:void(0);"
-                                                        onclick="intensidadJma('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
-                                                                '{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
-                                                    {% else %}
-                                                        href="#"
-                                                        tabindex="-1"
-                                                        aria-disabled="true"
-                                                        onclick="return false;"
-                                                    {% endif %}
-                                            ></a>
-                                        </div>
-                                    </div>
-
-                                </div>
-                                <div class="col-md-4">
-                                    {# Determina si la card debe estar habilitada según "informe" #}
-                                    {% set habilitada = (informe|default(0)) == 1 %}
-
-                                    {# Card: Edificios #}
-                                    <div
-                                            id="card-edificios"
-                                            class="card shadow-sm position-relative {{ habilitada ? '' : 'opacity-50' }}"
-                                            aria-disabled="{{ habilitada ? 'false' : 'true' }}"
-                                    >
-                                        <div class="card-body">
-                                            <div class="mb-3">
-                                                <i class="bi bi-building fs-2 text-primary" aria-hidden="true"></i>
-                                            </div>
-
-                                            <h5 class="card-title">Edificios</h5>
-                                            <p class="card-text">Impacto del evento en edificaciones</p>
-
-                                            {# Enlace/activador: sólo permite acción real cuando está habilitada #}
-                                            <a
-                                                    id="card-intensidad-link"
-                                                    class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
-                                                    {% if habilitada %}
-                                                        href="javascript:void(0);"
-                                                        onclick="edificios('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
-                                                                '{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
-                                                    {% else %}
-                                                        href="#"
-                                                        tabindex="-1"
-                                                        aria-disabled="true"
-                                                        onclick="return false;"
-                                                    {% endif %}
-                                            ></a>
-                                        </div>
-                                    </div>
-
-                                </div>
-                                <div class="col-md-4">
-                                    {# Determina si la card debe estar habilitada según "informe" #}
-                                    {% set habilitada = (informe|default(0)) == 1 %}
-
-                                    {# Card: Espectros #}
-                                    <div
-                                            id="card-espectros"
-                                            class="card shadow-sm position-relative {{ habilitada ? '' : 'opacity-50' }}"
-                                            aria-disabled="{{ habilitada ? 'false' : 'true' }}"
-                                    >
-                                        <div class="card-body">
-                                            <div class="mb-3">
-                                                <i class="bi bi-activity fs-2 text-primary" aria-hidden="true"></i>
-                                            </div>
-
-                                            <h5 class="card-title">Espectros</h5>
-                                            <p class="card-text">Espectros registrados por estaci&oacute;n</p>
-
-                                            {# Enlace/activador: sólo permite acción real cuando está habilitada #}
-                                            <a
-                                                    id="card-intensidad-link"
-                                                    class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
-                                                    {% if habilitada %}
-                                                        href="javascript:void(0);"
-                                                        onclick="espectros('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
-                                                                '{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
-                                                    {% else %}
-                                                        href="#"
-                                                        tabindex="-1"
-                                                        aria-disabled="true"
-                                                        onclick="return false;"
-                                                    {% endif %}
-                                            ></a>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    {# Determina si la card debe estar habilitada según "informe" #}
-                                    {% set habilitada = (informe|default(0)) == 1 %}
-
-                                    {# Card: Shakemaps #}
-                                    <div
-                                            id="card-shakemaps"
-                                            class="card shadow-sm position-relative {{ habilitada ? '' : 'opacity-50' }}"
-                                            aria-disabled="{{ habilitada ? 'false' : 'true' }}"
-                                    >
-                                        <div class="card-body">
-                                            <div class="mb-3">
-                                                <i class="bi bi-map fs-2 text-primary" aria-hidden="true"></i>
-                                            </div>
-
-                                            <h5 class="card-title">Shakemaps</h5>
-                                            <p class="card-text">Shakemaps para aceleraci&oacute;n e intensidad</p>
-
-                                            {# Enlace/activador: sólo permite acción real cuando está habilitada #}
-                                            <a
-                                                    id="card-intensidad-link"
-                                                    class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
-                                                    {% if habilitada %}
-                                                        href="javascript:void(0);"
-                                                        onclick="shakemaps('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
-                                                                '{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
-                                                    {% else %}
-                                                        href="#"
-                                                        tabindex="-1"
-                                                        aria-disabled="true"
-                                                        onclick="return false;"
-                                                    {% endif %}
-                                            ></a>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            {% endblock %}
+                            </div>
                         </div>
-                    </main>
+
+                        {# 5. Espectros #}
+                        <div class="col-sm-6 col-md-4">
+                            <div id="card-espectros" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
+                                <div class="card-body">
+                                    <div class="mb-3"><i class="bi bi-activity fs-2 text-primary"></i></div>
+                                    <h5 class="card-title">Espectros</h5>
+                                    <p class="card-text small">Espectros registrados por estación</p>
+                                    <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
+                                            {% if habilitada %} href="javascript:void(0);" onclick="espectros('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                    {% else %} href="#" tabindex="-1" onclick="return false;" {% endif %}></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# 6. Shakemaps #}
+                        <div class="col-sm-6 col-md-4">
+                            <div id="card-shakemaps" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
+                                <div class="card-body">
+                                    <div class="mb-3"><i class="bi bi-map fs-2 text-primary"></i></div>
+                                    <h5 class="card-title">Shakemaps</h5>
+                                    <p class="card-text small">Shakemaps para aceleración e intensidad</p>
+                                    <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
+                                            {% if habilitada %} href="javascript:void(0);" onclick="shakemaps('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                    {% else %} href="#" tabindex="-1" onclick="return false;" {% endif %}></a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endblock %}
                 </div>
             </div>
-        <div id="hidden_form_container" style="display:none;"></div>
 
+            {# COLUMNA DERECHA: Mapa Estático (Ocupa 4 de 12 columnas) #}
+            <div class="col-lg-4 col-md-12">
+                <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
+
+                    <div class="card-body p-0">
+                        <div id="map" style="width: 100%; height: 420px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="hidden_form_container" style="display:none;"></div>
     </div>
 
+{% endblock %}
 
+{% block javascripts %}
+    {{ parent() }}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Verificar si tenemos los datos necesarios (previene errores si el Controller aún no los envía)
+            {% if datos is defined and datos is not empty %}
+
+            // Configuración de mapa estático (sin interacciones)
+            var map = L.map('map', {
+                zoomControl: false,
+                dragging: false,
+                touchZoom: false,
+                scrollWheelZoom: false,
+                doubleClickZoom: false,
+                boxZoom: false,
+                keyboard: false
+            }).setView([0, 0], 2);
+
+            let bounds = L.latLngBounds([8.03, -85.95], [11.22, -82.55]);
+            map.fitBounds(bounds);
+
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'LIS-UCR'
+            }).addTo(map);
+
+            // Estrella del epicentro
+            const starIcon = L.divIcon({
+                html: '<img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" alt="Estrella" style="width:30px;">',
+                className: '',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            L.marker([{{ lat }}, {{ long }}], {icon: starIcon, zIndexOffset:900000}).addTo(map);
+
+            // Funciones de estilo
+            function getIndex(valor) {
+                if (valor > 60) return 9*2000;
+                if (valor > 40) return 8*2000;
+                if (valor > 20) return 7*2000;
+                if (valor > 10) return 6*2000;
+                if (valor > 5) return 5*2000;
+                if (valor > 1) return 4*2000;
+                return 3*2000;
+            }
+
+            function getColor(valor) {
+                if (valor > 60) return "#cc0000";
+                if (valor > 40) return '#cc5200';
+                if (valor > 20) return '#cc8b00';
+                if (valor > 10) return '#ccaa00';
+                if (valor > 5) return '#88cc00';
+                if (valor > 1) return '#00cc03';
+                return '#0058cc';
+            }
+
+            function triangleIcon(color) {
+                const s = 14;
+                const points = `${s/2},2 ${s-2},${s-2} 2,${s-2}`;
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
+                                    <polygon points="${points}" fill="${color}" fill-opacity="0.8" stroke="#333" stroke-width="1" />
+                                 </svg>`;
+                return L.divIcon({
+                    html: svg, className: 'triangle-icon', iconSize: [s, s], iconAnchor: [s/2, s/2]
+                });
+            }
+
+            var puntos = [
+                {% for dato in datos %}
+                { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo }} }
+                {% if not loop.last %},{% endif %}
+                {% endfor %}
+            ];
+
+            puntos.forEach(function (punto) {
+                L.marker([punto.lat, punto.lng], {
+                    icon: triangleIcon(getColor(punto.max)),
+                    zIndexOffset: getIndex(punto.max)
+                }).addTo(map);
+            });
+
+            {% else %}
+            document.getElementById('map').innerHTML = "<div class='p-3 text-center text-muted'>Cargando mapa...<br><small>(Requiere enviar variable 'datos' desde el controlador)</small></div>";
+            {% endif %}
+        });
+    </script>
 {% endblock %}

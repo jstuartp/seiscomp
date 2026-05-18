@@ -180,47 +180,8 @@ class mainController extends AbstractController
     }
 
 
-    #[Route('/indexAA', name:'indexAA', methods: ['POST','GET'])]
-    public function indexAA(Request $request, EntityManagerInterface $em, ManagerRegistry $doctrine): Response
-    {
-        $titulo="Pagina Principal";
-        #$mydate = $request->request->get('date');
-        #$time = $request->request->get('time');
-        $em = $doctrine->getManager('default');
-        $seiscomp = $doctrine->getManager('seiscomp');
-
-        //nombre de la pagina
-        $nombre="Ultimos Sismos Registrados";
-        $datos = "";
-        $json= "";
-        $salida="";
-        $datosSeiscomp="";//se llama a la funcion para sacar los datos de la tabla
-        $datos = $this->datosTabla($em);
-        //$datosSeiscomp = $this->datosTablaSeiscomp($seiscomp,$mydate);
-        $json = json_encode($datos);
-
-        //Devuelvo todo el entity, lo que me permite usarlo en el twigg
-        return $this->render('index.html.twig',
-            ['title'=> $nombre, 'datos'=>$datos,'json'=>$json, 'salida'=>$salida,
-                'seiscomp' =>$datosSeiscomp]);
-    }
 
 
-
-    public function datosTabla(EntityManagerInterface $em)
-    {
-        $sql = "select distinct PEvent.publicID,Event._oid, Origin.time_value as hora, Origin._oid, ROUND(M.magnitude_value,1) as magnitud,
-                ROUND(Origin.latitude_value,3) as latitud, ROUND(Origin.longitude_value,3) as longitud, ROUND(Origin.depth_value,2) as profundidad
-                from Origin,PublicObject as POrigin,Event,PublicObject as PEvent, Magnitude as M
-                where POrigin.publicID=Event.preferredOriginID and  M._parent_oid = Origin._oid
-                and Origin._oid=POrigin._oid and Event._oid=PEvent._oid
-                Order by Origin.time_value DESC;";
-        //echo $sql;
-        $stmt = $em->getConnection()->prepare($sql);
-        $result = $stmt->executeQuery();
-        $return = $result->fetchAllAssociative();
-        return ($return);
-    }
 
     /**
      * @Route("/pga/", name="pga")
@@ -446,7 +407,7 @@ class mainController extends AbstractController
 
 
     /**
-     * @Route("/jma/", name="pga")
+     * @Route("/jma/", name="jma")
      */
     #[Route('/jma/', name:'jma', methods: ['POST','GET','PUT'])]
     public function jmaAction(Request $request, EntityManagerInterface $em): Response
@@ -499,6 +460,7 @@ class mainController extends AbstractController
                 'longitud'    => $request->get('long'),
                 'magnitud'    => $request->get('mag'),
                 'informe'     => $request->get('informe'),
+                'profundidad'     => $request->get('profundidad'),
                 'lugar'       => $request->get('epi'),
             ];
             if (empty($epi)) {
@@ -518,9 +480,22 @@ class mainController extends AbstractController
                 'longitud'    => $MyEvento->getLongitudEvento(),
                 'magnitud'    => $MyEvento->getMagnitudEvento(),
                 'informe'     => $MyEvento->getInforme(),
+                'profundidad'  => $MyEvento->getProfundidadEvento(),
                 'lugar'       => $this->CalculaEpicentro($MyEvento->getLatitudEvento(),$MyEvento->getLongitudEvento()),
             ];
         }
+
+        //Activo el repositorio para traer los datos de PGA segun el evento
+        $datosPga = $this->repository->findPgaByEventoconNombre($datosEvento['idEvento']);
+
+        // Listado SMHR a excluir de la lista
+        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
+            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
+
+        $datosPgaFiltrados = array_filter($datosPga, function ($item) use ($estacionesExcluir) {
+            // Se excluyen únicamente las estaciones en la lista,
+            return !in_array($item['estacion'], $estacionesExcluir, true);
+        });
 
         return $this->render('informe.html.twig',
             ['title'=> "Datos del Sismo: ",
@@ -530,7 +505,10 @@ class mainController extends AbstractController
                 'lat' => $datosEvento['latitud'],
                 'long' => $datosEvento['longitud'],
                 'informe' => $datosEvento['informe'],
-                'epi' => $datosEvento['lugar'],]);
+                'profundidad' => $datosEvento['profundidad'],
+                'epi' => $datosEvento['lugar'],
+                'datos' => $datosPgaFiltrados,
+                ]);
     }
 
 
@@ -541,42 +519,88 @@ class mainController extends AbstractController
     #[Route('/epicentro/', name:'epicentro', methods: ['POST','GET','PUT'])]
     public function epicentroAction(Request $request, EntityManagerInterface $em): Response
     {
-        //Chequeo los datos que llegan por post del ID y la Fecha
+        // Inicializamos variables por defecto para evitar errores si entran por GET
+        $evento = $fecha = $mag = $epi = "";
+        $lat = 0.0;
+        $long = 0.0;
+
+        // Chequeo los datos que llegan por POST del ID y la Fecha
         if ($request->isMethod('POST')) {
             $evento = $request->request->get('id');
-            $fecha = $request->request->get('fecha');
-            $mag = $request->request->get('mag');
-            $lat = $request->request->get('lat');
-            $long = $request->request->get('long');
-            $epi = $request->request->get('epi');
-        }else{echo "NO HAY NADA";}
+            $fecha  = $request->request->get('fecha');
+            $mag    = $request->request->get('mag');
+            $lat    = (float)$request->request->get('lat');
+            $long   = (float)$request->request->get('long');
+            $epi    = $request->request->get('epi');
+        }
 
-        $ciudades1 = [];
-        // IF para leer el archivo de distritos y calcular el epicentro
+        // --- Función para calcular distancia Haversine en PHP ---
+        $calcularDistanciaHaversine = function($lat1, $lon1, $lat2, $lon2) {
+            $R = 6371; // Radio de la Tierra en km
+            $dLat = deg2rad($lat2 - $lat1);
+            $dLon = deg2rad($lon2 - $lon1);
+            $a = sin($dLat / 2) * sin($dLat / 2) +
+                cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+                sin($dLon / 2) * sin($dLon / 2);
+            $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+            return $R * $c;
+        };
+
+        $todasLasCiudades = [];
+        $ciudadesImportantes = [];
+
+        // Leer el archivo de distritos y calcular el epicentro
         if (($handle = fopen("distritos.csv", "r")) !== FALSE) {
             while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                $ciudades1[] = ["nombre" => $data[2], "lat" => (float)$data[1], "lon" => (float)$data[0]];
+                // Asumimos: 0 = lon, 1 = lat, 2 = nombre, 3 = importante (1 o 0)
+                $ciudadLat = (float)$data[1];
+                $ciudadLon = (float)$data[0];
+                $distancia = $calcularDistanciaHaversine($lat, $long, $ciudadLat, $ciudadLon);
+
+                // Verificamos si existe la columna de "importante", por defecto 0
+                $esImportante = isset($data[3]) ? (int)$data[3] : 0;
+
+                $ciudad = [
+                    "nombre"    => $data[2],
+                    "lat"       => $ciudadLat,
+                    "lon"       => $ciudadLon,
+                    "distancia" => $distancia,
+                    "importante"=> $esImportante
+                ];
+
+                $todasLasCiudades[] = $ciudad;
+
+                if ($esImportante === 1) {
+                    $ciudadesImportantes[] = $ciudad;
+                }
             }
             fclose($handle);
         }
-        return $this->render('epicentro.html.twig',
-            ['title'=> "Ciudades cercanas al Epicentro: ", 'fecha' => $fecha,'magnitud'=>$mag,'id'=>$evento,
-                'lat'=>$lat,'long'=>$long , 'ciudadesp' =>$ciudades1,'epi'=>$epi]);
+
+        // Ordenar arreglos por distancia ascendente
+        usort($todasLasCiudades, function($a, $b) {
+            return $a['distancia'] <=> $b['distancia'];
+        });
+        usort($ciudadesImportantes, function($a, $b) {
+            return $a['distancia'] <=> $b['distancia'];
+        });
+
+        // Retornar solo las 20 más cercanas de la lista general
+        $ciudadesCercanas = array_slice($todasLasCiudades, 0, 20);
+
+        return $this->render('epicentro.html.twig', [
+            'title'                => "Ciudades cercanas al Epicentro: ",
+            'fecha'                => $fecha,
+            'magnitud'             => $mag,
+            'id'                   => $evento,
+            'lat'                  => $lat,
+            'long'                 => $long,
+            'epi'                  => $epi,
+            'ciudades_cercanas'    => $ciudadesCercanas,     // Array para Pestaña 1
+            'ciudades_importantes' => $ciudadesImportantes   // Array para Pestaña 2
+        ]);
     }
 
-    public function datosTablaSeiscomp(EntityManagerInterface $seiscomp, $mydate)
-    {
-        $sql = "SELECT r.startTime_value, r.waveformID_stationCode, 
-                    r.waveformID_channelCode, r.gainUnit, p.type, ROUND(p.motion_value*100,4) as pga 
-                    from Record r join PeakMotion p ON r._oid = p._parent_oid 
-                    where (r.startTime_value > '".$mydate." 00:00:00' and r.startTime_value < '".$mydate." 23:59:59' ) and p.type='pga'";
-        //echo $sql;
-
-        $stmt = $seiscomp->getConnection()->prepare($sql);
-        $result = $stmt->executeQuery();
-        $return = $result->fetchAllAssociative();
-        return ($return);
-    }
 
     // =========================================================================
     // NUEVAS FUNCIONES PARA EL SHAKEMAP
