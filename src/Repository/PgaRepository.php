@@ -102,6 +102,83 @@ class PgaRepository extends ServiceEntityRepository
     }
 
 
+    /**
+     * Obtener Todas las pgv de un evento particular
+     */
+    public function findPgvByEventoConNombre($evento): ?array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = "
+        SELECT DISTINCT 
+            Pga.idpga as id, 
+            Pga.estacion, 
+            E.nombre as nombre,
+            E.suelo as suelo,
+            E.zona as zona,
+            ROUND(Pga.latitud,3) as latitud, 
+            ROUND(Pga.longitud,3) as longitud, 
+            ROUND(Pga.hne_pgv,4) as hne, 
+            ROUND(Pga.hnn_pgv,4) as hnn, 
+            ROUND(Pga.hnz_pgv,4) as hnz,
+            GREATEST(ROUND(Pga.hne_pgv, 4), ROUND(Pga.hnn_pgv, 4), ROUND(Pga.hnz_pgv, 4)) AS maximo,
+            Pga.rutaWaveform as grafica
+        FROM 
+            Pga 
+        LEFT JOIN 
+            lis.estaciones E ON E.estacion = Pga.estacion
+        WHERE 
+            Pga.tipo_estacion != 2 
+            AND Pga.nombre_evento = :evento
+    ";
+
+        // Ejecutamos usando parámetros para evitar SQL Injection
+        $resultSet = $conn->executeQuery($sql, ['evento' => $evento]);
+
+        // Devuelve un array asociativo
+        return $resultSet->fetchAllAssociative();
+
+
+    }
+
+    /**
+     * Obtener Todas las pgd de un evento particular
+     */
+    public function findPgdByEventoConNombre($evento): ?array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+        $sql = "
+        SELECT DISTINCT 
+            Pga.idpga as id, 
+            Pga.estacion, 
+            E.nombre as nombre,
+            E.suelo as suelo,
+            E.zona as zona,
+            ROUND(Pga.latitud,3) as latitud, 
+            ROUND(Pga.longitud,3) as longitud, 
+            ROUND(Pga.hne_pgd,4) as hne, 
+            ROUND(Pga.hnn_pgd,4) as hnn, 
+            ROUND(Pga.hnz_pgd,4) as hnz,
+            GREATEST(ROUND(Pga.hne_pgd, 4), ROUND(Pga.hnn_pgd, 4), ROUND(Pga.hnz_pgd, 4)) AS maximo,
+            Pga.rutaWaveform as grafica
+        FROM 
+            Pga 
+        LEFT JOIN 
+            lis.estaciones E ON E.estacion = Pga.estacion
+        WHERE 
+            Pga.tipo_estacion != 2 
+            AND Pga.nombre_evento = :evento
+    ";
+
+        // Ejecutamos usando parámetros para evitar SQL Injection
+        $resultSet = $conn->executeQuery($sql, ['evento' => $evento]);
+
+        // Devuelve un array asociativo
+        return $resultSet->fetchAllAssociative();
+
+
+    }
+
+
 
     /**
      * Obtener Listado de los Archivos LIS creados

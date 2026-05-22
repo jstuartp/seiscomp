@@ -2,20 +2,20 @@
 
 {% block body %}
 
-    <div class="container-fluid" xmlns="http://www.w3.org/1999/html">
+    <div class="container-fluid">
 
         <div class="row">
             <br><br>
-            <div class="col">
-
-            </div>
+            <div class="col"></div>
         </div>
         <div class="row">
             <div class="col-sm-8">
-                <h2 class="mb-4">{% block page_title %}
-                        Aceleraciones M&aacute;ximas del sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(UTC)
-                        <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>{% endblock %}
-                </h2>
+                <h2 class="mb-2">{% block page_title %}
+                    Aceleraciones M&aacute;ximas del sismo del <strong>{{ fecha|date("d-m-Y") }}</strong> <span class="badge bg-danger">M {{ magnitud | round(1) }} </span> </h2>
+                <h3>
+                    Hora: {{ fecha|date("H:i:s ") }}(UTC) -- {{ fecha|date('H:i:s', 'America/Costa_Rica') }} (Local)
+                    {% endblock %}
+                </h3>
             </div>
             <div class="col-sm-4 text-end">
                 <a href="{{ path('homepage') }}" class="btn btn-success">
@@ -30,80 +30,132 @@
                 </h3>
             </div>
         </div>
-        <div class="row">
-        </div>
+
         <div class="row">
             <br>
         </div>
+
         <div class="row h-100">
-            <div class="col-12 col-md-4">
-                <div class="row h-100">
+
+            <div class="col-12 col-md-4"> <div class="row h-100">
                     <div class="bs-example" data-example-id="contextual-table">
-                        <table class="table table-bordered table-hover table-condensed table-sm table-striped" id="tabla_pga" style="font-size: 12px !important;
-                                                                                                                     height: 32px !important;
-                                                                                                                    min-width: 100px !important;
-                                                                                                                    padding: 2px 6px !important; ">
-                            <thead>
-                            <tr>
-                                <th></th>
-                                <th colspan="4">PGA M&aacute;ximos en cm/s&sup2</th>
-                                <th></th>
-                            </tr>
+                        <table class="table table-bordered table-hover table-condensed table-sm
+                        table-striped dt-responsive nowrap" id="tabla_pga"
+                               style="font-size: 12px !important;
+                               height: 32px !important;
+                               min-width: 100px !important;
+                               padding: 2px 6px !important; ">
+                            <thead class="table-dark">
                             <tr>
                                 <th>Estación</th>
-                                <th>HNE</th>
-                                <th>HNN</th>
+                                <th>HNE</th> <th>HNN</th>
                                 <th>HNZ</th>
-                                <th>M&aacute;ximo</th>
-                                <th>Onda</th>
-                            </tr>
+                                <th>Máximo</th>
+                                <th>Onda</th> </tr>
                             </thead>
                             <tbody>
                             {% for dato in datos %}
-                            <tr class="info">
-                                <td>{{ dato.estacion }}</td>
-                                <td>{{ dato.hne | round(2)}}</td>
-                                <td>{{ dato.hnn | round(2)}}</td>
-                                <td>{{ dato.hnz | round(2)}}</td>
-                                <td>{{ dato.maximo | round(2)}}</td>
-                                <td><div class="icon button viewButton"><button onclick="openModal('{{asset('assets/waves/'~ dato.grafica~'.png')}}')">Onda</button></div></td>
-                            </tr>
-                            {% endfor %}
+                                <tr>
+                                    <td>{{ dato.estacion }}</td>
+                                    <td>{{ dato.hne|round(2) }}</td>
+                                    <td>{{ dato.hnn|round(2) }}</td>
+                                    <td>{{ dato.hnz|round(2) }}</td>
 
+                                    {% set pga = dato.maximo %}
+                                    {% if pga > 60 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
+                                    {% elseif pga > 40 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
+                                    {% elseif pga > 20 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
+                                    {% elseif pga > 10 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
+                                    {% elseif pga > 5 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
+                                    {% elseif pga > 1 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
+                                    {% else %}             {% set color = '#0058cc' %} {% set text_color = 'white' %}
+                                    {% endif %}
+
+                                    <td style="background-color: {{ color }}; color: {{ text_color }}; font-weight: bold;">
+                                        {{ pga | round(2) }}
+                                    </td>
+
+                                    <td class="text-center">
+                                        {# Construimos la ruta al JSON. Asegúrate que 'nombre_evento' venga del controlador #}
+                                        {% set ruta_json = asset('assets/waves/' ~ dato.grafica~'.json') %}
+
+                                        <button class="btn btn-primary btn-sm py-0" onclick="cargarGrafica('{{ ruta_json }}', '{{ dato.estacion }}')">
+                                            <i class="bi bi-activity"></i> Ver
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
-            <div class="col-12 col-md-8 d-none d-md-block">
-                <div class="row h-100">
-                    <div id="map">MAPA</div>
-                </div>
+
+            <div class="col-12 col-md-8">
+                <div id="map" style="width: 100%; height: 80vh; min-height: 500px;"></div>
             </div>
         </div>
-        <div id="myModal" class="modal">
-            <!-- El contenido del modal (la imagen) -->
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
 
-                    <div class="modal-body text-center">
-                        <img class="modal-content" id="img01">
+    </div>
+
+    <div id="graphModal" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Waveform - Estación <span id="modalStationTitle"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <ul class="nav nav-tabs" id="waveTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-z-tab" data-bs-toggle="tab" data-bs-target="#tab-z" type="button" role="tab" aria-controls="tab-z" aria-selected="true">
+                                Vertical (Z)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-n-tab" data-bs-toggle="tab" data-bs-target="#tab-n" type="button" role="tab" aria-controls="tab-n" aria-selected="false">
+                                Norte (N)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-e-tab" data-bs-toggle="tab" data-bs-target="#tab-e" type="button" role="tab" aria-controls="tab-e" aria-selected="false">
+                                Este (E)
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content border border-top-0 p-3" id="waveTabsContent">
+
+                        <div class="tab-pane fade show active" id="tab-z" role="tabpanel" aria-labelledby="tab-z-tab">
+                            <div id="plotDivZ" style="width: 100%; height: 500px;">
+                                <div class="d-flex justify-content-center align-items-center h-100">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-n" role="tabpanel" aria-labelledby="tab-n-tab">
+                            <div id="plotDivN" style="width: 100%; height: 500px;"></div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-e" role="tabpanel" aria-labelledby="tab-e-tab">
+                            <div id="plotDivE" style="width: 100%; height: 500px;"></div>
+                        </div>
+
                     </div>
                 </div>
             </div>
-           <!-- <span class="close">&times;</span>-->
-
-        </div>
-
-
-    </div>
-
-    <div class="row">
-        <div class="col">
-
         </div>
     </div>
+{% endblock %}
+{% block scriptspie %}
+    {{ parent() }}
+{% endblock %}
+{% block endscrips %}
+    {{ parent() }}
 
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -170,14 +222,29 @@
                 map.fitBounds(bounds);
 
                 // Agregar capa de mapa base
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: ''
                 }).addTo(map);
                 L.control.scale().addTo(map);
                 // Agregar el marcador con estrella
-                L.marker([ {{ epi_lat }}, {{ epi_long }}], {icon: starIcon})
+                L.marker([ {{ epi_lat }}, {{ epi_long }}], {icon: starIcon, zIndexOffset:900000})
                     .addTo(map)
                     .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1) }}');
+
+
+                //Funcion para alterar el indice
+                //pone los puntos mas intensos de primero
+                function getIndex(valor) {
+                    if (valor > 60) return 9*2000;
+                    if (valor > 40) return 8*2000;
+                    if (valor > 20) return 7*2000;
+                    if (valor > 10) return 6*2000;
+                    if (valor > 5) return 5*2000;
+                    if (valor > 1) return 4*2000;
+                    return 3*2000;
+                }
+
+
 
                 // Función para determinar el color del círculo según el valor numérico
                 function getColor(valor) {
@@ -198,7 +265,7 @@
                         lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo }},
                         datos: `Estaci&oacute;n: {{ dato.estacion }} <br>
                             M&aacute;ximo: {{ dato.maximo | round(2) }} cm/s&sup2<br>
-                <button onclick="openModal('{{ asset('assets/waves/'~ dato.grafica~'.png') }}')">Onda</button>`,
+                <button onclick="cargarGrafica('{{ asset('assets/waves/' ~ dato.grafica~'.json') }}', '{{ dato.estacion }}')">Onda</button>`,
                     }
                     {% if not loop.last %},{% endif %}
                     {% endfor %}
@@ -209,7 +276,7 @@
                     const color = getColor(punto.max);
                     const icono = triangleIcon(color, /* tamaño px */ 18, /* fillOpacity */ 0.5, /* stroke */ '#333', /* strokeWidth */ 2);
 
-                    L.marker([punto.lat, punto.lng], {icon: icono})
+                    L.marker([punto.lat, punto.lng], {icon: icono , zIndexOffset: getIndex(punto.max)})
                         .addTo(map)
                         .bindPopup(punto.datos);
                 });
@@ -255,12 +322,185 @@
             };
 
             legend.addTo(map);
-
-
-
-
-
         });
-    </script>
 
+        // --- 2. NUEVA LÓGICA DE PLOTLY ---
+
+        // Variable global para el modal
+        const graphModal = new bootstrap.Modal(document.getElementById('graphModal'));
+
+        // --- LÓGICA DE TABS Y RESIZE (Vital para Plotly en pestañas) ---
+        // Detectamos cuando el usuario cambia de pestaña para ajustar el tamaño de la gráfica
+        const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+        tabEls.forEach(tabEl => {
+            tabEl.addEventListener('shown.bs.tab', event => {
+                // Redimensionar todas las gráficas por si acaso
+                Plotly.Plots.resize('plotDivZ');
+                Plotly.Plots.resize('plotDivN');
+                Plotly.Plots.resize('plotDivE');
+            });
+        });
+
+        function cargarGrafica(url, estacion) {
+            document.getElementById('modalStationTitle').innerText = estacion;
+
+            // Resetear visualmente las gráficas (poner spinner en la activa Z)
+            document.getElementById('plotDivZ').innerHTML = '<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-border text-primary" role="status"></div></div>';
+            document.getElementById('plotDivN').innerHTML = '';
+            document.getElementById('plotDivE').innerHTML = '';
+
+            // Resetear tabs a la primera (Z) siempre que se abre el modal
+            const firstTabEl = document.querySelector('#waveTabs button[data-bs-target="#tab-z"]');
+            const tabInstance = bootstrap.Tab.getOrCreateInstance(firstTabEl);
+            tabInstance.show();
+
+            graphModal.show();
+
+            fetch(url)
+                .then(res => {
+                    // Evaluamos el código de estado HTTP
+                    if (res.status === 404) throw new Error("EN_PROCESO");
+                    if (!res.ok) throw new Error("ERROR_SERVIDOR");
+                    return res.json();
+                })
+                .then(data => dibujarPlotlyTabs(data))
+                .catch(err => {
+                    const divZ = document.getElementById('plotDivZ');
+
+                    if (err.message === "EN_PROCESO") {
+                        // Estado elegante: Archivo aún no existe (en cálculo por Python)
+                        divZ.innerHTML = `
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center p-4">
+                        <!-- Ícono SVG de una gráfica construyéndose -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#adb5bd" class="mb-3" viewBox="0 0 16 16">
+                          <path d="M0 0h1v15h15v1H0V0Zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5Z"/>
+                        </svg>
+                        <h5 class="text-secondary fw-normal">Generando datos detallados</h5>
+                        <p class="text-muted small mb-0" style="max-width: 320px;">
+                            Las series de tiempo para la estación <b>${estacion}</b> aún se están calculando en el servidor. Este proceso puede tomar varios minutos. <br><br> Por favor, cierra esta ventana e intenta abrirla en un momento.
+                        </p>
+                    </div>
+                `;
+                    } else {
+                        // Estado de fallo real (ej. error 500 o error de red)
+                        divZ.innerHTML = `
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div class="alert alert-light border text-center text-muted">
+                            <span class="fs-4 d-block mb-2">⚠️</span>
+                            No se pudo cargar la gráfica en este momento.
+                        </div>
+                    </div>
+                `;
+                    }
+                });
+        }
+
+        function dibujarPlotlyTabs(json) {
+            // 1. Procesar Tiempo (Igual que antes)
+            // Nota: Asumimos que el string de tiempo viene formato 'YYYYMMDDThhmmss' o similar según tu regex
+            // Si tu json ya trae ISO estándar, podrías usar new Date(json.meta.start_time) directo.
+            let startTime;
+            try {
+                const rawTime = json.meta.start_time;
+                // Ajuste de seguridad por si el regex falla o el formato varía
+                const isoTime = rawTime.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}).*$/, '$1-$2-$3T$4:$5:$6');
+                startTime = new Date(isoTime).getTime();
+            } catch (e) {
+                console.error("Error parseando tiempo", e);
+                startTime = new Date().getTime(); // Fallback
+            }
+
+            const dt = 1000 / json.meta.sample_rate;
+
+            // 2. Procesar Datos y Convertir Unidades
+            // Asumimos que json.data viene en METROS/SEGUNDO^2 (m/s^2)
+
+            const processData = (rawData) => {
+                if (!rawData || rawData.length === 0) return { cm: [], g: [] };
+
+                // Creamos dos versiones de los datos
+                const cmData = rawData.map(val => val * 100);      // m/s² a cm/s² (Gal)
+                const gData = rawData.map(val => ((val*100) / 980)*100);   // m/s² a g (aprox 9.81)
+
+                return { cm: cmData, g: gData };
+            };
+
+            const hnzProcessed = processData(json.data.HNZ);
+            const hnnProcessed = processData(json.data.HNN);
+            const hneProcessed = processData(json.data.HNE);
+
+            // Generar eje X
+            const nPts = hnzProcessed.cm.length || hneProcessed.cm.length;
+            const xValues = new Array(nPts);
+            for (let i = 0; i < nPts; i++) {
+                xValues[i] = new Date(startTime + (i * dt)).toISOString();
+            }
+
+            // 3. Configuración del Botón (Selector)
+            // Esta función genera el layout específico para cada gráfica con sus propios datos alternativos
+            const createLayoutWithMenu = (title, dataCm, dataG) => {
+                return {
+                    height: 500,
+                    margin: { t: 40, b: 40, l: 60, r: 20 },
+                    showlegend: false,
+                    title: title,
+                    xaxis: { title: 'Tiempo (UTC)' },
+                    yaxis: { title: 'Aceleración (cm/s²)' }, // Título inicial por defecto
+
+                    // Aquí está la magia: Menús de actualización
+                    updatemenus: [{
+                        type: 'buttons',
+                        direction: 'left',
+                        pad: { 'r': 10, 't': 10 },
+                        showactive: true,
+                        x: 0.0, // Posición del botón en X
+                        xanchor: 'left',
+                        y: 1.15, // Posición del botón en Y (encima de la gráfica)
+                        yanchor: 'top',
+                        buttons: [
+                            {
+                                label: 'cm/s²',
+                                method: 'update', // 'update' modifica data y layout a la vez
+                                args: [
+                                    { y: [dataCm] }, // Nuevos datos
+                                    { 'yaxis.title': 'Aceleración (cm/s²)' } // Nuevo layout
+                                ]
+                            },
+                            {
+                                label: 'g',
+                                method: 'update',
+                                args: [
+                                    { y: [dataG] }, // Nuevos datos
+                                    { 'yaxis.title': 'Aceleración (%g)' } // Nuevo layout
+                                ]
+                            }
+                        ]
+                    }]
+                };
+            };
+
+            const config = {
+                responsive: true,
+                locale: 'es',
+                displayModeBar: true,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d']
+            };
+
+            // 4. Dibujar Gráfica Z
+            // Inicializamos con dataCm por defecto
+            const layoutZ = createLayoutWithMenu('Componente Vertical (HNZ)', hnzProcessed.cm, hnzProcessed.g);
+            const traceZ = { x: xValues, y: hnzProcessed.cm, type: 'scatter', line: { width: 1, color: 'black' } };
+            Plotly.newPlot('plotDivZ', [traceZ], layoutZ, config);
+
+            // 5. Dibujar Gráfica N
+            const layoutN = createLayoutWithMenu('Componente Norte (HNN)', hnnProcessed.cm, hnnProcessed.g);
+            const traceN = { x: xValues, y: hnnProcessed.cm, type: 'scatter', line: { width: 1, color: 'blue' } };
+            Plotly.newPlot('plotDivN', [traceN], layoutN, config);
+
+            // 6. Dibujar Gráfica E
+            const layoutE = createLayoutWithMenu('Componente Este (HNE)', hneProcessed.cm, hneProcessed.g);
+            const traceE = { x: xValues, y: hneProcessed.cm, type: 'scatter', line: { width: 1, color: 'red' } };
+            Plotly.newPlot('plotDivE', [traceE], layoutE, config);
+        }
+    </script>
 {% endblock %}

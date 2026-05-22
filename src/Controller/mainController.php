@@ -202,25 +202,38 @@ class mainController extends AbstractController
         //Activo el repositorio para traer los datos de PGA segun el evento
         $datosPga = $this->repository->findPgaByEventoconNombre($evento);
 
+        //Activo el repositorio para traer los datos de PGA segun el evento
+        $datosPgv = $this->repository->findPgvByEventoConNombre($evento);
+
+        //Activo el repositorio para traer los datos de PGA segun el evento
+        $datosPgd = $this->repository->findPgdByEventoConNombre($evento);
+
         // Listado SMHR a excluir de la lista
-        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
+        $estacionesExcluir = ['AALA','ACLH','AGRH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
             'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
 
         $datosPgaFiltrados = array_filter($datosPga, function ($item) use ($estacionesExcluir) {
             // Se excluyen únicamente las estaciones en la lista,
             return !in_array($item['estacion'], $estacionesExcluir, true);
         });
-        /*
-        // Filtra los elementos cuyo campo 'estacion' NO termine en 'h' eliminando la CCSS
-        $datosPgaFiltrados = array_filter($datosPga, function ($item) {
-            return !str_ends_with($item['estacion'], 'H');
-        });*/
 
+        $datosPgvFiltrados = array_filter($datosPgv, function ($item) use ($estacionesExcluir) {
+            // Se excluyen únicamente las estaciones en la lista,
+            return !in_array($item['estacion'], $estacionesExcluir, true);
+        });
+
+        $datosPgdFiltrados = array_filter($datosPgd, function ($item) use ($estacionesExcluir) {
+            // Se excluyen únicamente las estaciones en la lista,
+            return !in_array($item['estacion'], $estacionesExcluir, true);
+        });
 
         return $this->render('pga.html.twig',
-            ['fecha' => $fecha,'datos'=>$datosPgaFiltrados,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
+            ['fecha' => $fecha,'datos'=>$datosPgaFiltrados,'datosPgv'=>$datosPgvFiltrados,
+                'datosPgd'=>$datosPgdFiltrados,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
                 'epi_long'=>$epi_long,'epi'=>$epi]);
     }
+
+
 
     /**
      * @Route("/espectros/", name="espectros")
@@ -249,13 +262,6 @@ class mainController extends AbstractController
             // Se excluyen únicamente las estaciones en la lista,
             return !in_array($item['estacion'], $estacionesExcluir, true);
         });
-        /*
-        // Filtra los elementos cuyo campo 'estacion' NO termine en 'h' eliminando la CCSS
-        $datosPgaFiltrados = array_filter($datosPga, function ($item) {
-            return !str_ends_with($item['estacion'], 'H');
-        });*/
-
-
         return $this->render('espectros.html.twig',
             ['fecha' => $fecha,'datos'=>$datosPgaFiltrados,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
                 'epi_long'=>$epi_long,'epi'=>$epi]);

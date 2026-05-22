@@ -45,6 +45,25 @@ class Pga
     #[ORM\Column]
     private ?float $hnz_pga = null;
 
+
+    #[ORM\Column]
+    private ?float $hne_pgv = null;
+
+    #[ORM\Column]
+    private ?float $hnn_pgv = null;
+
+    #[ORM\Column]
+    private ?float $hnz_pgv = null;
+
+    #[ORM\Column]
+    private ?float $hne_pgd = null;
+
+    #[ORM\Column]
+    private ?float $hnn_pgd = null;
+
+    #[ORM\Column]
+    private ?float $hnz_pgd = null;
+
     #[ORM\Column]
     private ?float $maximo = null;
 
@@ -184,10 +203,83 @@ class Pga
         return $this;
     }
 
+    public function getHnePgv(): ?float
+    {
+        return $this->hne_pgv;
+    }
+
+    public function setHnePgv(float $hne_pgv): static
+    {
+        $this->hne_pgv = $hne_pgv;
+
+        return $this;
+    }
+
+    public function getHnnPgv(): ?float
+    {
+        return $this->hnn_pgv;
+    }
+
+    public function setHnnPgv(float $hnn_pgv): static
+    {
+        $this->hnn_pgv = $hnn_pgv;
+
+        return $this;
+    }
+
+    public function getHnzPgv(): ?float
+    {
+        return $this->hnz_pgv;
+    }
+
+    public function setHnzPgv(float $hnz_pgv): static
+    {
+        $this->hnz_pgv = $hnz_pgv;
+
+        return $this;
+    }
+
+    public function getHnePgd(): ?float
+    {
+        return $this->hne_pgd;
+    }
+
+    public function setHnePgd(float $hne_pgd): static
+    {
+        $this->hne_pgd = $hne_pgd;
+
+        return $this;
+    }
+
+    public function getHnnPgd(): ?float
+    {
+        return $this->hnn_pgd;
+    }
+
+    public function setHnnPgd(float $hnn_pgd): static
+    {
+        $this->hnn_pgd = $hnn_pgd;
+
+        return $this;
+    }
+
+    public function getHnzPgd(): ?float
+    {
+        return $this->hnz_pgd;
+    }
+
+    public function setHnzPgd(float $hnz_pgd): static
+    {
+        $this->hnz_pgd = $hnz_pgd;
+
+        return $this;
+    }
+
     public function getMaximo(): ?float
     {
         return $this->maximo;
     }
+
 
     public function setMaximo(float $maximo): static
     {
