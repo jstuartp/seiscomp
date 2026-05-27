@@ -3,85 +3,43 @@
 {% block body %}
 
     <script>
-        // [Tus funciones originales enviaDatos, intensidadJma, etc. se mantienen igual]
-        function enviaDatos(id, fecha, mag, lat, long, epi) {
-            var theForm, newInput1, newInput2, newInput3, newInput4, newInput5, newInput6;
-            theForm = document.createElement('form');
-            theForm.action = '{{ path('pga') }}';
-            theForm.method = 'post';
-            newInput1 = document.createElement('input'); newInput1.type = 'hidden'; newInput1.name = 'id'; newInput1.value = id;
-            newInput2 = document.createElement('input'); newInput2.type = 'hidden'; newInput2.name = 'fecha'; newInput2.value = fecha;
-            newInput3 = document.createElement('input'); newInput3.type = 'hidden'; newInput3.name = 'mag'; newInput3.value = mag;
-            newInput4 = document.createElement('input'); newInput4.type = 'hidden'; newInput4.name = 'lat'; newInput4.value = lat;
-            newInput5 = document.createElement('input'); newInput5.type = 'hidden'; newInput5.name = 'long'; newInput5.value = long;
-            newInput6 = document.createElement('input'); newInput6.type = 'hidden'; newInput6.name = 'epi'; newInput6.value = epi;
-            theForm.appendChild(newInput1); theForm.appendChild(newInput2); theForm.appendChild(newInput3);
-            theForm.appendChild(newInput4); theForm.appendChild(newInput5); theForm.appendChild(newInput6);
-            document.getElementById('hidden_form_container').appendChild(theForm);
-            theForm.submit();
-        }
+        // Función unificada para manejar la navegación normal y móvil con envío condicional de datos
+        function procesarNavegacion(rutaNormal, rutaMovil, id, fecha, mag, lat, long, epi) {
+            // Detección automática de dispositivo móvil (sin intervención del usuario)
+            const esMovil = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
-        function intensidadJma(id, fecha, mag, lat, long, epi) {
             var theForm = document.createElement('form');
-            theForm.action = '{{ path('jma') }}';
-            theForm.method = 'post';
-            ['id', 'fecha', 'mag', 'lat', 'long', 'epi'].forEach((name, idx) => {
-                let input = document.createElement('input'); input.type = 'hidden'; input.name = name;
-                input.value = [id, fecha, mag, lat, long, epi][idx];
-                theForm.appendChild(input);
-            });
-            document.getElementById('hidden_form_container').appendChild(theForm);
-            theForm.submit();
-        }
+            // Decide la ruta final
+            theForm.action = esMovil ? rutaMovil : rutaNormal;
+            theForm.method = 'get';
 
-        function edificios(id, fecha, mag, lat, long, epi) {
-            var theForm = document.createElement('form');
-            theForm.action = '{{ path('app_estructuras') }}';
-            theForm.method = 'post';
-            ['id', 'fecha', 'mag', 'lat', 'long', 'epi'].forEach((name, idx) => {
-                let input = document.createElement('input'); input.type = 'hidden'; input.name = name;
-                input.value = [id, fecha, mag, lat, long, epi][idx];
-                theForm.appendChild(input);
-            });
-            document.getElementById('hidden_form_container').appendChild(theForm);
-            theForm.submit();
-        }
+            // El 'id' se envía SIEMPRE, sin importar el dispositivo
+            let inputId = document.createElement('input');
+            inputId.type = 'hidden';
+            inputId.name = 'id';
+            inputId.value = id;
+            theForm.appendChild(inputId);
 
-        function espectros(id, fecha, mag, lat, long, epi) {
-            var theForm = document.createElement('form');
-            theForm.action = '{{ path('espectros') }}';
-            theForm.method = 'post';
-            ['id', 'fecha', 'mag', 'lat', 'long', 'epi'].forEach((name, idx) => {
-                let input = document.createElement('input'); input.type = 'hidden'; input.name = name;
-                input.value = [id, fecha, mag, lat, long, epi][idx];
-                theForm.appendChild(input);
-            });
-            document.getElementById('hidden_form_container').appendChild(theForm);
-            theForm.submit();
-        }
+            // Si NO es móvil, adjuntamos el resto de los datos
+            if (!esMovil) {
+                const parametrosExtra = {
+                    'fecha': fecha,
+                    'mag': mag,
+                    'lat': lat,
+                    'long': long,
+                    'epi': epi
+                };
 
-        function shakemaps(id, fecha, mag, lat, long, epi) {
-            var theForm = document.createElement('form');
-            theForm.action = '{{ path('shakemaps') }}';
-            theForm.method = 'post';
-            ['id', 'fecha', 'mag', 'lat', 'long', 'epi'].forEach((name, idx) => {
-                let input = document.createElement('input'); input.type = 'hidden'; input.name = name;
-                input.value = [id, fecha, mag, lat, long, epi][idx];
-                theForm.appendChild(input);
-            });
-            document.getElementById('hidden_form_container').appendChild(theForm);
-            theForm.submit();
-        }
+                for (const [key, value] of Object.entries(parametrosExtra)) {
+                    let input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = key;
+                    input.value = value;
+                    theForm.appendChild(input);
+                }
+                theForm.method = 'post';
+            }
 
-        function enviaEpicentro(id, fecha, mag, lat, long, epi) {
-            var theForm = document.createElement('form');
-            theForm.action = '{{ path('epicentro') }}';
-            theForm.method = 'post';
-            ['id', 'fecha', 'mag', 'lat', 'long', 'epi'].forEach((name, idx) => {
-                let input = document.createElement('input'); input.type = 'hidden'; input.name = name;
-                input.value = [id, fecha, mag, lat, long, epi][idx];
-                theForm.appendChild(input);
-            });
             document.getElementById('hidden_form_container').appendChild(theForm);
             theForm.submit();
         }
@@ -94,17 +52,21 @@
         <div class="row mt-4 mb-3">
             <div class="col-sm-8">
                 <h2 class="mb-2">{% block page_title %}
-                        Sismo del <strong>{{ fecha|date("d-m-Y") }}</strong> <span class="badge bg-danger">M {{ magnitud | round(1) }} </span> </h2>
+                    Sismo
+                    del <strong>{{ fecha|date("d-m-Y") }}</strong> <span class="badge bg-danger">M {{ magnitud |
+                        round(1) }} </span> </h2>
                 <h3>
-                        Hora: {{ fecha|date("H:i:s ") }}(UTC) -- {{ fecha|date('H:i:s', 'America/Costa_Rica') }} (Local)
-                        {% endblock %}
+                    Hora: {{ fecha|date("H:i:s ") }}(UTC) -- {{ fecha|date('H:i:s', 'America/Costa_Rica') }} (Local)
+                    {% endblock %}
                 </h3>
+
                 <h4 class="text-muted">{{ epi }}</h4>
                 <h4 class="text-muted">Profundidad: {{ profundidad|round(1) }} km</h4>
             </div>
             <div class="col-sm-4 text-end">
                 <a href="{{ path('homepage') }}" class="btn btn-success">Inicio</a>
             </div>
+
         </div>
 
         {# Contenido principal dividido en 2 columnas #}
@@ -113,17 +75,21 @@
             {# COLUMNA IZQUIERDA: Tarjetas (Ocupa 8 de 12 columnas en pantallas grandes) #}
             <div class="col-lg-8 col-md-12 mb-4">
                 <div class="row g-3">
+
                     {% block content %}
                         {% set habilitada = (informe|default(0)) == 1 %}
 
                         {# 1. Epicentro #}
                         <div class="col-sm-6 col-md-4">
                             <div class="card shadow-sm position-relative h-100">
-                                <div class="card-body">
+                                <div class="card-body d-flex flex-column">
                                     <div class="mb-3"><i class="bi bi-geo-alt-fill fs-2 text-primary"></i></div>
                                     <h5 class="card-title">Epicentro</h5>
-                                    <p class="card-text small">Mapa de ubicación y lugares cercanos</p>
-                                    <a href="javascript:void(0);" onclick="enviaEpicentro('{{ id }}','{{ fecha }}','{{ magnitud }}','{{ lat }}','{{ long }}','{{ epi|e('js') }}')" class="stretched-link"></a>
+                                    <p class="card-text small mb-4">Mapa de ubicación y lugares cercanos</p>
+
+                                    <a href="javascript:void(0);"
+                                       onclick="procesarNavegacion('{{ path('epicentro') }}', '{{ path('epicentro') }}', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                       class="stretched-link"></a>
                                 </div>
                             </div>
                         </div>
@@ -131,13 +97,16 @@
                         {# 2. Aceleración Máxima #}
                         <div class="col-sm-6 col-md-4">
                             <div id="card-aceleracion" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
-                                <div class="card-body">
+                                <div class="card-body d-flex flex-column">
                                     <div class="mb-3"><i class="bi bi-speedometer2 fs-2 text-primary"></i></div>
-                                    <h5 class="card-title">Aceleración Máxima</h5>
-                                    <p class="card-text small">Mapa interactivo y formas de Onda</p>
+                                    <h5 class="card-title">Valores Máximos</h5>
+                                    <p class="card-text small mb-4">Mapa interactivo y formas de Onda</p>
+
                                     <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
-                                            {% if habilitada %} href="javascript:void(0);" onclick="enviaDatos('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
-                                    {% else %} href="#" tabindex="-1" onclick="return false;" {% endif %}></a>
+                                            {% if habilitada %} href="javascript:void(0);"
+                                        onclick="procesarNavegacion('{{ path('pga') }}', '{{ path('pga_movil') }}', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                    {% else %} href="#" tabindex="-1" onclick="return false;"
+                                            {% endif %}></a>
                                 </div>
                             </div>
                         </div>
@@ -145,13 +114,16 @@
                         {# 3. Intensidad JMA #}
                         <div class="col-sm-6 col-md-4">
                             <div id="card-jma" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
-                                <div class="card-body">
+                                <div class="card-body d-flex flex-column">
                                     <div class="mb-3"><i class="bi bi-archive fs-2 text-primary"></i></div>
                                     <h5 class="card-title">Intensidad JMA</h5>
-                                    <p class="card-text small">Distribución de valores máximos</p>
+                                    <p class="card-text small mb-4">Distribución de valores máximos</p>
+
                                     <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
-                                            {% if habilitada %} href="javascript:void(0);" onclick="intensidadJma('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
-                                    {% else %} href="#" tabindex="-1" onclick="return false;" {% endif %}></a>
+                                            {% if habilitada %} href="javascript:void(0);"
+                                        onclick="procesarNavegacion('{{ path('jma') }}', '{{ path('jma_movil') }}', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                    {% else %} href="#" tabindex="-1" onclick="return false;"
+                                            {% endif %}></a>
                                 </div>
                             </div>
                         </div>
@@ -159,13 +131,16 @@
                         {# 4. Edificios #}
                         <div class="col-sm-6 col-md-4">
                             <div id="card-edificios" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
-                                <div class="card-body">
+                                <div class="card-body d-flex flex-column">
                                     <div class="mb-3"><i class="bi bi-building fs-2 text-primary"></i></div>
                                     <h5 class="card-title">Edificios</h5>
-                                    <p class="card-text small">Impacto del evento en edificaciones</p>
+                                    <p class="card-text small mb-4">Impacto del evento en edificaciones</p>
+
                                     <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
-                                            {% if habilitada %} href="javascript:void(0);" onclick="edificios('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
-                                    {% else %} href="#" tabindex="-1" onclick="return false;" {% endif %}></a>
+                                            {% if habilitada %} href="javascript:void(0);"
+                                        onclick="procesarNavegacion('{{ path('app_estructuras') }}', 'RUTA_EDIFICIOS_MOVIL', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                    {% else %} href="#" tabindex="-1" onclick="return false;"
+                                            {% endif %}></a>
                                 </div>
                             </div>
                         </div>
@@ -173,13 +148,16 @@
                         {# 5. Espectros #}
                         <div class="col-sm-6 col-md-4">
                             <div id="card-espectros" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
-                                <div class="card-body">
+                                <div class="card-body d-flex flex-column">
                                     <div class="mb-3"><i class="bi bi-activity fs-2 text-primary"></i></div>
                                     <h5 class="card-title">Espectros</h5>
-                                    <p class="card-text small">Espectros registrados por estación</p>
+                                    <p class="card-text small mb-4">Espectros registrados por estación</p>
+
                                     <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
-                                            {% if habilitada %} href="javascript:void(0);" onclick="espectros('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
-                                    {% else %} href="#" tabindex="-1" onclick="return false;" {% endif %}></a>
+                                            {% if habilitada %} href="javascript:void(0);"
+                                        onclick="procesarNavegacion('{{ path('espectros') }}', 'RUTA_ESPECTROS_MOVIL', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                    {% else %} href="#" tabindex="-1" onclick="return false;"
+                                            {% endif %}></a>
                                 </div>
                             </div>
                         </div>
@@ -187,16 +165,20 @@
                         {# 6. Shakemaps #}
                         <div class="col-sm-6 col-md-4">
                             <div id="card-shakemaps" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
-                                <div class="card-body">
+                                <div class="card-body d-flex flex-column">
                                     <div class="mb-3"><i class="bi bi-map fs-2 text-primary"></i></div>
                                     <h5 class="card-title">Shakemaps</h5>
-                                    <p class="card-text small">Shakemaps para aceleración e intensidad</p>
+                                    <p class="card-text small mb-4">Shakemaps para aceleración e intensidad</p>
+
                                     <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
-                                            {% if habilitada %} href="javascript:void(0);" onclick="shakemaps('{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
-                                    {% else %} href="#" tabindex="-1" onclick="return false;" {% endif %}></a>
+                                            {% if habilitada %} href="javascript:void(0);"
+                                        onclick="procesarNavegacion('{{ path('shakemaps') }}', 'RUTA_SHAKEMAPS_MOVIL', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                    {% else %} href="#" tabindex="-1" onclick="return false;"
+                                            {% endif %}></a>
                                 </div>
                             </div>
                         </div>
+
                     {% endblock %}
                 </div>
             </div>
@@ -204,7 +186,6 @@
             {# COLUMNA DERECHA: Mapa Estático (Ocupa 4 de 12 columnas) #}
             <div class="col-lg-4 col-md-12">
                 <div class="card shadow-sm border-0 sticky-top" style="top: 20px;">
-
                     <div class="card-body p-0">
                         <div id="map" style="width: 100%; height: 420px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;"></div>
                     </div>
@@ -223,8 +204,6 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Verificar si tenemos los datos necesarios (previene errores si el Controller aún no los envía)
-            {% if datos is defined and datos is not empty %}
 
             // Configuración de mapa estático (sin interacciones)
             var map = L.map('map', {
@@ -251,9 +230,10 @@
                 iconSize: [30, 30],
                 iconAnchor: [15, 15]
             });
-
             L.marker([{{ lat }}, {{ long }}], {icon: starIcon, zIndexOffset:900000}).addTo(map);
 
+            // Verificar si tenemos los datos necesarios (previene errores si el Controller aún no los envía)
+            {% if datos is defined and datos is not empty %}
             // Funciones de estilo
             function getIndex(valor) {
                 if (valor > 60) return 9*2000;
@@ -299,9 +279,8 @@
                     zIndexOffset: getIndex(punto.max)
                 }).addTo(map);
             });
-
             {% else %}
-            document.getElementById('map').innerHTML = "<div class='p-3 text-center text-muted'>Cargando mapa...<br><small>(Requiere enviar variable 'datos' desde el controlador)</small></div>";
+            //document.getElementById('map').innerHTML = "<div class='p-3 text-center text-muted'>Cargando mapa...<br><small>(Requiere enviar variable 'datos' desde el controlador)</small></div>";
             {% endif %}
         });
     </script>

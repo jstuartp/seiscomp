@@ -186,17 +186,45 @@
                     </div>
 
                 </div>
-
-                <div id="graficos" class="w-100 mt-2"></div>
-
             </div>
 
             <div class="col-12 col-md-8">
                 <div id="map" style="width: 100%; height: 80vh; min-height: 500px;"></div>
             </div>
         </div>
+        <div id="graficos" class="row mt-5 mb-5 g-4">
 
-    </div>
+            {# Gráfico 1: Top 20 #}
+            <div class="col-12 col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Atenuación: Top 20 Estaciones más Cercanas</h5>
+                    </div>
+                    <div class="card-body p-2">
+                        {# Se ajustó la altura a 500px para que coincida con el gráfico 2 #}
+                        <div id="plotTop20" style="width: 100%; height: 500px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            {# Gráfico 2: Datos Observados vs Modelos #}
+            <div class="col-12 col-lg-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Datos Observados vs Atenuación</h5>
+                    </div>
+                    <div class="card-body p-2">
+                        <div id="plotAtenuacion" style="width: 100%; height: 500px;"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div> {# <- Cierre del container-fluid #}
+
+
+
 
     <div id="graphModal" class="modal fade" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-xl modal-dialog-centered">
@@ -572,5 +600,137 @@
             const traceE = { x: xValues, y: hneProcessed.main, type: 'scatter', line: { width: 1, color: 'red' } };
             Plotly.newPlot('plotDivE', [traceE], layoutE, config);
         }
+
+        // --- Gráfico Plotly para el Top 20 de Estaciones Cercanas ---
+        {% if top20_cercanas is defined and top20_cercanas is not empty %}
+        // Preparación de los arreglos de datos desde Twig
+        const nombresEstaciones = [
+            {% for est in top20_cercanas %}
+            '{{ est.estacion }} ({{ est.distancia|round(1) }} km)'{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        ];
+
+        const valoresAceleracion = [
+            {% for est in top20_cercanas %}
+            {{ est.aceleracion_maxima|default(0)|round(2) }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        ];
+
+        const traceTop20 = {
+            x: nombresEstaciones,
+            y: valoresAceleracion,
+            type: 'bar',
+            marker: {
+                color: 'rgba(220, 53, 69, 0.75)', // Rojo sutil combinando con los badges de magnitud
+                line: {
+                    color: 'rgb(220, 53, 69)',
+                    width: 1.5
+                }
+            },
+            hovertemplate: '<b>Estación:</b> %{x}<br><b>PGA:</b> %{y:.2f} cm/s²<extra></extra>'
+        };
+
+        const layoutTop20 = {
+            title: {
+                text: 'Aceleraciones 20 Estaciones más cercanas al Epicentro',
+                font: { size: 14, color: '#495057', weight: 'bold' }
+            },
+            margin: { l: 50, r: 20, t: 50, b: 100 },
+            xaxis: {
+                title: 'Estación (Ordenadas por distancia)',
+                tickangle: -45,
+                automargin: true
+            },
+            yaxis: {
+                title: 'Aceleración Máxima (cm/s²)',
+                zeroline: true,
+                gridcolor: '#f0f0f0'
+            },
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)'
+        };
+
+        const configTop20 = {
+            responsive: true,
+            locale: 'es',
+            displayModeBar: false // Ocultar barra de herramientas para mantener la interfaz limpia
+        };
+
+        // Renderizar el gráfico en el contenedor correspondiente
+        Plotly.newPlot('plotTop20', [traceTop20], layoutTop20, configTop20);
+        {% endif %}
+
+
+        // --- Gráfico de Dispersión PGA vs Distancia (Log-Log) ---
+        {% if todas_estaciones is defined and todas_estaciones is not empty %}
+
+        // Filtramos y preparamos los datos observados
+        const traceObservados = {
+            x: [
+                {% for est in todas_estaciones %}
+                // Aseguramos la distancia (X)
+                {{ est.distancia|round(1) }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            ],
+            y: [
+                {% for est in todas_estaciones %}
+                // En escalas logarítmicas, el valor no puede ser 0.
+                // Usamos un valor minúsculo por defecto si no hay dato para que no falle el renderizado.
+                {{ est.maximo|default(0.01)|round(2) }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            ],
+            text: [
+                {% for est in todas_estaciones %}
+                '{{ est.estacion }}'{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            ],
+            mode: 'markers',
+            type: 'scatter',
+            name: 'Estaciones',
+            marker: {
+                size: 9,
+                color: 'rgba(52, 152, 219, 0.75)', // Azul visible y profesional
+                line: { color: '#2980b9', width: 1.5 }
+            },
+            hovertemplate: '<b>%{text}</b><br>Distancia: %{x} km<br>PGA: %{y:.2f} cm/s²<extra></extra>'
+        };
+
+        // Configuración del Layout con ambos ejes en Log
+        const layoutAtenuacion = {
+            title: {
+                text: 'Aceleración Máxima vs. Distancia',
+                font: { size: 15, color: '#495057', weight: 'bold' }
+            },
+            margin: { l: 60, r: 30, t: 50, b: 60 },
+            xaxis: {
+                title: 'Distancia Epicentral (km)',
+                type: 'log', // Activa la escala logarítmica
+                autorange: true,
+                gridcolor: '#e2e8f0',
+                zeroline: false
+            },
+            yaxis: {
+                title: 'PGA (cm/s²)',
+                type: 'log', // Activa la escala logarítmica
+                autorange: true,
+                gridcolor: '#e2e8f0',
+                zeroline: false
+            },
+            showlegend: false, // Ocultamos la leyenda ya que solo hay un grupo de datos
+            plot_bgcolor: '#f8f9fa',
+            paper_bgcolor: 'rgba(0,0,0,0)'
+        };
+
+        const configAtenuacion = {
+            responsive: true,
+            locale: 'es',
+            displayModeBar: false,
+            modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d']
+        };
+
+        // Renderizamos el gráfico enviando solo nuestro arreglo de puntos reales
+        Plotly.newPlot('plotAtenuacion', [traceObservados], layoutAtenuacion, configAtenuacion);
+
+        {% endif %}
     </script>
 {% endblock %}

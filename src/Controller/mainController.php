@@ -122,16 +122,6 @@ class mainController extends AbstractController
             fclose($handle);
         }
 
-        $calcularDistanciaHaversine = function($lat1, $lon1, $lat2, $lon2) {
-            $R = 6371; // Radio de la Tierra en km
-            $dLat = deg2rad($lat2 - $lat1);
-            $dLon = deg2rad($lon2 - $lon1);
-            $a = sin($dLat / 2) * sin($dLat / 2) +
-                cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-                sin($dLon / 2) * sin($dLon / 2);
-            $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
-            return $R * $c;
-        };
 
         // --- Función para calcular dirección cardinal ---
         $obtenerDireccion = function($lat1, $lon1, $lat2, $lon2) {
@@ -154,7 +144,7 @@ class mainController extends AbstractController
         $distanciaMinima = INF;
 
         foreach ($ciudades as $ciudad) {
-            $distancia = $calcularDistanciaHaversine($lat, $lon, $ciudad['lat'], $ciudad['lon']);
+            $distancia = $this->calcularDistanciaHaversine($lat, $lon, $ciudad['lat'], $ciudad['lon']);
             if ($distancia < $distanciaMinima) {
                 $distanciaMinima = $distancia;
                 $ciudadMasCercana = [
@@ -180,6 +170,22 @@ class mainController extends AbstractController
     }
 
 
+    /*
+     * Funcion para calcular la distancia Haversine
+     * @param lat1 y long1 del punto origina, lat2 y long2 del punto que se quiere medir
+    */
+    public function calcularDistanciaHaversine($lat1, $lon1, $lat2, $lon2): float|int
+    {
+        $R = 6371; // Radio de la Tierra en km
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLon = deg2rad($lon2 - $lon1);
+        $a = sin($dLat / 2) * sin($dLat / 2) +
+            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+            sin($dLon / 2) * sin($dLon / 2);
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+        return $R * $c;
+    }
+
 
 
 
@@ -202,10 +208,10 @@ class mainController extends AbstractController
         //Activo el repositorio para traer los datos de PGA segun el evento
         $datosPga = $this->repository->findPgaByEventoconNombre($evento);
 
-        //Activo el repositorio para traer los datos de PGA segun el evento
+        //Activo el repositorio para traer los datos de PGV segun el evento
         $datosPgv = $this->repository->findPgvByEventoConNombre($evento);
 
-        //Activo el repositorio para traer los datos de PGA segun el evento
+        //Activo el repositorio para traer los datos de PGD segun el evento
         $datosPgd = $this->repository->findPgdByEventoConNombre($evento);
 
         // Listado SMHR a excluir de la lista
@@ -217,6 +223,7 @@ class mainController extends AbstractController
             return !in_array($item['estacion'], $estacionesExcluir, true);
         });
 
+
         $datosPgvFiltrados = array_filter($datosPgv, function ($item) use ($estacionesExcluir) {
             // Se excluyen únicamente las estaciones en la lista,
             return !in_array($item['estacion'], $estacionesExcluir, true);
@@ -227,10 +234,43 @@ class mainController extends AbstractController
             return !in_array($item['estacion'], $estacionesExcluir, true);
         });
 
+        $estacionesConDistancia = [];
+
+        foreach ($datosPgaFiltrados as $estacion) {
+            // Se calcula la distancia asegurando que los valores se pasen como float
+            $distancia = $this->calcularDistanciaHaversine(
+                (float) $epi_lat,
+                (float) $epi_long,
+                (float) $estacion['latitud'],
+                (float) $estacion['longitud']
+            );
+
+            // Se guarda la estación completa y se le añade la nueva llave de distancia
+            $estacion['distancia'] = $distancia;
+            $estacionesConDistancia[] = $estacion;
+        }
+
+        // Ordenar el arreglo resultante por la distancia (de menor a mayor) usando usort
+        usort($estacionesConDistancia, function ($a, $b) {
+            return $a['distancia'] <=> $b['distancia'];
+        });
+
+        // Extraer únicamente las primeras 20 posiciones (las más cercanas)
+        $top20Estaciones = array_slice($estacionesConDistancia, 0, 20);
+
+        // Crear un arreglo simplificado solo con los datos requeridos (estacion, distancia y maximo)
+        $resumenTop20 = array_map(function($estacion) {
+            return [
+                'estacion' => $estacion['estacion'],
+                'distancia' => round($estacion['distancia'], 2), // Redondeado a 2 decimales para mejor lectura
+                'aceleracion_maxima' => $estacion['maximo'] ?? null // Asegúrate que 'maximo' sea la llave correcta
+            ];
+        }, $top20Estaciones);
+
         return $this->render('pga.html.twig',
             ['fecha' => $fecha,'datos'=>$datosPgaFiltrados,'datosPgv'=>$datosPgvFiltrados,
                 'datosPgd'=>$datosPgdFiltrados,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
-                'epi_long'=>$epi_long,'epi'=>$epi]);
+                'epi_long'=>$epi_long,'epi'=>$epi,'top20_cercanas' => $resumenTop20,'todas_estaciones' => $estacionesConDistancia]);
     }
 
 
@@ -526,18 +566,32 @@ class mainController extends AbstractController
     public function epicentroAction(Request $request, EntityManagerInterface $em): Response
     {
         // Inicializamos variables por defecto para evitar errores si entran por GET
-        $evento = $fecha = $mag = $epi = "";
-        $lat = 0.0;
-        $long = 0.0;
+        //$evento = $fecha = $mag = $epi = "";
+        //$lat = 0.0;
+        //$long = 0.0;
 
         // Chequeo los datos que llegan por POST del ID y la Fecha
         if ($request->isMethod('POST')) {
-            $evento = $request->request->get('id');
-            $fecha  = $request->request->get('fecha');
-            $mag    = $request->request->get('mag');
-            $lat    = (float)$request->request->get('lat');
-            $long   = (float)$request->request->get('long');
-            $epi    = $request->request->get('epi');
+            $datosEvento = [
+                'idEvento'    =>  $request->request->get('id'),
+                'fecha'       => $request->request->get('fecha'),
+                'magnitud'    => $request->request->get('mag'),
+                'latitud'     => (float)$request->request->get('lat'),
+                'longitud'    => (float)$request->request->get('long'),
+                'lugar'       =>    $request->request->get('epi')];
+        }elseif ($request->isMethod('GET')){
+            $evento = $request->query->get('id');
+            //Activo el repositorio para traer todos los datos del evento buscado
+            $MyEvento = $this->historicoSismosRepository->findOneByIdEvento($evento);
+            // Formateamos la respuesta usando los getters de la entidad
+            $datosEvento = [
+                'idEvento'    => $MyEvento->getIdEvento(),
+                'fecha'       => $MyEvento->getFechaEvento()->format('Y-m-d H:i:s'),
+                'latitud'     => $MyEvento->getLatitudEvento(),
+                'longitud'    => $MyEvento->getLongitudEvento(),
+                'magnitud'    => $MyEvento->getMagnitudEvento(),
+                'lugar'       => $this->CalculaEpicentro($MyEvento->getLatitudEvento(),$MyEvento->getLongitudEvento()),
+            ];
         }
 
         // --- Función para calcular distancia Haversine en PHP ---
@@ -561,7 +615,7 @@ class mainController extends AbstractController
                 // Asumimos: 0 = lon, 1 = lat, 2 = nombre, 3 = importante (1 o 0)
                 $ciudadLat = (float)$data[1];
                 $ciudadLon = (float)$data[0];
-                $distancia = $calcularDistanciaHaversine($lat, $long, $ciudadLat, $ciudadLon);
+                $distancia = $calcularDistanciaHaversine($datosEvento['latitud'], $datosEvento['longitud'], $ciudadLat, $ciudadLon);
 
                 // Verificamos si existe la columna de "importante", por defecto 0
                 $esImportante = isset($data[3]) ? (int)$data[3] : 0;
@@ -596,12 +650,12 @@ class mainController extends AbstractController
 
         return $this->render('epicentro.html.twig', [
             'title'                => "Ciudades cercanas al Epicentro: ",
-            'fecha'                => $fecha,
-            'magnitud'             => $mag,
-            'id'                   => $evento,
-            'lat'                  => $lat,
-            'long'                 => $long,
-            'epi'                  => $epi,
+            'fecha'                => $datosEvento['fecha'],
+            'magnitud'             => $datosEvento['magnitud'],
+            'id'                   => $datosEvento['idEvento'],
+            'lat'                  => $datosEvento['latitud'],
+            'long'                 => $datosEvento['longitud'],
+            'epi'                  => $datosEvento['lugar'],
             'ciudades_cercanas'    => $ciudadesCercanas,     // Array para Pestaña 1
             'ciudades_importantes' => $ciudadesImportantes   // Array para Pestaña 2
         ]);
