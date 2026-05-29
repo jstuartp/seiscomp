@@ -195,7 +195,7 @@
         <div id="graficos" class="row mt-5 mb-5 g-4">
 
             {# Gráfico 1: Top 20 #}
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-lg-4" id="containerPlotTop20">
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-light">
                         <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Atenuación: Top 20 Estaciones más Cercanas</h5>
@@ -208,7 +208,7 @@
             </div>
 
             {# Gráfico 2: Datos Observados vs Modelos #}
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-lg-4" id="containerPlotAtenuacion">
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-light">
                         <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Datos Observados vs Atenuación</h5>
@@ -219,6 +219,21 @@
                 </div>
             </div>
 
+            {# Gráfico 3: Duración del Movimiento #}
+            <div class="col-12 col-lg-4" id="containerPlotDuracion">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Duración de Movimiento Significativo por Estación</h5>
+                    </div>
+                    <div class="card-body p-2">
+                        <div id="plotDuracion" style="width: 100%; height: 500px;">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <div class="spinner-border text-primary" role="status"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
     </div> {# <- Cierre del container-fluid #}
@@ -710,7 +725,7 @@
                 zeroline: false
             },
             yaxis: {
-                title: 'PGA (cm/s²)',
+                title: 'Aceleración Máxima (cm/s²)',
                 type: 'log', // Activa la escala logarítmica
                 autorange: true,
                 gridcolor: '#e2e8f0',
@@ -732,5 +747,101 @@
         Plotly.newPlot('plotAtenuacion', [traceObservados], layoutAtenuacion, configAtenuacion);
 
         {% endif %}
+
+        // =========================================================
+        // LÓGICA PARA EL GRÁFICO DE DURACIÓN DEL MOVIMIENTO (JSON)
+        // =========================================================
+
+        // Aquí usamos Twig para inyectar dinámicamente el idEvento.
+        // Si tu variable se llama diferente en el backend (ej. evento.id), ajústala.
+        // Para la ruta de assets, asumo que guardas los JSON en la carpeta de waveforms o similar.
+        const idEvento = '{{ id | default("PJCO") }}';
+        const urlMovimiento = `{{ asset('assets/waves/'~ id ~ '/') }}${idEvento}_mov.json`;
+
+        fetch(urlMovimiento)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Archivo de duración no encontrado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Si no hay datos, ocultamos el contenedor y expandimos los otros gráficos
+                if (!data || data.length === 0) {
+                    document.getElementById('containerPlotDuracion').style.display = 'none';
+                    document.getElementById('containerPlotTop20').className = 'col-12 col-lg-6';
+                    document.getElementById('containerPlotAtenuacion').className = 'col-12 col-lg-6';
+                    return;
+                }
+
+                // Limpiamos el spinner
+                document.getElementById('plotDuracion').innerHTML = '';
+
+                // Extraer datos para Plotly
+                const estaciones = data.map(item => item.estacion);
+                const duraciones = data.map(item => item.duracion_s);
+                const pgas = data.map(item => item.pga_3d_cm_s2);
+
+                const traza = {
+                    x: estaciones,
+                    y: duraciones,
+                    type: 'bar',
+                    marker: {
+                        color: '#0d6efd', // Azul Bootstrap
+                        opacity: 0.85,
+                        line: {
+                            color: '#0a58ca',
+                            width: 1.5
+                        }
+                    },
+                    // El texto personalizado para el tooltip
+                    customdata: pgas,
+                    hovertemplate:
+                        '<b>Estación: %{x}</b><br>' +
+                        'Duración: %{y:.1f} s<br>' +
+                        '<extra></extra>' // El extra vacio quita la caja secundaria al lado del cursor
+                };
+
+                const layout = {
+                    title: {
+                        text: 'Duración del Sismo (Umbral > 0.05 cm/s²)',
+                        font: { size: 15, color: '#495057', weight: 'bold' }
+                    },
+                    margin: { l: 60, r: 30, t: 50, b: 60 },
+                    xaxis: {
+                        title: 'Estación',
+                        tickangle: -45, // Inclinamos las etiquetas para que se lean bien si son muchas
+                        gridcolor: '#e2e8f0'
+                    },
+                    yaxis: {
+                        title: 'Duración (segundos)',
+                        gridcolor: '#e2e8f0',
+                        zeroline: false
+                    },
+                    plot_bgcolor: '#f8f9fa',
+                    paper_bgcolor: 'rgba(0,0,0,0)'
+                };
+
+                const config = {
+                    responsive: true,
+                    locale: 'es',
+                    displayModeBar: false
+                };
+
+                Plotly.newPlot('plotDuracion', [traza], layout, config);
+            })
+            .catch(error => {
+                console.warn("No se pudo cargar el gráfico de duración:", error);
+                // Ocultar el contenedor y expandir los otros en caso de error (archivo no encontrado)
+                const containerDuracion = document.getElementById('containerPlotDuracion');
+                if (containerDuracion) {
+                    containerDuracion.style.display = 'none';
+                    document.getElementById('containerPlotTop20').className = 'col-12 col-lg-6';
+                    document.getElementById('containerPlotAtenuacion').className = 'col-12 col-lg-6';
+                }
+            });
+
+
+
     </script>
 {% endblock %}
