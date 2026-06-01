@@ -756,7 +756,7 @@
         // Si tu variable se llama diferente en el backend (ej. evento.id), ajústala.
         // Para la ruta de assets, asumo que guardas los JSON en la carpeta de waveforms o similar.
         const idEvento = '{{ id | default("PJCO") }}';
-        const urlMovimiento = `{{ asset('assets/waves/'~ id ~ '/') }}${idEvento}_mov.json`;
+        const urlMovimiento = `{{ asset('assets/waves/'~ id ~ '/') }}grafico_mov.json`;
 
         fetch(urlMovimiento)
             .then(response => {
