@@ -4,7 +4,7 @@
 
     <script>
         // Función unificada para manejar la navegación normal y móvil con envío condicional de datos
-        function procesarNavegacion(rutaNormal, rutaMovil, id, fecha, mag, lat, long, epi) {
+        function procesarNavegacion(rutaNormal, rutaMovil, id, fecha, mag, lat, long,profundidad, epi) {
             // Detección automática de dispositivo móvil (sin intervención del usuario)
             const esMovil = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
@@ -27,6 +27,7 @@
                     'mag': mag,
                     'lat': lat,
                     'long': long,
+                    'profundidad': profundidad,
                     'epi': epi
                 };
 
@@ -88,7 +89,9 @@
                                     <p class="card-text small mb-4">Mapa de ubicación y lugares cercanos</p>
 
                                     <a href="javascript:void(0);"
-                                       onclick="procesarNavegacion('{{ path('epicentro') }}', '{{ path('epicentro') }}', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                       onclick="procesarNavegacion('{{ path('epicentro') }}', '{{ path('epicentro') }}',
+                                               '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}',
+                                               '{{ long|e('js') }}','{{ profundidad|e('js') }}','{{ epi|e('js') }}')"
                                        class="stretched-link"></a>
                                 </div>
                             </div>
@@ -104,7 +107,9 @@
 
                                     <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
                                             {% if habilitada %} href="javascript:void(0);"
-                                        onclick="procesarNavegacion('{{ path('pga') }}', '{{ path('pga_movil') }}', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                        onclick="procesarNavegacion('{{ path('pga') }}', '{{ path('pga_movil') }}',
+                                                '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
+                                                '{{ lat|e('js') }}','{{ long|e('js') }}','{{ profundidad|e('js') }}','{{ epi|e('js') }}')"
                                     {% else %} href="#" tabindex="-1" onclick="return false;"
                                             {% endif %}></a>
                                 </div>
@@ -121,7 +126,9 @@
 
                                     <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
                                             {% if habilitada %} href="javascript:void(0);"
-                                        onclick="procesarNavegacion('{{ path('jma') }}', '{{ path('jma_movil') }}', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                        onclick="procesarNavegacion('{{ path('jma') }}', '{{ path('jma_movil') }}',
+                                                '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
+                                                '{{ lat|e('js') }}','{{ long|e('js') }}','{{ profundidad|e('js') }}','{{ epi|e('js') }}')"
                                     {% else %} href="#" tabindex="-1" onclick="return false;"
                                             {% endif %}></a>
                                 </div>
@@ -129,7 +136,7 @@
                         </div>
 
                         {# 4. Edificios #}
-                        <div class="col-sm-6 col-md-4">
+                        <div class="col-sm-6 col-md-4 d-none">
                             <div id="card-edificios" class="card shadow-sm position-relative h-100 {{ habilitada ? '' : 'opacity-50' }}">
                                 <div class="card-body d-flex flex-column">
                                     <div class="mb-3"><i class="bi bi-building fs-2 text-primary"></i></div>
@@ -138,7 +145,9 @@
 
                                     <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
                                             {% if habilitada %} href="javascript:void(0);"
-                                        onclick="procesarNavegacion('{{ path('app_estructuras') }}', 'RUTA_EDIFICIOS_MOVIL', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                        onclick="procesarNavegacion('{{ path('app_estructuras') }}', 'RUTA_EDIFICIOS_MOVIL',
+                                                '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}',
+                                                '{{ lat|e('js') }}','{{ long|e('js') }}','{{ profundidad|e('js') }}','{{ epi|e('js') }}')"
                                     {% else %} href="#" tabindex="-1" onclick="return false;"
                                             {% endif %}></a>
                                 </div>
@@ -151,11 +160,13 @@
                                 <div class="card-body d-flex flex-column">
                                     <div class="mb-3"><i class="bi bi-activity fs-2 text-primary"></i></div>
                                     <h5 class="card-title">Espectros</h5>
-                                    <p class="card-text small mb-4">Espectros registrados por estación</p>
+                                    <p class="card-text small mb-4">Espectros de pseudoaceleración calculados por estación</p>
 
                                     <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
                                             {% if habilitada %} href="javascript:void(0);"
-                                        onclick="procesarNavegacion('{{ path('espectros') }}', 'RUTA_ESPECTROS_MOVIL', '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}','{{ long|e('js') }}','{{ epi|e('js') }}')"
+                                        onclick="procesarNavegacion('{{ path('espectros') }}', '{{ path('espectros') }}',
+                                                '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}',
+                                                '{{ long|e('js') }}','{{ profundidad|e('js') }}','{{ epi|e('js') }}')"
                                     {% else %} href="#" tabindex="-1" onclick="return false;"
                                             {% endif %}></a>
                                 </div>

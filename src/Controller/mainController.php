@@ -288,6 +288,7 @@ class mainController extends AbstractController
             $magnitud = $request->request->get('mag');
             $epi_lat = $request->request->get('lat');
             $epi_long = $request->request->get('long');
+            $profundidad = $request->request->get('profundidad');
             $epi = $request->request->get('epi');
         }else{echo "NO HAY NADA";}
 
@@ -304,7 +305,7 @@ class mainController extends AbstractController
         });
         return $this->render('espectros.html.twig',
             ['fecha' => $fecha,'datos'=>$datosPgaFiltrados,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
-                'epi_long'=>$epi_long,'epi'=>$epi]);
+                'epi_long'=>$epi_long,'epi'=>$epi,'profundidad'=> $profundidad]);
     }
 
 

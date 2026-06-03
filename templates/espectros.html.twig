@@ -7,9 +7,13 @@
         <div class="row mt-4">
             <div class="col-sm-8">
                 <h2 class="mb-4">{% block page_title %}
-                        Aceleraciones Máximas del sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(UTC)
-                        <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>{% endblock %}
-                </h2>
+                    Sismo
+                    del <strong>{{ fecha|date("d-m-Y") }}</strong> <span class="badge bg-danger">M {{ magnitud |
+                        round(1) }} </span> </h2>
+                <h3>
+                    Hora: {{ fecha|date("H:i:s ") }}(UTC) -- {{ fecha|date('H:i:s', 'America/Costa_Rica') }} (Local)
+                    {% endblock %}
+                </h3>
             </div>
             <div class="col-sm-4 text-end">
                 <a href="{{ path('homepage') }}" class="btn btn-success">Inicio</a>
@@ -18,7 +22,8 @@
 
         <div class="row">
             <div class="col-sm-12">
-                <h3 class="mb-4">{{ epi }}</h3>
+                <h4 class="text-muted">{{ epi }}</h4>
+                <h4 class="text-muted">Profundidad: {{ profundidad|round(1) }} km</h4>
             </div>
         </div>
 
@@ -31,7 +36,7 @@
                             <th style="width: 20%;">Estación</th>
                             <th style="width: 20%;">Tipo Suelo</th>
                             <th style="width: 20%;">Zona</th>
-                            <th style="width: 20%;">Máximo (cm/s²)</th>
+                            <th style="width: 20%;">PGA – aceleración pico del terreno (cm/s²)</th>
                             <th style="width: 30%;">Espectro CSCR</th>
                             <th style="width: 30%;">Espectro</th>
                         </tr>
