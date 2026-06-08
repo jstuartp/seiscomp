@@ -281,19 +281,43 @@ class mainController extends AbstractController
     #[Route('/espectros/', name:'espectros', methods: ['POST','GET','PUT'])]
     public function espectrosAction(Request $request, EntityManagerInterface $em): Response
     {
-        //Chequeo los datos que llegan por post del ID y la Fecha
+        // Chequeo los datos que llegan por POST del ID y la Fecha
         if ($request->isMethod('POST')) {
-            $evento = $request->request->get('id');
-            $fecha = $request->request->get('fecha');
-            $magnitud = $request->request->get('mag');
-            $epi_lat = $request->request->get('lat');
-            $epi_long = $request->request->get('long');
-            $profundidad = $request->request->get('profundidad');
-            $epi = $request->request->get('epi');
-        }else{echo "NO HAY NADA";}
+            $datosEvento = [
+                'idEvento'    =>  $request->request->get('id'),
+                'fecha'       => $request->request->get('fecha'),
+                'magnitud'    => $request->request->get('mag'),
+                'latitud'     => (float)$request->request->get('lat'),
+                'longitud'    => (float)$request->request->get('long'),
+                'profundidad' => $request->request->get('profundidad'),
+                'lugar'       =>    $request->request->get('epi')];
+        }elseif ($request->isMethod('GET')){
+            $evento = $request->query->get('id');
+            //Activo el repositorio para traer todos los datos del evento buscado
+            $MyEvento = $this->historicoSismosRepository->findOneByIdEvento($evento);
+            // Formateamos la respuesta usando los getters de la entidad
+            $datosEvento = [
+                'idEvento'    => $MyEvento->getIdEvento(),
+                'fecha'       => $MyEvento->getFechaEvento()->format('Y-m-d H:i:s'),
+                'latitud'     => $MyEvento->getLatitudEvento(),
+                'longitud'    => $MyEvento->getLongitudEvento(),
+                'magnitud'    => $MyEvento->getMagnitudEvento(),
+                'profundidad'    => $MyEvento->getProfundidadEvento(),
+                'lugar'       => $this->CalculaEpicentro($MyEvento->getLatitudEvento(),$MyEvento->getLongitudEvento()),
+            ];
+        }
 
         //Activo el repositorio para traer los datos de PGA segun el evento
-        $datosPga = $this->repository->findPgaByEventoconNombre($evento);
+        $datosPga = $this->repository->findPgaByEventoconNombre($datosEvento['idEvento']);
+
+        //Quitamos el slash para usar la nueva version de la grafica
+        foreach ($datosPga as &$dato) {
+            if (isset($dato['grafica'])) {
+                // basename hace el trabajo de buscar la barra y cortar automáticamente
+                $dato['grafica'] = basename($dato['grafica']);
+            }
+        }
+        unset($dato);
 
         // Listado SMHR a excluir de la lista
         $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
@@ -304,8 +328,8 @@ class mainController extends AbstractController
             return !in_array($item['estacion'], $estacionesExcluir, true);
         });
         return $this->render('espectros.html.twig',
-            ['fecha' => $fecha,'datos'=>$datosPgaFiltrados,'id'=>$evento,'magnitud'=>$magnitud,'epi_lat'=>$epi_lat,
-                'epi_long'=>$epi_long,'epi'=>$epi,'profundidad'=> $profundidad]);
+            ['fecha' => $datosEvento['fecha'],'datos'=>$datosPgaFiltrados,'id'=>$datosEvento['idEvento'],'magnitud'=>$datosEvento['magnitud'],'epi_lat'=>$datosEvento['latitud'],
+                'epi_long'=>$datosEvento['longitud'],'epi'=>$datosEvento['lugar'],'profundidad'=> $datosEvento['profundidad']]);
     }
 
 

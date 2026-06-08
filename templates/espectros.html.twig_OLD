@@ -58,12 +58,12 @@
                                 <td class="text-center align-middle">
                                     <div class="ratio ratio-16x9 border rounded overflow-hidden estado-proceso"
                                          style="width: 150px; margin: 0 auto;"
-                                         onclick="if(this.classList.contains('cargado')) openModal('{{ asset('assets/waves/' ~id~'/espectros_acc/'~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}')">
+                                         onclick="if(this.classList.contains('cargado')) openModal('{{ asset('assets/waves/' ~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}')">
 
                                         <!-- Aquí está el nuevo span -->
                                         <span class="texto-proceso">En proceso...</span>
 
-                                        <img src="{{ asset('assets/waves/'  ~id~'/espectros_acc/'~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}"
+                                        <img src="{{ asset('assets/waves/' ~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}"
                                              alt="Previo CSCR"
                                              class="imagen-dinamica"
                                              style="object-fit: cover;"
@@ -77,12 +77,12 @@
                                 <td class="text-center align-middle">
                                     <div class="ratio ratio-16x9 border rounded overflow-hidden estado-proceso"
                                          style="width: 150px; margin: 0 auto;"
-                                         onclick="if(this.classList.contains('cargado')) openModal('{{ asset('assets/waves/' ~id~'/espectros_acc/'~  dato.grafica ~ '_RotD100_loglog.png') }}')">
+                                         onclick="if(this.classList.contains('cargado')) openModal('{{ asset('assets/waves/' ~ dato.grafica ~ '_RotD100_loglog.png') }}')">
 
                                         <!-- Aquí está el nuevo span -->
                                         <span class="texto-proceso">En proceso...</span>
 
-                                        <img src="{{ asset('assets/waves/'  ~id~'/espectros_acc/'~ dato.grafica ~ '_RotD100_loglog.png') }}"
+                                        <img src="{{ asset('assets/waves/' ~ dato.grafica ~ '_RotD100_loglog.png') }}"
                                              alt="Previo Espectro"
                                              class="imagen-dinamica"
                                              style="object-fit: cover;"
