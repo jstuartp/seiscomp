@@ -59,9 +59,9 @@
                                 <thead class="table-dark">
                                 <tr>
                                     <th>Estación</th>
-                                    <th>HNE</th> <th>HNN</th>
-                                    <th>HNZ</th>
-                                    <th>Máximo</th>
+                                    <th>HNE</br>(cm/s²)</th> <th>HNN</br>(cm/s²)</th>
+                                    <th>HNZ</br>(cm/s²)</th>
+                                    <th>Máximo </br>(cm/s²)</th>
                                     <th>Onda</th>
                                 </tr>
                                 </thead>
@@ -73,12 +73,12 @@
                                         <td>{{ dato.hnn|round(2) }}</td>
                                         <td>{{ dato.hnz|round(2) }}</td>
                                         {% set pga = dato.maximo %}
-                                        {% if pga > 60 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
-                                        {% elseif pga > 40 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
-                                        {% elseif pga > 20 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
-                                        {% elseif pga > 10 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
-                                        {% elseif pga > 5 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
-                                        {% elseif pga > 1 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
+                                        {% if pga > 500 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
+                                        {% elseif pga > 200 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
+                                        {% elseif pga > 100 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
+                                        {% elseif pga > 50 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
+                                        {% elseif pga > 10 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
+                                        {% elseif pga > 2 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
                                         {% else %}             {% set color = '#0058cc' %} {% set text_color = 'white' %}
                                         {% endif %}
                                         <td style="background-color: {{ color }}; color: {{ text_color }}; font-weight: bold;">
@@ -103,9 +103,10 @@
                                 <thead class="table-dark">
                                 <tr>
                                     <th>Estación</th>
-                                    <th>HNE</th> <th>HNN</th>
-                                    <th>HNZ</th>
-                                    <th>Máximo</th>
+                                    <th>HNE</br>(cm/s)</th>
+                                    <th>HNN</br>(cm/s)</th>
+                                    <th>HNZ</br>(cm/s)</th>
+                                    <th>Máximo </br>(cm/s)</th>
                                     <th>Onda</th>
                                 </tr>
                                 </thead>
@@ -118,11 +119,11 @@
                                         <td>{{ dato.hnz|round(2) }}</td>
                                         {% set pgv = dato.maximo %}
                                         {% if pgv > 60 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
-                                        {% elseif pgv > 40 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
-                                        {% elseif pgv > 20 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
-                                        {% elseif pgv > 10 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
-                                        {% elseif pgv > 5 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
-                                        {% elseif pgv > 1 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
+                                        {% elseif pgv > 30 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
+                                        {% elseif pgv > 10 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
+                                        {% elseif pgv > 3 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
+                                        {% elseif pgv > 1 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
+                                        {% elseif pgv > 0.3 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
                                         {% else %}             {% set color = '#0058cc' %} {% set text_color = 'white' %}
                                         {% endif %}
                                         <td style="background-color: {{ color }}; color: {{ text_color }}; font-weight: bold;">
@@ -147,9 +148,9 @@
                                 <thead class="table-dark">
                                 <tr>
                                     <th>Estación</th>
-                                    <th>HNE</th> <th>HNN</th>
-                                    <th>HNZ</th>
-                                    <th>Máximo</th>
+                                    <th>HNE</br>(cm)</th> <th>HNN</br>(cm)</th>
+                                    <th>HNZ</br>(cm)</th>
+                                    <th>Máximo </br>(cm)</th>
                                     <th>Onda</th>
                                 </tr>
                                 </thead>
@@ -161,12 +162,12 @@
                                         <td>{{ dato.hnn|round(2) }}</td>
                                         <td>{{ dato.hnz|round(2) }}</td>
                                         {% set pgd = dato.maximo %}
-                                        {% if pgd > 60 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
-                                        {% elseif pgd > 40 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
-                                        {% elseif pgd > 20 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
-                                        {% elseif pgd > 10 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
-                                        {% elseif pgd > 5 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
-                                        {% elseif pgd > 1 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
+                                        {% if pgd > 40 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
+                                        {% elseif pgd > 15 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
+                                        {% elseif pgd > 5 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
+                                        {% elseif pgd > 1 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
+                                        {% elseif pgd > 0.2 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
+                                        {% elseif pgd > 0.05 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
                                         {% else %}             {% set color = '#0058cc' %} {% set text_color = 'white' %}
                                         {% endif %}
                                         <td style="background-color: {{ color }}; color: {{ text_color }}; font-weight: bold;">
@@ -195,10 +196,10 @@
         <div id="graficos" class="row mt-5 mb-5 g-4">
 
             {# Gráfico 1: Top 20 #}
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-lg-4" id="containerPlotTop20">
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-light">
-                        <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Atenuación: Top 20 Estaciones más Cercanas</h5>
+                        <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Atenuación: 20 Estaciones más Cercanas</h5>
                     </div>
                     <div class="card-body p-2">
                         {# Se ajustó la altura a 500px para que coincida con el gráfico 2 #}
@@ -208,7 +209,7 @@
             </div>
 
             {# Gráfico 2: Datos Observados vs Modelos #}
-            <div class="col-12 col-lg-6">
+            <div class="col-12 col-lg-4" id="containerPlotAtenuacion">
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-light">
                         <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Datos Observados vs Atenuación</h5>
@@ -220,7 +221,7 @@
             </div>
 
             {# Gráfico 3: Duración del Movimiento #}
-            <div class="col-12 col-lg-12">
+            <div class="col-12 col-lg-4" id="containerPlotDuracion">
                 <div class="card shadow-sm h-100">
                     <div class="card-header bg-light">
                         <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Duración de Movimiento Significativo por Estación</h5>
@@ -308,143 +309,183 @@
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        // --- CONFIGURACIÓN MANUAL DE ESCALAS ---
+        // Aquí puedes modificar los umbrales (thresholds) y colores para cada mapa
+        const configuracionEscalas = {
+            'pga': {
+                titulo: 'PGA (cm/s²)',
+                unidad: 'cm/s²',
+                sufijoJson: '',
+                thresholds: [500, 200, 100, 50, 10, 2],
+                colores: ['#cc0000', '#cc5200', '#cc8b00', '#ccaa00', '#88cc00', '#00cc03', '#0058cc'],
+                labels: ['> 500', '200 – 500', '100 – 200', '50 – 100', '10 – 50', '2 – 10', '≤ 2']
+            },
+            'pgv': {
+                titulo: 'PGV (cm/s)',
+                unidad: 'cm/s',
+                sufijoJson: '_VEL',
+                thresholds: [60, 30, 10, 3, 1, 0.3], // Ejemplo de escala diferente
+                colores: ['#cc0000', '#cc5200', '#cc8b00', '#ccaa00', '#88cc00', '#00cc03', '#0058cc'],
+                labels: ['> 60', '30 – 60', '10 – 30', '3 – 10', '1 – 3', '0.3 – 1', '≤ 0.3']
+            },
+            'pgd': {
+                titulo: 'PGD (cm)',
+                unidad: 'cm',
+                sufijoJson: '_DISP',
+                thresholds: [40, 15, 5, 1, 0.2, 0.05], // Ejemplo de escala diferente
+                colores: ['#cc0000', '#cc5200', '#cc8b00', '#ccaa00', '#88cc00', '#00cc03', '#0058cc'],
+                labels: ['> 40', '15 – 40', '5 – 15', '1 – 5', '0.2 – 1', '0.05 – 0.2', '≤ 0.05']
+            }
+        };
 
+        document.addEventListener("DOMContentLoaded", function() {
+            // Variables globales del mapa
+            var map;
+            var layerEstaciones = L.layerGroup(); // Grupo para limpiar marcadores fácilmente
+            var legendControl;
+
+            // --- INICIALIZACIÓN DE DATATABLES ---
             let dtOptions = {
-                columnDefs: [
-                    { targets: '_all', className: 'dt-head-center dt-body-center' }
-                ],
-                responsive: false,
-                paging: true,
-                ordering: true,
-                order: [[4, "desc"],],
-                lengthChange: false,
-                pageLength: 15,
-                language: {
-                    processing: "En curso...",
-                    search: "Buscar:",
-                    paginate: {
-                        first: "Primero",
-                        previous: "Anterior",
-                        next: "Siguiente",
-                        last: "Último"
-                    },
-                },
+                columnDefs: [{ targets: '_all', className: 'dt-head-center dt-body-center' }],
+                responsive: false, paging: true, ordering: true, order: [[4, "desc"]],
+                lengthChange: false, pageLength: 15,
+                language: { search: "Buscar:", paginate: { previous: "Anterior", next: "Siguiente" } }
             };
 
-            $('#tabla_pga').DataTable(dtOptions);
-            $('#tabla_pgv').DataTable(dtOptions);
-            $('#tabla_pgd').DataTable(dtOptions);
+            $('#tabla_pga, #tabla_pgv, #tabla_pgd').DataTable(dtOptions);
 
-            function triangleIcon(color, sizePx = 20, fillOpacity = 0.5, strokeColor = '#333', strokeWidth = 2) {
+            // --- ICONOS ---
+            function triangleIcon(color, sizePx = 20) {
                 const s = sizePx;
                 const points = `${s/2},2 ${s-2},${s-2} 2,${s-2}`;
                 const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
-                                  <polygon points="${points}" fill="${color}" fill-opacity="${fillOpacity}" stroke="${strokeColor}" stroke-width="${strokeWidth}" />
-                                </svg>`;
-                return L.divIcon({
-                    html: svg,
-                    className: 'triangle-icon',
-                    iconSize: [s, s],
-                    iconAnchor: [s/2, s/2]
-                });
+                                <polygon points="${points}" fill="${color}" fill-opacity="0.6" stroke="#333" stroke-width="2" />
+                             </svg>`;
+                return L.divIcon({ html: svg, className: 'triangle-icon', iconSize: [s, s], iconAnchor: [s/2, s/2] });
             }
 
             const starIcon = L.divIcon({
-                html: ' <img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" alt="Estrella" style="width:50%;"> ',
-                className: '',
-                iconSize: [80, 80],
-                iconAnchor: [30, 30]
+                html: '<img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" style="width:40px; height:40px;">',
+                className: '', iconSize: [40, 40], iconAnchor: [20, 20]
             });
 
+            // --- PREPARACIÓN DE DATOS (TWIG TO JS) ---
+            const datosMapa = {
+                'pga': [
+                    {% for dato in datos %}
+                    { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo|default(0) }}, est: '{{ dato.estacion }}', graf: '{{ asset('assets/waves/' ~ dato.grafica ~ '.json') }}' }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                'pgv': [
+                    {% for dato in datosPgv %}
+                    { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo|default(0) }}, est: '{{ dato.estacion }}', graf: '{{ asset('assets/waves/' ~ dato.grafica ~ '_VEL.json') }}' }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                'pgd': [
+                    {% for dato in datosPgd %}
+                    { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo|default(0) }}, est: '{{ dato.estacion }}', graf: '{{ asset('assets/waves/' ~ dato.grafica ~ '_DISP.json') }}' }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            };
+
+            // --- FUNCIONES DE LÓGICA DE COLOR ---
+            function obtenerColorYIndex(valor, tipo) {
+                const escala = configuracionEscalas[tipo];
+                for (let i = 0; i < escala.thresholds.length; i++) {
+                    if (valor > escala.thresholds[i]) {
+                        return { color: escala.colores[i], zIndex: (escala.thresholds.length - i) * 1000 };
+                    }
+                }
+                return { color: escala.colores[escala.colores.length - 1], zIndex: 0 };
+            }
+
+            // --- RENDERIZADO DINÁMICO DEL MAPA ---
+            function actualizarMapa(tipo) {
+                if (!map) return;
+
+                // 1. Limpiar estaciones anteriores
+                layerEstaciones.clearLayers();
+
+                // 2. Dibujar nuevas estaciones
+                const puntos = datosMapa[tipo];
+                const escala = configuracionEscalas[tipo];
+
+                puntos.forEach(p => {
+                    const style = obtenerColorYIndex(p.max, tipo);
+                    const icono = triangleIcon(style.color, 18);
+
+                    const popupContenido = `
+                        <b>Estación:</b> ${p.est}<br>
+                        <b>Máximo:</b> ${p.max.toFixed(2)} ${escala.unidad}<br>
+                        <button class="btn btn-primary btn-sm mt-2" onclick="cargarGrafica('${p.graf}', '${p.est}', '${tipo}')">Ver Onda</button>
+                    `;
+
+                    L.marker([p.lat, p.lng], { icon: icono, zIndexOffset: style.zIndex })
+                        .bindPopup(popupContenido)
+                        .addTo(layerEstaciones);
+                });
+
+                layerEstaciones.addTo(map);
+
+                // 3. Actualizar Leyenda
+                actualizarLeyenda(tipo);
+            }
+
+            function actualizarLeyenda(tipo) {
+                if (legendControl) map.removeControl(legendControl);
+
+                const escala = configuracionEscalas[tipo];
+                legendControl = L.control({ position: 'topright' });
+
+                legendControl.onAdd = function() {
+                    const div = L.DomUtil.create('div', 'info legend');
+                    div.style.backgroundColor = 'white';
+                    div.style.padding = '10px';
+                    div.style.border = '1px solid #ccc';
+
+                    let html = `<div style="font-weight:bold; margin-bottom:5px;">${escala.titulo}</div>`;
+                    escala.labels.forEach((label, i) => {
+                        const color = escala.colores[i];
+                        html += `<div><i style="background:${color}; width:12px; height:12px; display:inline-block; margin-right:5px; opacity:0.6; border:1px solid #333;"></i> ${label}</div>`;
+                    });
+                    div.innerHTML = html;
+                    return div;
+                };
+                legendControl.addTo(map);
+            }
+
+            // --- INICIALIZACIÓN DEL MAPA ---
             const isDesktopUp = window.matchMedia('(min-width: 768px)').matches;
-
             if (isDesktopUp) {
-                var map = L.map('map').setView([0, 0], 2);
-                let bounds = L.latLngBounds([7.886, -84.409], [11.019, -82.976]);
-                map.fitBounds(bounds);
+                map = L.map('map').setView([9.9, -84], 8);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}').addTo(map);
 
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-                    attribution: ''
-                }).addTo(map);
-
-                L.control.scale().addTo(map);
-
-                L.marker([ {{ epi_lat }}, {{ epi_long }}], {icon: starIcon, zIndexOffset:900000})
+                // Epicentro (Fijo)
+                L.marker([{{ epi_lat }}, {{ epi_long }}], { icon: starIcon, zIndexOffset: 9999 })
                     .addTo(map)
                     .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1) }}');
 
-                function getIndex(valor) {
-                    if (valor > 60) return 9*2000;
-                    if (valor > 40) return 8*2000;
-                    if (valor > 20) return 7*2000;
-                    if (valor > 10) return 6*2000;
-                    if (valor > 5) return 5*2000;
-                    if (valor > 1) return 4*2000;
-                    return 3*2000;
-                }
+                // Carga inicial (PGA)
+                actualizarMapa('pga');
 
-                function getColor(valor) {
-                    if (valor > 60) return "#cc0000";
-                    if (valor > 40) return '#cc5200';
-                    if (valor > 20) return '#cc8b00';
-                    if (valor > 10) return '#ccaa00';
-                    if (valor > 5) return '#88cc00';
-                    if (valor > 1) return '#00cc03';
-                    return '#0058cc';
-                }
-
-                var puntos = [
-                    {% for dato in datos %}
-                    {
-                        lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo }},
-                        datos: `Estaci&oacute;n: {{ dato.estacion }} <br>
-                            M&aacute;ximo: {{ dato.maximo | round(2) }} cm/s&sup2<br>
-                <button onclick="cargarGrafica('{{ asset('assets/waves/' ~ dato.grafica~'.json') }}', '{{ dato.estacion }}', 'pga')">Onda</button>`,
-                    }
-                    {% if not loop.last %},{% endif %}
-                    {% endfor %}
-                ];
-
-                puntos.forEach(function (punto) {
-                    const color = getColor(punto.max);
-                    const icono = triangleIcon(color, 18, 0.5, '#333', 2);
-                    L.marker([punto.lat, punto.lng], {icon: icono , zIndexOffset: getIndex(punto.max)})
-                        .addTo(map)
-                        .bindPopup(punto.datos);
-                });
+                // Ajustar límites
+                let bounds = L.latLngBounds([7.5, -86], [11.5, -82.5]);
+                map.fitBounds(bounds);
             }
 
-            function legendTriangle(color) {
-                const s = 16;
-                const points = `${s/2},2 ${s-2},${s-2} 2,${s-2}`;
-                return `
-                    <svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}"
-                         style="vertical-align: middle; margin-right: 6px;">
-                      <polygon points="${points}" fill="${color}" fill-opacity="0.5" stroke="#333" stroke-width="1.5"/>
-                    </svg>`;
-            }
+            // --- LISTENER DE CAMBIO DE TABS (Bootstrap) ---
+            const tabBotones = document.querySelectorAll('#tablasDatos button[data-bs-toggle="tab"]');
+            tabBotones.forEach(btn => {
+                btn.addEventListener('shown.bs.tab', function(event) {
+                    const id = event.target.id; // pga-tab, pgv-tab o pgd-tab
+                    const tipo = id.split('-')[0]; // pga, pgv o pgd
 
-            const legendItems = [
-                { label: '> 60',    color: '#cc0000' },
-                { label: '40 – 60', color: '#cc5200' },
-                { label: '20 – 40', color: '#cc8b00' },
-                { label: '10 – 20', color: '#ccaa00' },
-                { label: '5 – 10',  color: '#88cc00' },
-                { label: '1 – 5',   color: '#00cc03' },
-                { label: '≤ 1',     color: '#0058cc' }
-            ];
+                    actualizarMapa(tipo);
 
-            const legend = L.control({ position: 'topright' });
-            legend.onAdd = function () {
-                const div = L.DomUtil.create('div', 'info legend');
-                div.innerHTML = '<div class="legend-title">PGA (cm/s&sup2)</div>';
-                legendItems.forEach(item => {
-                    div.innerHTML += `<div class="legend-item">${legendTriangle(item.color)}<span>${item.label}</span></div>`;
+                    // Ajustar DataTables para evitar problemas de ancho
+                    $(`#tabla_${tipo}`).DataTable().columns.adjust();
                 });
-                return div;
-            };
-            legend.addTo(map);
+            });
         });
 
         const graphModal = new bootstrap.Modal(document.getElementById('graphModal'));
@@ -756,7 +797,7 @@
         // Si tu variable se llama diferente en el backend (ej. evento.id), ajústala.
         // Para la ruta de assets, asumo que guardas los JSON en la carpeta de waveforms o similar.
         const idEvento = '{{ id | default("PJCO") }}';
-        const urlMovimiento = `{{ asset('assets/waves/'~ id ~ '/') }}${idEvento}_mov.json`;
+        const urlMovimiento = `{{ asset('assets/waves/'~ id ~ '/') }}grafico_mov.json`;
 
         fetch(urlMovimiento)
             .then(response => {
@@ -766,6 +807,14 @@
                 return response.json();
             })
             .then(data => {
+                // Si no hay datos, ocultamos el contenedor y expandimos los otros gráficos
+                if (!data || data.length === 0) {
+                    document.getElementById('containerPlotDuracion').style.display = 'none';
+                    document.getElementById('containerPlotTop20').className = 'col-12 col-lg-6';
+                    document.getElementById('containerPlotAtenuacion').className = 'col-12 col-lg-6';
+                    return;
+                }
+
                 // Limpiamos el spinner
                 document.getElementById('plotDuracion').innerHTML = '';
 
@@ -824,16 +873,21 @@
             })
             .catch(error => {
                 console.warn("No se pudo cargar el gráfico de duración:", error);
-                document.getElementById('plotDuracion').innerHTML = `
-                        <div class="d-flex justify-content-center align-items-center h-100">
-                            <div class="alert alert-light border text-center text-muted">
-                                <span class="fs-4 d-block mb-2">📊</span>
-                                Datos de duración no disponibles o en procesamiento para este evento.
-                            </div>
-                        </div>`;
+                // Ocultar el contenedor y expandir los otros en caso de error (archivo no encontrado)
+                const containerDuracion = document.getElementById('containerPlotDuracion');
+                if (containerDuracion) {
+                    containerDuracion.style.display = 'none';
+                    document.getElementById('containerPlotTop20').className = 'col-12 col-lg-6';
+                    document.getElementById('containerPlotAtenuacion').className = 'col-12 col-lg-6';
+                }
             });
 
 
 
     </script>
+    <style>
+        /* Estilo para la leyenda del mapa */
+        .legend i { border-radius: 50%; }
+        .info.legend { line-height: 18px; color: #555; }
+    </style>
 {% endblock %}

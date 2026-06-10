@@ -20,7 +20,7 @@
         <!-- Top 5 Aceleraciones -->
         <div class="card shadow-sm border-0">
             <div class="card-header bg-dark text-white py-2">
-                <h6 class="mb-0 text-center"><i class="bi bi-graph-up-arrow"></i> Top 5 Aceleraciones Máximas</h6>
+                <h6 class="mb-0 text-center"><i class="bi bi-graph-up-arrow"></i> 5 Aceleraciones Máximas</h6>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -37,12 +37,12 @@
                         <tbody>
                         {% for dato in top5 %}
                             {% set pga = dato.maximo %}
-                            {% if pga > 60 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
-                            {% elseif pga > 40 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
-                            {% elseif pga > 20 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
-                            {% elseif pga > 10 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
-                            {% elseif pga > 5 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
-                            {% elseif pga > 1 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
+                            {% if pga > 500 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
+                            {% elseif pga > 200 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
+                            {% elseif pga > 100 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
+                            {% elseif pga > 50 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
+                            {% elseif pga > 10 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
+                            {% elseif pga > 2 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
                             {% else %}             {% set color = '#0058cc' %} {% set text_color = 'white' %}
                             {% endif %}
 
@@ -112,21 +112,21 @@
             //Funcion para alterar el indice
             //pone los puntos mas intensos de primero
             function getIndex(valor) {
-                if (valor > 60) return 9*2000;
-                if (valor > 40) return 8*2000;
-                if (valor > 20) return 7*2000;
-                if (valor > 10) return 6*2000;
-                if (valor > 5) return 5*2000;
-                if (valor > 1) return 4*2000;
+                if (valor > 500) return 9*2000;
+                if (valor > 200) return 8*2000;
+                if (valor > 100) return 7*2000;
+                if (valor > 50) return 6*2000;
+                if (valor > 10) return 5*2000;
+                if (valor > 2) return 4*2000;
                 return 3*2000;
             }
             function getColor(valor) {
-                if (valor > 60) return "#cc0000";
-                if (valor > 40) return '#cc5200';
-                if (valor > 20) return '#cc8b00';
-                if (valor > 10) return '#ccaa00';
-                if (valor > 5) return '#88cc00';
-                if (valor > 1) return '#00cc03';
+                if (valor > 500) return "#cc0000";
+                if (valor > 200) return '#cc5200';
+                if (valor > 100) return '#cc8b00';
+                if (valor > 50) return '#ccaa00';
+                if (valor > 10) return '#88cc00';
+                if (valor > 2) return '#00cc03';
                 return '#0058cc';
             }
 
