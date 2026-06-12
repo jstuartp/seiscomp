@@ -1,5 +1,10 @@
 {% extends '/base.html.twig' %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+{% endblock %}
+
 {% block body %}
 
     <div class="container-fluid">
@@ -7,9 +12,9 @@
         <div class="row mt-4">
             <div class="col-sm-8">
                 <h2 class="mb-4">{% block page_title %}
-                    Sismo
-                    del <strong>{{ fecha|date("d-m-Y") }}</strong> <span class="badge bg-danger">M {{ magnitud |
-                        round(1) }} </span> </h2>
+                    Sismo del <strong>{{ fecha|date("d-m-Y") }}</strong>
+                    <span class="badge bg-danger">M {{ magnitud | round(1) }} </span>
+                </h2>
                 <h3>
                     Hora: {{ fecha|date("H:i:s ") }}(UTC) -- {{ fecha|date('H:i:s', 'America/Costa_Rica') }} (Local)
                     {% endblock %}
@@ -20,7 +25,7 @@
             </div>
         </div>
 
-        <div class="row">
+        <div class="row mb-3">
             <div class="col-sm-12">
                 <h4 class="text-muted">{{ epi }}</h4>
                 <h4 class="text-muted">Profundidad: {{ profundidad|round(1) }} km</h4>
@@ -28,69 +33,52 @@
         </div>
 
         <div class="row">
-            <div class="col-12">
-                <div class="bs-example" data-example-id="contextual-table">
-                    <table class="table table-bordered table-hover table-striped dt-responsive nowrap" id="tabla_pga" style="width:100%">
+
+            <div class="col-lg-4 mb-4">
+                <div class="bs-example card shadow-sm p-2 border-0" data-example-id="contextual-table">
+                    <table class="table table-bordered table-hover table-striped dt-responsive nowrap table-sm small" id="tabla_pga" style="width:100%">
                         <thead class="table-dark">
                         <tr>
-                            <th style="width: 20%;">Estación</th>
-                            <th style="width: 20%;">Tipo Suelo</th>
-                            <th style="width: 20%;">Zona</th>
-                            <th style="width: 20%;">PGA – aceleración pico del terreno (cm/s²)</th>
-                            <th style="width: 30%;">Espectro CSCR</th>
-                            <th style="width: 30%;">Espectro</th>
+                            <th >Estación</th>
+                            <th >Tipo Suelo</th>
+                            <th >Zona</th>
+                            <th >PGA (cm/s²)</th>
+                            <th >Espectro CSCR</th>
+                            <th >Espectro</th>
                         </tr>
                         </thead>
                         <tbody>
                         {% for dato in datos %}
                             <tr>
-                                <td class="align-middle fw-bold">{{ dato.nombre }} ({{ dato.estacion }})</td>
-                                <td class="align-middle fw-bold">{{ dato.suelo |replace({'S1': 'Roca','s1': 'Roca',
-                                        'S2': 'Firme','s2': 'Firme',
-                                        'S3': 'Blando', 's3': 'Blando','s4':'Muy Blando','S4':'Muy Blando'})}} </td>
-                                <td class="align-middle fw-bold">{{ dato.zona |replace({'zII': 'Zona II (Baja/Media - Caribe)',
-                                        'zIII': 'Zona III (Alta - Centro)', 'z4': 'Zona IV (Muy Alta - Pacífico)',
-                                        'zIV': 'Zona IV (Muy Alta - Pacífico)'})}} </td>
-
-                                <td class="align-middle">{{ dato.maximo | round(2) }}</td>
+                                <td class="align-middle ">{{ dato.nombre }} ({{ dato.estacion }})</td>
+                                <td class="align-middle ">{{ dato.suelo |replace({'S1': 'Roca','s1': 'Roca', 'S2': 'Firme','s2': 'Firme', 'S3': 'Blando', 's3': 'Blando','s4':'Muy Blando','S4':'Muy Blando'})}} </td>
+                                <td class="align-middle ">{{ dato.zona |replace({'zII': 'Zona II', 'zIII': 'Zona III', 'z4': 'Zona IV', 'zIV': 'Zona IV'})}} </td>
+                                <td class="align-middle text-center">{{ dato.maximo | round(2) }}</td>
 
                                 {# ----- COLUMNA IMAGEN 1 (CSCR) ----- #}
                                 <td class="text-center align-middle">
                                     <div class="ratio ratio-16x9 border rounded overflow-hidden estado-proceso"
-                                         style="width: 150px; margin: 0 auto;"
+                                         style="width: 120px; margin: 0 auto;"
                                          onclick="if(this.classList.contains('cargado')) openModal('{{ asset('assets/waves/' ~id~'/espectros_acc/'~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}')">
-
-                                        <!-- Aquí está el nuevo span -->
                                         <span class="texto-proceso">En proceso...</span>
-
                                         <img src="{{ asset('assets/waves/'  ~id~'/espectros_acc/'~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}"
-                                             alt="Previo CSCR"
-                                             class="imagen-dinamica"
-                                             style="object-fit: cover;"
+                                             alt="Previo CSCR" class="imagen-dinamica" style="object-fit: cover;"
                                              onload="this.parentElement.classList.remove('estado-proceso'); this.parentElement.classList.add('cargado'); this.classList.add('visible');"
                                              onerror="this.style.display='none';">
                                     </div>
-
                                 </td>
 
                                 {# ----- COLUMNA IMAGEN 2 (Espectro General) ----- #}
                                 <td class="text-center align-middle">
                                     <div class="ratio ratio-16x9 border rounded overflow-hidden estado-proceso"
-                                         style="width: 150px; margin: 0 auto;"
+                                         style="width: 120px; margin: 0 auto;"
                                          onclick="if(this.classList.contains('cargado')) openModal('{{ asset('assets/waves/' ~id~'/espectros_acc/'~  dato.grafica ~ '_RotD100_loglog.png') }}')">
-
-                                        <!-- Aquí está el nuevo span -->
                                         <span class="texto-proceso">En proceso...</span>
-
                                         <img src="{{ asset('assets/waves/'  ~id~'/espectros_acc/'~ dato.grafica ~ '_RotD100_loglog.png') }}"
-                                             alt="Previo Espectro"
-                                             class="imagen-dinamica"
-                                             style="object-fit: cover;"
+                                             alt="Previo Espectro" class="imagen-dinamica" style="object-fit: cover;"
                                              onload="this.parentElement.classList.remove('estado-proceso'); this.parentElement.classList.add('cargado'); this.classList.add('visible');"
                                              onerror="this.style.display='none';">
                                     </div>
-
-                                </td>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -98,6 +86,18 @@
                     </table>
                 </div>
             </div>
+
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-dark text-white py-2">
+                        <h6 class="mb-0 text-center"><i class="bi bi-map"></i> Aceleraciones Espectrales (SA)</h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="map" style="width: 100%; height: 100%; min-height: 500px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div id="myModal" class="modal" tabindex="-1">
@@ -113,35 +113,116 @@
 
     </div>
 
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Inicialización de DataTable
-            let mytabla = $('#tabla_pga').DataTable({
-                columnDefs: [
-                    { targets: '_all', className: 'dt-head-center dt-body-center' }
-                ],
-                responsive: true,
-                paging: true,
-                ordering: true,
-                order: [[3, "desc"]], // Ordenar por columna "Máximo" (índice 3 en base 0)
-                lengthMenu: [15, 30, 60],
-                pageLength: 15,
-                language: {
-                    processing: "Procesando...",
-                    search: "Filtrar:",
-                    lengthMenu: "Mostrar _MENU_ registros",
-                    info: "Mostrando _START_ a _END_ de _TOTAL_ estaciones",
-                    paginate: {
-                        first: "Primero",
-                        previous: "Anterior",
-                        next: "Siguiente",
-                        last: "Último"
-                    },
-                },
+
+            // --- INICIALIZACIÓN DE DATATABLES ---
+            let dtOptions = {
+                columnDefs: [{ targets: '_all', className: 'dt-head-center dt-body-center' }],
+                responsive: false, paging: true, ordering: true, order: [[3, "desc"]],
+                lengthChange: false, pageLength: 15,
+                language: { search: "Buscar:", paginate: { previous: "Anterior", next: "Siguiente" } }
+            };
+
+            $('#tabla_pga, #tabla_pgv, #tabla_pgd').DataTable(dtOptions);
+
+            // ==========================================
+            // 2. Inicialización del Mapa Leaflet
+            // ==========================================
+            // Centrado en Costa Rica con zoom 7
+            const starIcon = L.divIcon({
+                html: '<img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" style="width:40px; height:40px;">',
+                className: '', iconSize: [40, 40], iconAnchor: [20, 20]
             });
+
+            const isDesktopUp = window.matchMedia('(min-width: 768px)').matches;
+            if (isDesktopUp) {
+                map = L.map('map').setView([9.9, -84], 8);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
+                // Epicentro (Fijo)
+                L.marker([{{ epi_lat }}, {{ epi_long }}], { icon: starIcon, zIndexOffset: 9999 })
+                    .addTo(map)
+                    .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1) }}');
+
+
+                // Ajustar límites
+                let bounds = L.latLngBounds([7.5, -86], [11.5, -82.5]);
+                map.fitBounds(bounds);
+            }
+
+            // Función para determinar el color del marcador según SA Máxima
+            function getSaColor(sa) {
+                return sa > 100 ? '#cc0000' :
+                    sa > 50  ? '#cc5200' :
+                        sa > 20  ? '#ccaa00' :
+                            sa > 10  ? '#88cc00' :
+                                sa > 5   ? '#00cc03' :
+                                    '#0058cc';
+            }
+
+            // Opciones de estilo para los puntos GeoJSON
+            function geojsonMarkerOptions(feature) {
+                return {
+                    radius: 8,
+                    fillColor: getSaColor(feature.properties.sa_max_cm_s2),
+                    color: "#000",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                };
+            }
+
+            // Crear el PopUp con la información detallada para cada estación
+            function onEachFeature(feature, layer) {
+                if (feature.properties) {
+                    var props = feature.properties;
+                    var popupContent = `
+                        <div class="text-center" style="min-width: 180px;">
+                            <h6 class="fw-bold mb-2 border-bottom pb-1">Estación: ${props.estacion}</h6>
+                            <table class="table table-sm table-borderless mb-0 text-start" style="font-size: 12px;">
+                                <tr><td class="p-1"><b>SA Max:</b></td><td class="text-end p-1">${props.sa_max_cm_s2} cm/s²</td></tr>
+                                <tr><td class="p-1"><b>Periodo Max:</b></td><td class="text-end p-1">${props.periodo_max_s} s</td></tr>
+                                <tr><td class="p-1"><b>SA (0.2s):</b></td><td class="text-end p-1">${props.sa_02_cm_s2} cm/s²</td></tr>
+                                <tr><td class="p-1"><b>SA (1.0s):</b></td><td class="text-end p-1">${props.sa_10_cm_s2} cm/s²</td></tr>
+                            </table>
+                        </div>
+                    `;
+                    layer.bindPopup(popupContent);
+                }
+            }
+
+            // Consumir el archivo GeoJSON
+            // Ajusta la ruta si el archivo está en una carpeta genérica o específica por ID
+            var geojsonUrl = "{{ asset('assets/waves/' ~ id ~ '/espectros_acc/datos_espectrales.geojson') }}";
+
+            fetch(geojsonUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('GeoJSON no encontrado');
+                    return response.json();
+                })
+                .then(data => {
+                    L.geoJSON(data, {
+                        pointToLayer: function (feature, latlng) {
+                            return L.circleMarker(latlng, geojsonMarkerOptions(feature));
+                        },
+                        onEachFeature: onEachFeature
+                    }).addTo(map);
+                })
+                .catch(error => {
+                    console.warn('No se pudo cargar el mapa de aceleraciones espectrales:', error);
+                });
         });
 
-        // Lógica del Modal
+        // ==========================================
+        // 3. Lógica del Modal
+        // ==========================================
         var modal = document.getElementById("myModal");
         var modalImg = document.getElementById("img01");
 
@@ -154,7 +235,7 @@
         function closeModal() {
             modal.style.display = "none";
             document.body.style.overflow = 'auto';
-            modalImg.src = ""; // Limpiar la imagen al cerrar
+            modalImg.src = "";
         }
 
         window.onclick = function(event) {
@@ -176,7 +257,6 @@
             cursor: default !important;
         }
 
-        /* El nuevo span de texto */
         .texto-proceso {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -189,12 +269,8 @@
             z-index: 10;
         }
 
-        /* Ocultamos el texto automáticamente cuando la imagen se carga */
-        .cargado .texto-proceso {
-            display: none;
-        }
+        .cargado .texto-proceso { display: none; }
 
-        /* El ::after sigue libre para hacer la animación del brillo */
         .estado-proceso::after {
             content: "";
             position: absolute;
@@ -218,9 +294,7 @@
             background-color: white;
         }
 
-        .imagen-dinamica.visible {
-            opacity: 1;
-        }
+        .imagen-dinamica.visible { opacity: 1; }
 
         /* ----- ESTILOS DE INTERACCIÓN ----- */
         .cargado.ratio:hover {
@@ -230,25 +304,9 @@
             cursor: pointer;
         }
 
-        .estado-proceso:hover {
-            opacity: 1 !important;
-            border-color: #dee2e6 !important;
-        }
-
-        /* ----- ESTILOS DE INTERACCIÓN ----- */
-        /* Solo hacemos hover azul si la imagen ya cargó */
-        .cargado.ratio:hover {
-            opacity: 0.8;
-            border-color: #0d6efd !important;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        /* Evitamos que el hover afecte a los que están en proceso */
         .estado-proceso:hover {
             opacity: 1 !important;
             border-color: #dee2e6 !important;
         }
     </style>
-
 {% endblock %}
