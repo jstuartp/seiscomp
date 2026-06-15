@@ -39,21 +39,28 @@
                     <table class="table table-bordered table-hover table-striped dt-responsive nowrap table-sm small" id="tabla_pga" style="width:100%">
                         <thead class="table-dark">
                         <tr>
+                            <th hidden>order</th>
                             <th >Estación</th>
                             <th >Tipo Suelo</th>
                             <th >Zona</th>
-                            <th >PGA (cm/s²)</th>
+                            <th >Aceleraciones</th>
                             <th >Espectro CSCR</th>
-                            <th >Espectro</th>
+                            <th >Espectros (Acc-Vel-Dis)</th>
                         </tr>
                         </thead>
                         <tbody>
                         {% for dato in datos %}
                             <tr>
+                                <td  hidden class="align-middle " >{{ dato.max }}</td>
                                 <td class="align-middle ">{{ dato.nombre }} ({{ dato.estacion }})</td>
                                 <td class="align-middle ">{{ dato.suelo |replace({'S1': 'Roca','s1': 'Roca', 'S2': 'Firme','s2': 'Firme', 'S3': 'Blando', 's3': 'Blando','s4':'Muy Blando','S4':'Muy Blando'})}} </td>
                                 <td class="align-middle ">{{ dato.zona |replace({'zII': 'Zona II', 'zIII': 'Zona III', 'z4': 'Zona IV', 'zIV': 'Zona IV'})}} </td>
-                                <td class="align-middle text-center">{{ dato.maximo | round(2) }}</td>
+                                <td class="align-middle"  style="font-size: 12px;">
+                                    <strong>SA Max:</strong> {{ dato.max|round(2) }} (cm/s²) <br/>
+                                    <strong>Periodo Max:</strong> {{ dato.periodo }} s<br/>
+                                    <strong>SA a los 0.2s:</strong> {{ dato.sa_02 }} (cm/s²)<br/>
+                                    <strong>SA a los 1.0s:</strong> {{ dato.sa_10 }} (cm/s²)<br/>
+                                </td>
 
                                 {# ----- COLUMNA IMAGEN 1 (CSCR) ----- #}
                                 <td class="text-center align-middle">
@@ -90,7 +97,7 @@
             <div class="col-lg-8 mb-4">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header bg-dark text-white py-2">
-                        <h6 class="mb-0 text-center"><i class="bi bi-map"></i> Aceleraciones Espectrales (SA)</h6>
+                        <h6 class="mb-0 text-center"><i class="bi bi-map"></i> Aceleraciones Espectrales Máximas (SA)</h6>
                     </div>
                     <div class="card-body p-0">
                         <div id="map" style="width: 100%; height: 100%; min-height: 500px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;"></div>
@@ -113,6 +120,25 @@
 
     </div>
 
+    <!-- MODAL PARA LA LEYENDA DEL MAPA-->
+    <div class="modal fade" id="modalLeyenda" tabindex="-1" aria-labelledby="modalLeyendaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="modalLeyendaLabel">
+                        <i class="bi bi-info-circle-fill me-2"></i><span id="textoTituloModal">Descripción de la Escala</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body bg-light" id="modalLeyendaCuerpo">
+                </div>
+                <div class="modal-footer py-1">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
 
 {% block javascripts %}
@@ -125,7 +151,7 @@
             // --- INICIALIZACIÓN DE DATATABLES ---
             let dtOptions = {
                 columnDefs: [{ targets: '_all', className: 'dt-head-center dt-body-center' }],
-                responsive: false, paging: true, ordering: true, order: [[3, "desc"]],
+                responsive: false, paging: true, ordering: true, order: [[0, "desc"]],
                 lengthChange: false, pageLength: 15,
                 language: { search: "Buscar:", paginate: { previous: "Anterior", next: "Siguiente" } }
             };
@@ -159,13 +185,93 @@
 
             // Función para determinar el color del marcador según SA Máxima
             function getSaColor(sa) {
-                return sa > 100 ? '#cc0000' :
-                    sa > 50  ? '#cc5200' :
-                        sa > 20  ? '#ccaa00' :
-                            sa > 10  ? '#88cc00' :
-                                sa > 5   ? '#00cc03' :
-                                    '#0058cc';
+                return sa > 500 ? '#cc0000' :
+                    sa > 200  ? '#cc5200' :
+                        sa > 100  ? '#cc8b00' :
+                            sa > 50  ? '#ccaa00' :
+                                sa > 10   ? '#88cc00' :
+                                    sa > 2   ? '#00cc03' :
+                                                '#0058cc';
             }
+
+
+            // Definición de rangos en el mismo orden que el getColor
+            const legendItems = [
+                { label: '> 500',  color: '#cc0000' },
+                { label: '200 – 500', color: '#cc5200' },
+                { label: '100 – 200', color: '#cc8b00' },
+                { label: '50 – 100', color: '#ccaa00' },
+                { label: '10 – 50', color: '#88cc00' },
+                { label: '2 – 10', color: '#00cc03' },
+                { label: '≤ 2', color: '#0058cc' },
+            ];
+
+            // Control de Leaflet para la leyenda
+            const legend = L.control({ position: 'topright' });
+
+            legend.onAdd = function () {
+                // Si estás usando Bootstrap, puedes agregar clases al div principal: 'info legend bg-white p-2 shadow rounded'
+                const div = L.DomUtil.create('div', 'info legend');
+
+                // Estilos del contenedor (puedes omitirlos si ya los manejas en tu CSS)
+                div.style.backgroundColor = 'white';
+                div.style.padding = '10px';
+                div.style.borderRadius = '5px';
+                div.style.boxShadow = '0 0 15px rgba(0,0,0,0.2)';
+                div.style.cursor = 'pointer'; // Cambia el cursor a la "manito"
+                div.title = 'Haz clic para ver la descripción detallada'; // Tooltip nativo al pasar el mouse
+
+                div.innerHTML = '<div class="legend-title" style="font-weight:bold; margin-bottom:8px;">Escala (S.A.)<br/>(cm/s²)</div>';
+
+                legendItems.forEach(item => {
+                    // Se reemplazó legendTriangle() por un elemento <i> con border-radius: 50%
+                    div.innerHTML += `
+            <div class="legend-item" style="display: flex; align-items: center; margin-bottom: 4px;">
+                <i style="background: ${item.color}; width: 14px; height: 14px; border-radius: 50%; display: inline-block; margin-right: 8px; border: 1px solid #333; opacity: 0.8;"></i>
+                <span>${item.label}</span>
+            </div>`;
+                });
+
+                L.DomEvent.disableClickPropagation(div);
+
+                // 4. Agregar el evento clic
+                div.addEventListener('click', function() {
+
+                    // Referencias a las partes del modal que vamos a modificar
+                    const tituloModal = document.getElementById('textoTituloModal');
+                    const cuerpoModal = document.getElementById('modalLeyendaCuerpo');
+
+                    let htmlCuerpo = `
+                        <table class="table table-sm table-striped table-borderless mb-0">
+                            <tbody>
+                                <tr><td class="fw-bold text-nowrap" style="color:#0058cc;">&lt; 2</td><td>Imperceptible </td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#00cc03;">2 – 10</td><td>Perceptible </td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#88cc00;">10 – 50</td><td>Movimiento claramente apreciable</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#ccaa00;">50 – 100</td><td>Movimiento fuerte</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc8b00;">100 – 200</td><td>Posibles daños no estructurales</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc5200;">200 – 500</td><td>Posibles daños estructurales moderados</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc0000;">&gt; 500</td><td>Daño severo esperado</td></tr>
+                            </tbody>
+                        </table>
+                    `;
+                    let textoTitulo = 'Escala Aceleración (cm/s²)';
+
+                    // Inyectar los datos en el modal
+                    tituloModal.textContent = textoTitulo;
+                    cuerpoModal.innerHTML = htmlCuerpo;
+
+                    // Instanciar y mostrar el modal usando el JS de Bootstrap 5
+                    const modalElement = document.getElementById('modalLeyenda');
+                    const modalInstancia = bootstrap.Modal.getOrCreateInstance(modalElement);
+                    modalInstancia.show();
+                });
+
+
+                return div;
+            };
+
+            legend.addTo(map);
+
 
             // Opciones de estilo para los puntos GeoJSON
             function geojsonMarkerOptions(feature) {
@@ -208,6 +314,18 @@
                     return response.json();
                 })
                 .then(data => {
+                    // Verificamos que existan features y las ordenamos de menor a mayor
+                    if (data && data.features) {
+                        data.features.sort(function(a, b) {
+                            // Restar el valor 'b' del valor 'a' ordena ascendentemente
+                            return a.properties.sa_max_cm_s2 - b.properties.sa_max_cm_s2;
+                        });
+                    }
+                    // --- NUEVO CÓDIGO: Llenar la tabla con los datos del GeoJSON ---
+
+
+                    // ---------------------------------------------------------------
+
                     L.geoJSON(data, {
                         pointToLayer: function (feature, latlng) {
                             return L.circleMarker(latlng, geojsonMarkerOptions(feature));
@@ -243,6 +361,9 @@
                 closeModal();
             }
         }
+
+
+
     </script>
 
     <style>

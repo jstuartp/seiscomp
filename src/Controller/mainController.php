@@ -6,6 +6,7 @@ use App\Repository\PgaRepository;
 use App\Repository\HistoricoSismosRepository;
 use App\Repository\TodosSismosRepository;
 use App\Repository\JmaRepository;
+use App\Repository\EspectrosRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -21,13 +22,16 @@ class mainController extends AbstractController
 
     private JmaRepository $jmaRepository;  //Variable para inyectar el repositorio de la tabla JMA
 
+    private EspectrosRepository $espectrosRepository;  //Variable para inyectar el repositorio de la tabla JMA
+
     public function __construct(PgaRepository $repository, HistoricoSismosRepository $historicoSismosRepository,
-                                TodosSismosRepository $todosSismosRepository, JmaRepository $jmaRepository)
+                                TodosSismosRepository $todosSismosRepository, JmaRepository $jmaRepository, EspectrosRepository $espectrosRepository)
     {
         $this->repository = $repository;
         $this->historicoSismosRepository = $historicoSismosRepository;
         $this->todoSismoRepository = $todosSismosRepository;
         $this->jmaRepository = $jmaRepository;
+        $this->espectrosRepository = $espectrosRepository;
     }
 
     #[Route('/', name: 'homepage', methods: ['GET', 'POST'])]
@@ -309,9 +313,10 @@ class mainController extends AbstractController
 
         //Activo el repositorio para traer los datos de PGA segun el evento
         $datosPga = $this->repository->findPgaByEventoconNombre($datosEvento['idEvento']);
+        $datosEspectros =$this->espectrosRepository->findEspectrosByEventoConNombre($datosEvento['idEvento']);
 
         //Quitamos el slash para usar la nueva version de la grafica
-        foreach ($datosPga as &$dato) {
+        foreach ($datosEspectros as &$dato) {
             if (isset($dato['grafica'])) {
                 // basename hace el trabajo de buscar la barra y cortar automáticamente
                 $dato['grafica'] = basename($dato['grafica']);
@@ -323,12 +328,12 @@ class mainController extends AbstractController
         $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
             'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
 
-        $datosPgaFiltrados = array_filter($datosPga, function ($item) use ($estacionesExcluir) {
+        $datosFiltrados = array_filter($datosEspectros, function ($item) use ($estacionesExcluir) {
             // Se excluyen únicamente las estaciones en la lista,
             return !in_array($item['estacion'], $estacionesExcluir, true);
         });
         return $this->render('espectros.html.twig',
-            ['fecha' => $datosEvento['fecha'],'datos'=>$datosPgaFiltrados,'id'=>$datosEvento['idEvento'],'magnitud'=>$datosEvento['magnitud'],'epi_lat'=>$datosEvento['latitud'],
+            ['fecha' => $datosEvento['fecha'],'datos'=>$datosFiltrados,'id'=>$datosEvento['idEvento'],'magnitud'=>$datosEvento['magnitud'],'epi_lat'=>$datosEvento['latitud'],
                 'epi_long'=>$datosEvento['longitud'],'epi'=>$datosEvento['lugar'],'profundidad'=> $datosEvento['profundidad']]);
     }
 
