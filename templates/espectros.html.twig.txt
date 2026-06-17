@@ -39,6 +39,7 @@
                     <table class="table table-bordered table-hover table-striped dt-responsive nowrap table-sm small" id="tabla_pga" style="width:100%">
                         <thead class="table-dark">
                         <tr>
+                            <th hidden>order</th>
                             <th >Estación</th>
                             <th >Tipo Suelo</th>
                             <th >Zona</th>
@@ -50,10 +51,16 @@
                         <tbody>
                         {% for dato in datos %}
                             <tr>
+                                <td  hidden class="align-middle " >{{ dato.max }}</td>
                                 <td class="align-middle ">{{ dato.nombre }} ({{ dato.estacion }})</td>
                                 <td class="align-middle ">{{ dato.suelo |replace({'S1': 'Roca','s1': 'Roca', 'S2': 'Firme','s2': 'Firme', 'S3': 'Blando', 's3': 'Blando','s4':'Muy Blando','S4':'Muy Blando'})}} </td>
                                 <td class="align-middle ">{{ dato.zona |replace({'zII': 'Zona II', 'zIII': 'Zona III', 'z4': 'Zona IV', 'zIV': 'Zona IV'})}} </td>
-                                <td class="align-middle text-center">{{ dato.maximo | round(2) }}</td>
+                                <td class="align-middle"  style="font-size: 12px;">
+                                    <strong>SA Max:</strong> {{ dato.max|round(2) }} (cm/s²) <br/>
+                                    <strong>Periodo Max:</strong> {{ dato.periodo }} s<br/>
+                                    <strong>SA a los 0.2s:</strong> {{ dato.sa_02 }} (cm/s²)<br/>
+                                    <strong>SA a los 1.0s:</strong> {{ dato.sa_10 }} (cm/s²)<br/>
+                                </td>
 
                                 {# ----- COLUMNA IMAGEN 1 (CSCR) ----- #}
                                 <td class="text-center align-middle">
@@ -144,7 +151,7 @@
             // --- INICIALIZACIÓN DE DATATABLES ---
             let dtOptions = {
                 columnDefs: [{ targets: '_all', className: 'dt-head-center dt-body-center' }],
-                responsive: false, paging: true, ordering: true, order: [[3, "desc"]],
+                responsive: false, paging: true, ordering: true, order: [[0, "desc"]],
                 lengthChange: false, pageLength: 15,
                 language: { search: "Buscar:", paginate: { previous: "Anterior", next: "Siguiente" } }
             };
@@ -314,6 +321,10 @@
                             return a.properties.sa_max_cm_s2 - b.properties.sa_max_cm_s2;
                         });
                     }
+                    // --- NUEVO CÓDIGO: Llenar la tabla con los datos del GeoJSON ---
+
+
+                    // ---------------------------------------------------------------
 
                     L.geoJSON(data, {
                         pointToLayer: function (feature, latlng) {
@@ -350,6 +361,9 @@
                 closeModal();
             }
         }
+
+
+
     </script>
 
     <style>
