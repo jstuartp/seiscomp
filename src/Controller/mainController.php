@@ -338,6 +338,61 @@ class mainController extends AbstractController
     }
 
 
+    /**
+     * @Route("/movil/", name="espectros_movil")
+     */
+    #[Route('/movil/espectros/', name:'espectros_movil', methods: ['POST','GET','PUT'])]
+    public function espectrosMobileAction(Request $request, EntityManagerInterface $em): Response
+    {
+
+            $evento = $request->query->get('id');
+            //Activo el repositorio para traer todos los datos del evento buscado
+            $MyEvento = $this->historicoSismosRepository->findOneByIdEvento($evento);
+            // Formateamos la respuesta usando los getters de la entidad
+            $datosEvento = [
+                'idEvento'    => $MyEvento->getIdEvento(),
+                'fecha'       => $MyEvento->getFechaEvento()->format('Y-m-d H:i:s'),
+                'latitud'     => $MyEvento->getLatitudEvento(),
+                'longitud'    => $MyEvento->getLongitudEvento(),
+                'magnitud'    => $MyEvento->getMagnitudEvento(),
+                'profundidad'    => $MyEvento->getProfundidadEvento(),
+                'lugar'       => $this->CalculaEpicentro($MyEvento->getLatitudEvento(),$MyEvento->getLongitudEvento()),
+            ];
+
+
+        //Activo el repositorio para traer los datos de PGA segun el evento
+
+        $datosEspectros =$this->espectrosRepository->findEspectrosByEventoConNombre($datosEvento['idEvento']);
+
+        //Quitamos el slash para usar la nueva version de la grafica
+        foreach ($datosEspectros as &$dato) {
+            if (isset($dato['grafica'])) {
+                // basename hace el trabajo de buscar la barra y cortar automáticamente
+                $dato['grafica'] = basename($dato['grafica']);
+            }
+        }
+        unset($dato);
+
+        // Listado SMHR a excluir de la lista
+        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
+            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
+
+        $datosFiltrados = array_filter($datosEspectros, function ($item) use ($estacionesExcluir) {
+            // Se excluyen únicamente las estaciones en la lista,
+            return !in_array($item['estacion'], $estacionesExcluir, true);
+        });
+
+        // 3. Ordenar de mayor a menor PGA y extraer el TOP 5
+        usort($datosFiltrados, function($a, $b) {
+            return $b['max'] <=> $a['max'];
+        });
+        $top5Pga = array_slice($datosFiltrados, 0, 7);
+
+        return $this->render('espectros_movil.html.twig',
+            ['fecha' => $datosEvento['fecha'],'datos'=>$datosFiltrados,'id'=>$datosEvento['idEvento'],'magnitud'=>$datosEvento['magnitud'],'epi_lat'=>$datosEvento['latitud'],
+                'epi_long'=>$datosEvento['longitud'],'epi'=>$datosEvento['lugar'],'profundidad'=> $datosEvento['profundidad']]);
+    }
+
 
     /**
      * @Route("/movil/", name="pga_movil")

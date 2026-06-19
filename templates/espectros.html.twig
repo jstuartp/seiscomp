@@ -115,25 +115,33 @@
 
         <div class="modal fade" id="carouselImageModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
-                <div class="modal-content bg-transparent border-0">
-                    <div class="modal-body text-center p-0 position-relative">
-                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1055;"></button>
+                <div class="modal-content bg-transparent border-0 position-relative">
 
-                        <div id="espectrosCarousel" class="carousel slide bg-white rounded shadow-lg" data-bs-theme="dark">
-                            <div class="carousel-indicators" id="carousel-indicators-container"></div>
-                            <div class="carousel-inner rounded" id="carousel-inner-container"></div>
+                    <button type="button" data-bs-dismiss="modal" aria-label="Close"
+                            style="position: absolute; top: 15px; right: 15px; z-index: 9999;
+                           width: 40px; height: 40px; background-color: rgba(0,0,0,0.7);
+                           border: 2px solid white; border-radius: 50%; color: white;
+                           font-size: 20px; font-weight: bold; display: flex;
+                           align-items: center; justify-content: center;
+                           padding: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                        &#10005; </button>
 
-                            <button class="carousel-control-prev" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="prev">
-                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Anterior</span>
-                            </button>
-                            <button class="carousel-control-next" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="next">
-                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                                <span class="visually-hidden">Siguiente</span>
-                            </button>
-                        </div>
+                    <div id="espectrosCarousel" class="carousel slide bg-white rounded shadow-lg pt-2 pb-4" data-bs-theme="dark">
 
+                        <div class="carousel-indicators" id="carousel-indicators-container" style="margin-bottom: -15px;"></div>
+
+                        <div class="carousel-inner rounded px-5" id="carousel-inner-container"></div>
+
+                        <button class="carousel-control-prev" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="prev" style="width: 5%;">
+                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-2 shadow-sm" aria-hidden="true"></span>
+                            <span class="visually-hidden">Anterior</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="next" style="width: 5%;">
+                            <span class="carousel-control-next-icon bg-dark rounded-circle p-2 shadow-sm" aria-hidden="true"></span>
+                            <span class="visually-hidden">Siguiente</span>
+                        </button>
                     </div>
+
                 </div>
             </div>
         </div>

@@ -164,7 +164,7 @@
 
                                     <a class="stretched-link {{ habilitada ? '' : 'pe-none disabled' }}"
                                             {% if habilitada %} href="javascript:void(0);"
-                                        onclick="procesarNavegacion('{{ path('espectros') }}', '{{ path('espectros') }}',
+                                        onclick="procesarNavegacion('{{ path('espectros') }}', '{{ path('espectros_movil') }}',
                                                 '{{ id|e('js') }}','{{ fecha|e('js') }}','{{ magnitud|e('js') }}','{{ lat|e('js') }}',
                                                 '{{ long|e('js') }}','{{ profundidad|e('js') }}','{{ epi|e('js') }}')"
                                     {% else %} href="#" tabindex="-1" onclick="return false;"

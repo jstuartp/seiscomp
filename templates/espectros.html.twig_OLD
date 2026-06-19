@@ -34,7 +34,7 @@
 
         <div class="row">
 
-            <div class="col-lg-4 mb-4">
+            <div class="col-lg-5 mb-4">
                 <div class="bs-example card shadow-sm p-2 border-0" data-example-id="contextual-table">
                     <table class="table table-bordered table-hover table-striped dt-responsive nowrap table-sm small" id="tabla_pga" style="width:100%">
                         <thead class="table-dark">
@@ -44,8 +44,8 @@
                             <th >Tipo Suelo</th>
                             <th >Zona</th>
                             <th >Aceleraciones</th>
-                            <th >Espectro CSCR</th>
-                            <th >Espectros (Acc-Vel-Dis)</th>
+                            <th hidden>Espectro CSCR</th>
+                            <th >Gr&aacute;ficas</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -58,34 +58,29 @@
                                 <td class="align-middle"  style="font-size: 12px;">
                                     <strong>SA Max:</strong> {{ dato.max|round(2) }} (cm/s²) <br/>
                                     <strong>Periodo Max:</strong> {{ dato.periodo }} s<br/>
-                                    <strong>SA a los 0.2s:</strong> {{ dato.sa_02 }} (cm/s²)<br/>
-                                    <strong>SA a los 1.0s:</strong> {{ dato.sa_10 }} (cm/s²)<br/>
+                                    <strong>SA para 0.2s:</strong> {{ dato.sa_02 }} (cm/s²)<br/>
+                                    <strong>SA para 1.0s:</strong> {{ dato.sa_10 }} (cm/s²)<br/>
                                 </td>
 
-                                {# ----- COLUMNA IMAGEN 1 (CSCR) ----- #}
-                                <td class="text-center align-middle">
-                                    <div class="ratio ratio-16x9 border rounded overflow-hidden estado-proceso"
-                                         style="width: 120px; margin: 0 auto;"
-                                         onclick="if(this.classList.contains('cargado')) openModal('{{ asset('assets/waves/' ~id~'/espectros_acc/'~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}')">
-                                        <span class="texto-proceso">En proceso...</span>
-                                        <img src="{{ asset('assets/waves/'  ~id~'/espectros_acc/'~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}"
-                                             alt="Previo CSCR" class="imagen-dinamica" style="object-fit: cover;"
-                                             onload="this.parentElement.classList.remove('estado-proceso'); this.parentElement.classList.add('cargado'); this.classList.add('visible');"
-                                             onerror="this.style.display='none';">
-                                    </div>
+                                {# ----- COLUMNA 1: Botón para CSCR (1 Imagen) ----- #}
+                                <td hidden class="text-center align-middle">
+                                    <button type="button" class="btn btn-outline-primary btn-sm shadow-sm"
+                                            onclick="openSingleModal('{{ asset('assets/waves/' ~ id ~ '/espectros_acc/' ~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}')">
+                                        <i class="bi bi-image"></i> Ver CSCR
+                                    </button>
                                 </td>
 
-                                {# ----- COLUMNA IMAGEN 2 (Espectro General) ----- #}
+                                {# ----- COLUMNA 2: Botón para Espectros (Carrusel de 3 Imágenes) ----- #}
                                 <td class="text-center align-middle">
-                                    <div class="ratio ratio-16x9 border rounded overflow-hidden estado-proceso"
-                                         style="width: 120px; margin: 0 auto;"
-                                         onclick="if(this.classList.contains('cargado')) openModal('{{ asset('assets/waves/' ~id~'/espectros_acc/'~  dato.grafica ~ '_RotD100_loglog.png') }}')">
-                                        <span class="texto-proceso">En proceso...</span>
-                                        <img src="{{ asset('assets/waves/'  ~id~'/espectros_acc/'~ dato.grafica ~ '_RotD100_loglog.png') }}"
-                                             alt="Previo Espectro" class="imagen-dinamica" style="object-fit: cover;"
-                                             onload="this.parentElement.classList.remove('estado-proceso'); this.parentElement.classList.add('cargado'); this.classList.add('visible');"
-                                             onerror="this.style.display='none';">
-                                    </div>
+                                    <button type="button" class="btn btn-outline-info btn-sm shadow-sm"
+                                            onclick="openCarouselModal([
+                                                    '{{ asset('assets/waves/' ~ id ~ '/espectros_acc/' ~ dato.grafica ~ '_RotD100_loglog_CSCR.png') }}',
+                                                    '{{ asset('assets/waves/' ~ id ~ '/espectros_acc/' ~ dato.grafica ~ '_RotD100_loglog.png') }}',
+                                                    '{{ asset('assets/waves/' ~ id ~ '/espectros_acc/' ~ dato.grafica ~ '_vel.png') }}',
+                                                    '{{ asset('assets/waves/' ~ id ~ '/espectros_acc/' ~ dato.grafica ~ '_disp.png') }}'
+                                                    ])">
+                                        <i class="bi bi-images"></i> Ver
+                                    </button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -94,7 +89,7 @@
                 </div>
             </div>
 
-            <div class="col-lg-8 mb-4">
+            <div class="col-lg-7 mb-4">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header bg-dark text-white py-2">
                         <h6 class="mb-0 text-center"><i class="bi bi-map"></i> Aceleraciones Espectrales Máximas (SA)</h6>
@@ -107,12 +102,37 @@
 
         </div>
 
-        <div id="myModal" class="modal" tabindex="-1">
+        <div class="modal fade" id="singleImageModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
                 <div class="modal-content bg-transparent border-0">
                     <div class="modal-body text-center p-0 position-relative">
-                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" onclick="closeModal()" aria-label="Close"></button>
-                        <img class="img-fluid rounded shadow-lg" id="img01" style="max-height: 90vh;">
+                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1055;"></button>
+                        <img class="img-fluid rounded shadow-lg bg-white" id="singleModalImg" style="max-height: 90vh;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="carouselImageModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content bg-transparent border-0">
+                    <div class="modal-body text-center p-0 position-relative">
+                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1055;"></button>
+
+                        <div id="espectrosCarousel" class="carousel slide bg-white rounded shadow-lg" data-bs-theme="dark">
+                            <div class="carousel-indicators" id="carousel-indicators-container"></div>
+                            <div class="carousel-inner rounded" id="carousel-inner-container"></div>
+
+                            <button class="carousel-control-prev" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Anterior</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Siguiente</span>
+                            </button>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -147,17 +167,46 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            var basePath = "{{ asset('assets/waves/' ~ id ~ '/espectros_acc/') }}";
+            // Consumir el archivo GeoJSON
+            // Ajusta la ruta si el archivo está en una carpeta genérica o específica por ID
+            var geojsonUrl = "{{ asset('assets/waves/' ~ id ~ '/espectros_acc/datos_espectrales.geojson') }}";
+            //alert(geojsonUrl);
 
             // --- INICIALIZACIÓN DE DATATABLES ---
             let dtOptions = {
-                columnDefs: [{ targets: '_all', className: 'dt-head-center dt-body-center' }],
-                responsive: false, paging: true, ordering: true, order: [[0, "desc"]],
-                lengthChange: false, pageLength: 15,
-                language: { search: "Buscar:", paginate: { previous: "Anterior", next: "Siguiente" } }
+                // 1. Fundamental: Apagar el auto-ajuste para que respete tus anchos
+                autoWidth: false,
+
+                columnDefs: [
+                    // Regla general: Centrado y aplicamos una clase para el texto pequeño
+                    {
+                        targets: '_all',
+                        className: 'dt-head-center dt-body-center texto-pequeno'
+                    },
+                    // Regla específica: Le damos el mayor porcentaje de ancho a tu columna objetivo
+                    {
+                        targets: 4, // Cambia este número si la columna es otra (Ej: 3 para PGA)
+                        width: '35%' // Toma el 35% del espacio total
+                    },
+                    // Opcional: Forzar a las otras columnas a ser más pequeñas
+                    { targets: [0, 1, 2, 3], width: '10%' },
+                    { targets: [5, 6], width: '12%' }
+                ],
+
+                responsive: false,
+                paging: true,
+                ordering: true,
+                order: [[0, "desc"]],
+                lengthChange: false,
+                pageLength: 10,
+                language: {
+                    search: "Buscar:",
+                    paginate: { previous: "Anterior", next: "Siguiente" }
+                }
             };
 
             $('#tabla_pga, #tabla_pgv, #tabla_pgd').DataTable(dtOptions);
-
             // ==========================================
             // 2. Inicialización del Mapa Leaflet
             // ==========================================
@@ -287,6 +336,7 @@
 
             // Crear el PopUp con la información detallada para cada estación
             function onEachFeature(feature, layer) {
+
                 if (feature.properties) {
                     var props = feature.properties;
                     var popupContent = `
@@ -297,16 +347,24 @@
                                 <tr><td class="p-1"><b>Periodo Max:</b></td><td class="text-end p-1">${props.periodo_max_s} s</td></tr>
                                 <tr><td class="p-1"><b>SA (0.2s):</b></td><td class="text-end p-1">${props.sa_02_cm_s2} cm/s²</td></tr>
                                 <tr><td class="p-1"><b>SA (1.0s):</b></td><td class="text-end p-1">${props.sa_10_cm_s2} cm/s²</td></tr>
+
                             </table>
                         </div>
+                        <button type="button" class="btn btn-outline-info btn-sm shadow-sm"
+                            onclick='openCarouselModal([
+                                "${basePath}${props.nombre_archivo}_RotD100_loglog_CSCR.png",
+                                "${basePath}${props.nombre_archivo}_RotD100_loglog.png",
+                                "${basePath}${props.nombre_archivo}_vel.png",
+                                "${basePath}${props.nombre_archivo}_disp.png"
+                            ])'>
+                            <i class="bi bi-images"></i> Ver Espectros
+                        </button>
                     `;
                     layer.bindPopup(popupContent);
                 }
             }
 
-            // Consumir el archivo GeoJSON
-            // Ajusta la ruta si el archivo está en una carpeta genérica o específica por ID
-            var geojsonUrl = "{{ asset('assets/waves/' ~ id ~ '/espectros_acc/datos_espectrales.geojson') }}";
+
 
             fetch(geojsonUrl)
                 .then(response => {
@@ -321,10 +379,6 @@
                             return a.properties.sa_max_cm_s2 - b.properties.sa_max_cm_s2;
                         });
                     }
-                    // --- NUEVO CÓDIGO: Llenar la tabla con los datos del GeoJSON ---
-
-
-                    // ---------------------------------------------------------------
 
                     L.geoJSON(data, {
                         pointToLayer: function (feature, latlng) {
@@ -339,27 +393,44 @@
         });
 
         // ==========================================
-        // 3. Lógica del Modal
+        // Lógica de Modales (Imagen Simple y Carrusel)
         // ==========================================
-        var modal = document.getElementById("myModal");
-        var modalImg = document.getElementById("img01");
 
-        function openModal(src) {
-            modal.style.display = "block";
-            modalImg.src = src;
-            document.body.style.overflow = 'hidden';
+        function openSingleModal(src) {
+            // Asignar imagen y mostrar el modal usando Bootstrap
+            document.getElementById('singleModalImg').src = src;
+            const modalInstance = new bootstrap.Modal(document.getElementById('singleImageModal'));
+            modalInstance.show();
         }
 
-        function closeModal() {
-            modal.style.display = "none";
-            document.body.style.overflow = 'auto';
-            modalImg.src = "";
-        }
+        function openCarouselModal(imagesArray) {
+            const innerContainer = document.getElementById('carousel-inner-container');
+            const indicatorsContainer = document.getElementById('carousel-indicators-container');
 
-        window.onclick = function(event) {
-            if (event.target == modal) {
-                closeModal();
-            }
+            // Limpiar el carrusel anterior
+            innerContainer.innerHTML = '';
+            indicatorsContainer.innerHTML = '';
+
+            // Inyectar las nuevas imágenes
+            imagesArray.forEach((src, index) => {
+                const activeClass = index === 0 ? 'active' : '';
+
+                // Agregar los botones indicadores de abajo
+                indicatorsContainer.innerHTML += `
+            <button type="button" data-bs-target="#espectrosCarousel" data-bs-slide-to="${index}" class="${activeClass}" aria-label="Slide ${index + 1}"></button>
+        `;
+
+                // Agregar la imagen al carrusel
+                innerContainer.innerHTML += `
+            <div class="carousel-item ${activeClass}">
+                <img src="${src}" class="d-block w-100 img-fluid" style="max-height: 85vh; object-fit: contain;" alt="Espectro ${index + 1}">
+            </div>
+        `;
+            });
+
+            // Mostrar el modal
+            const modalInstance = new bootstrap.Modal(document.getElementById('carouselImageModal'));
+            modalInstance.show();
         }
 
 
@@ -371,63 +442,8 @@
             background-color: rgba(0,0,0,0.85);
         }
 
-        /* ----- ESTILOS DEL ESTADO "EN PROCESO" ----- */
-        .estado-proceso {
-            background-color: #e9ecef;
-            position: relative;
-            cursor: default !important;
-        }
-
-        .texto-proceso {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #6c757d;
-            font-size: 0.8rem;
-            font-weight: 600;
-            z-index: 10;
-        }
-
-        .cargado .texto-proceso { display: none; }
-
-        .estado-proceso::after {
-            content: "";
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
-            background-size: 200% 100%;
-            animation: loading-pulse 1.5s infinite linear;
-            z-index: 11;
-        }
-
-        @keyframes loading-pulse {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        /* ----- ESTILOS DE LA IMAGEN ----- */
-        .imagen-dinamica {
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            z-index: 20;
-            background-color: white;
-        }
-
-        .imagen-dinamica.visible { opacity: 1; }
-
-        /* ----- ESTILOS DE INTERACCIÓN ----- */
-        .cargado.ratio:hover {
-            opacity: 0.8;
-            border-color: #0d6efd !important;
-            transition: all 0.2s;
-            cursor: pointer;
-        }
-
-        .estado-proceso:hover {
-            opacity: 1 !important;
-            border-color: #dee2e6 !important;
+        .texto-pequeno {
+            font-size: 12px !important; /* Ajusta a 11px o 13px según lo necesites */
         }
     </style>
 {% endblock %}
