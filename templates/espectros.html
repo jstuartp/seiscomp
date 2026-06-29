@@ -33,7 +33,7 @@
         </div>
 
         <div class="row">
-            <!-- DIV de la TABLA-->
+
             <div class="col-lg-5 mb-4">
                 <div class="bs-example card shadow-sm p-2 border-0" data-example-id="contextual-table">
                     <table class="table table-bordered table-hover table-striped dt-responsive nowrap table-sm small" id="tabla_pga" style="width:100%">
@@ -88,7 +88,7 @@
                     </table>
                 </div>
             </div>
-            <!-- DIV del MAPA-->
+
             <div class="col-lg-7 mb-4">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-header bg-dark text-white py-2">
@@ -115,33 +115,25 @@
 
         <div class="modal fade" id="carouselImageModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-centered">
-                <div class="modal-content bg-transparent border-0 position-relative">
+                <div class="modal-content bg-transparent border-0">
+                    <div class="modal-body text-center p-0 position-relative">
+                        <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1055;"></button>
 
-                    <button type="button" data-bs-dismiss="modal" aria-label="Close"
-                            style="position: absolute; top: 15px; right: 15px; z-index: 9999;
-                           width: 40px; height: 40px; background-color: rgba(0,0,0,0.7);
-                           border: 2px solid white; border-radius: 50%; color: white;
-                           font-size: 20px; font-weight: bold; display: flex;
-                           align-items: center; justify-content: center;
-                           padding: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
-                        &#10005; </button>
+                        <div id="espectrosCarousel" class="carousel slide bg-white rounded shadow-lg" data-bs-theme="dark">
+                            <div class="carousel-indicators" id="carousel-indicators-container"></div>
+                            <div class="carousel-inner rounded" id="carousel-inner-container"></div>
 
-                    <div id="espectrosCarousel" class="carousel slide bg-white rounded shadow-lg pt-2 pb-4" data-bs-theme="dark">
+                            <button class="carousel-control-prev" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Anterior</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Siguiente</span>
+                            </button>
+                        </div>
 
-                        <div class="carousel-indicators" id="carousel-indicators-container" style="margin-bottom: -15px;"></div>
-
-                        <div class="carousel-inner rounded px-5" id="carousel-inner-container"></div>
-
-                        <button class="carousel-control-prev" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="prev" style="width: 5%;">
-                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-2 shadow-sm" aria-hidden="true"></span>
-                            <span class="visually-hidden">Anterior</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="next" style="width: 5%;">
-                            <span class="carousel-control-next-icon bg-dark rounded-circle p-2 shadow-sm" aria-hidden="true"></span>
-                            <span class="visually-hidden">Siguiente</span>
-                        </button>
                     </div>
-
                 </div>
             </div>
         </div>
@@ -242,25 +234,25 @@
 
             // Función para determinar el color del marcador según SA Máxima
             function getSaColor(sa) {
-                return sa >= 100 ? '#cc0000' :
-                    sa > 70  ? '#cc5200' :
-                        sa > 50  ? '#cc8b00' :
-                            sa > 30  ? '#ccaa00' :
+                return sa > 500 ? '#cc0000' :
+                    sa > 200  ? '#cc5200' :
+                        sa > 100  ? '#cc8b00' :
+                            sa > 50  ? '#ccaa00' :
                                 sa > 10   ? '#88cc00' :
-                                    sa > 1   ? '#00cc03' :
+                                    sa > 2   ? '#00cc03' :
                                                 '#0058cc';
             }
 
 
             // Definición de rangos en el mismo orden que el getColor
             const legendItems = [
-                { label: '>= 100%',  color: '#cc0000' },
-                { label: '70% - 99%', color: '#cc5200' },
-                { label: '50% – 69%', color: '#cc8b00' },
-                { label: '30% – 49%', color: '#ccaa00' },
-                { label: '10% – 29%', color: '#88cc00' },
-                { label: '1 – 9%', color: '#00cc03' },
-                { label: '≤ 0.9', color: '#0058cc' },
+                { label: '> 500',  color: '#cc0000' },
+                { label: '200 – 500', color: '#cc5200' },
+                { label: '100 – 200', color: '#cc8b00' },
+                { label: '50 – 100', color: '#ccaa00' },
+                { label: '10 – 50', color: '#88cc00' },
+                { label: '2 – 10', color: '#00cc03' },
+                { label: '≤ 2', color: '#0058cc' },
             ];
 
             // Control de Leaflet para la leyenda
@@ -278,7 +270,7 @@
                 div.style.cursor = 'pointer'; // Cambia el cursor a la "manito"
                 div.title = 'Haz clic para ver la descripción detallada'; // Tooltip nativo al pasar el mouse
 
-                div.innerHTML = '<div class="legend-title" style="font-weight:bold; margin-bottom:8px;">Escala (SA)/(CSCR)</div>';
+                div.innerHTML = '<div class="legend-title" style="font-weight:bold; margin-bottom:8px;">Escala (S.A.)<br/>(cm/s²)</div>';
 
                 legendItems.forEach(item => {
                     // Se reemplazó legendTriangle() por un elemento <i> con border-radius: 50%
@@ -291,7 +283,37 @@
 
                 L.DomEvent.disableClickPropagation(div);
 
+                // 4. Agregar el evento clic
+                div.addEventListener('click', function() {
 
+                    // Referencias a las partes del modal que vamos a modificar
+                    const tituloModal = document.getElementById('textoTituloModal');
+                    const cuerpoModal = document.getElementById('modalLeyendaCuerpo');
+
+                    let htmlCuerpo = `
+                        <table class="table table-sm table-striped table-borderless mb-0">
+                            <tbody>
+                                <tr><td class="fw-bold text-nowrap" style="color:#0058cc;">&lt; 2</td><td>Imperceptible </td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#00cc03;">2 – 10</td><td>Perceptible </td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#88cc00;">10 – 50</td><td>Movimiento claramente apreciable</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#ccaa00;">50 – 100</td><td>Movimiento fuerte</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc8b00;">100 – 200</td><td>Posibles daños no estructurales</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc5200;">200 – 500</td><td>Posibles daños estructurales moderados</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc0000;">&gt; 500</td><td>Daño severo esperado</td></tr>
+                            </tbody>
+                        </table>
+                    `;
+                    let textoTitulo = 'Escala Aceleración (cm/s²)';
+
+                    // Inyectar los datos en el modal
+                    tituloModal.textContent = textoTitulo;
+                    cuerpoModal.innerHTML = htmlCuerpo;
+
+                    // Instanciar y mostrar el modal usando el JS de Bootstrap 5
+                    const modalElement = document.getElementById('modalLeyenda');
+                    const modalInstancia = bootstrap.Modal.getOrCreateInstance(modalElement);
+                    modalInstancia.show();
+                });
 
 
                 return div;
@@ -304,7 +326,7 @@
             function geojsonMarkerOptions(feature) {
                 return {
                     radius: 8,
-                    fillColor: getSaColor(feature.properties.porcentaje_max),
+                    fillColor: getSaColor(feature.properties.sa_max_cm_s2),
                     color: "#000",
                     weight: 1,
                     opacity: 1,

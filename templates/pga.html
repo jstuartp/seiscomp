@@ -1,0 +1,1003 @@
+{% extends '/base.html.twig' %}
+
+{% block body %}
+
+    <div class="container-fluid">
+
+        <div class="row">
+            <br><br>
+            <div class="col"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8">
+                <h2 class="mb-2">{% block page_title %}
+                    Aceleraciones M&aacute;ximas del sismo del <strong>{{ fecha|date("d-m-Y") }}</strong> <span class="badge bg-danger">M {{ magnitud | round(1) }} </span> </h2>
+                <h3>
+                    Hora: {{ fecha|date("H:i:s ") }}(UTC) -- {{ fecha|date('H:i:s', 'America/Costa_Rica') }} (Local)
+                    {% endblock %}
+                </h3>
+            </div>
+            <div class="col-sm-4 text-end">
+                <a href="{{ path('homepage') }}" class="btn btn-success">
+                    Inicio
+                </a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8">
+                <h3 class="mb-4">
+                    {{ epi }}
+                </h3>
+            </div>
+        </div>
+
+        <div class="row">
+            <br>
+        </div>
+
+        <div class="row ">
+            <div class="col-lg-5 mb-4">
+                <div class="bs-example card shadow-sm p-2 border-0" data-example-id="contextual-table">
+
+                    <ul class="nav nav-tabs" id="tablasDatos" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active px-2 py-1" id="pga-tab" data-bs-toggle="tab" data-bs-target="#tab-pga" type="button" role="tab" aria-controls="tab-pga" aria-selected="true" style="font-size:14px;">Aceleración</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link px-2 py-1" id="pgv-tab" data-bs-toggle="tab" data-bs-target="#tab-pgv" type="button" role="tab" aria-controls="tab-pgv" aria-selected="false" style="font-size:14px;">Velocidad</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link px-2 py-1" id="pgd-tab" data-bs-toggle="tab" data-bs-target="#tab-pgd" type="button" role="tab" aria-controls="tab-pgd" aria-selected="false" style="font-size:14px;">Desplazamiento</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content border border-top-0 p-2 mb-3" id="tablasDatosContent">
+
+                        <div class="tab-pane fade show active" id="tab-pga" role="tabpanel" aria-labelledby="pga-tab">
+                            <div class="bs-example" data-example-id="contextual-table">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-condensed table-sm table-striped dt-responsive w-100" id="tabla_pga" style="font-size: 12px !important; height: 32px !important; min-width: 100px !important; padding: 2px 6px !important;">
+                                        <thead class="table-dark">
+                                        <tr>
+                                            <th>Estación</th>
+                                            <th>HNE</br>(cm/s²)</th> <th>HNN</br>(cm/s²)</th>
+                                            <th>HNZ</br>(cm/s²)</th>
+                                            <th>Máximo </br>(cm/s²)</th>
+                                            <th>Onda</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for dato in datos %}
+                                            <tr>
+                                                <td>{{ dato.estacion }}</td>
+                                                <td>{{ dato.hne|round(2) }}</td>
+                                                <td>{{ dato.hnn|round(2) }}</td>
+                                                <td>{{ dato.hnz|round(2) }}</td>
+                                                {% set pga = dato.maximo %}
+                                                {% if pga > 500 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
+                                                {% elseif pga > 200 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
+                                                {% elseif pga > 100 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
+                                                {% elseif pga > 50 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
+                                                {% elseif pga > 10 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
+                                                {% elseif pga > 2 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
+                                                {% else %}             {% set color = '#0058cc' %} {% set text_color = 'white' %}
+                                                {% endif %}
+                                                <td style="background-color: {{ color }}; color: {{ text_color }}; font-weight: bold;">
+                                                    {{ pga | round(2) }}
+                                                </td>
+                                                <td class="text-center">
+                                                    {% set ruta_json = asset('assets/waves/' ~ dato.grafica~'.json') %}
+                                                    <button class="btn btn-primary btn-sm py-0" onclick="cargarGrafica('{{ ruta_json }}', '{{ dato.estacion }}', 'pga')">
+                                                        <i class="bi bi-activity"></i> Ver
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div> </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-pgv" role="tabpanel" aria-labelledby="pgv-tab">
+                            <div class="bs-example" data-example-id="contextual-table">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-condensed table-sm table-striped dt-responsive w-100" id="tabla_pgv" style="font-size: 12px !important; height: 32px !important; min-width: 100px !important; padding: 2px 6px !important;">
+                                        <thead class="table-dark">
+                                        <tr>
+                                            <th>Estación</th>
+                                            <th>HNE</br>(cm/s)</th>
+                                            <th>HNN</br>(cm/s)</th>
+                                            <th>HNZ</br>(cm/s)</th>
+                                            <th>Máximo </br>(cm/s)</th>
+                                            <th>Onda</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for dato in datosPgv %}
+                                            <tr>
+                                                <td>{{ dato.estacion }}</td>
+                                                <td>{{ dato.hne|round(2) }}</td>
+                                                <td>{{ dato.hnn|round(2) }}</td>
+                                                <td>{{ dato.hnz|round(2) }}</td>
+                                                {% set pgv = dato.maximo %}
+                                                {% if pgv > 60 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
+                                                {% elseif pgv > 30 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
+                                                {% elseif pgv > 10 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
+                                                {% elseif pgv > 3 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
+                                                {% elseif pgv > 1 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
+                                                {% elseif pgv > 0.3 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
+                                                {% else %}             {% set color = '#0058cc' %} {% set text_color = 'white' %}
+                                                {% endif %}
+                                                <td style="background-color: {{ color }}; color: {{ text_color }}; font-weight: bold;">
+                                                    {{ pgv | round(2) }}
+                                                </td>
+                                                <td class="text-center">
+                                                    {% set ruta_json = asset('assets/waves/' ~ dato.grafica~'_VEL.json') %}
+                                                    <button class="btn btn-primary btn-sm py-0" onclick="cargarGrafica('{{ ruta_json }}', '{{ dato.estacion }}', 'pgv')">
+                                                        <i class="bi bi-activity"></i> Ver
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div> </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-pgd" role="tabpanel" aria-labelledby="pgd-tab">
+                            <div class="bs-example" data-example-id="contextual-table">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover table-condensed table-sm table-striped dt-responsive w-100" id="tabla_pgd" style="font-size: 12px !important; height: 32px !important; min-width: 100px !important; padding: 2px 6px !important;">
+                                        <thead class="table-dark">
+                                        <tr>
+                                            <th>Estación</th>
+                                            <th>HNE</br>(cm)</th> <th>HNN</br>(cm)</th>
+                                            <th>HNZ</br>(cm)</th>
+                                            <th>Máximo </br>(cm)</th>
+                                            <th>Onda</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for dato in datosPgd %}
+                                            <tr>
+                                                <td>{{ dato.estacion }}</td>
+                                                <td>{{ dato.hne|round(2) }}</td>
+                                                <td>{{ dato.hnn|round(2) }}</td>
+                                                <td>{{ dato.hnz|round(2) }}</td>
+                                                {% set pgd = dato.maximo %}
+                                                {% if pgd > 40 %}      {% set color = '#cc0000' %} {% set text_color = 'white' %}
+                                                {% elseif pgd > 15 %}  {% set color = '#cc5200' %} {% set text_color = 'white' %}
+                                                {% elseif pgd > 5 %}  {% set color = '#cc8b00' %} {% set text_color = 'white' %}
+                                                {% elseif pgd > 1 %}  {% set color = '#ccaa00' %} {% set text_color = 'black' %}
+                                                {% elseif pgd > 0.2 %}   {% set color = '#88cc00' %} {% set text_color = 'black' %}
+                                                {% elseif pgd > 0.05 %}   {% set color = '#00cc03' %} {% set text_color = 'black' %}
+                                                {% else %}             {% set color = '#0058cc' %} {% set text_color = 'white' %}
+                                                {% endif %}
+                                                <td style="background-color: {{ color }}; color: {{ text_color }}; font-weight: bold;">
+                                                    {{ pgd | round(2) }}
+                                                </td>
+                                                <td class="text-center">
+                                                    {% set ruta_json = asset('assets/waves/' ~ dato.grafica~'_DISP.json') %}
+                                                    <button class="btn btn-primary btn-sm py-0" onclick="cargarGrafica('{{ ruta_json }}', '{{ dato.estacion }}', 'pgd')">
+                                                        <i class="bi bi-activity"></i> Ver
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div> </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-7 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body p-0">
+                        <div id="map" style="width: 100%; height: 100%; min-height: 500px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="graficos" class="row mt-5 mb-5 g-4">
+
+            {# Gráfico 1: Top 20 #}
+            <div class="col-12 col-lg-4" id="containerPlotTop20">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Atenuación: 20 Estaciones más Cercanas</h5>
+                    </div>
+                    <div class="card-body p-2">
+                        {# Se ajustó la altura a 500px para que coincida con el gráfico 2 #}
+                        <div id="plotTop20" style="width: 100%; height: 500px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            {# Gráfico 2: Datos Observados vs Modelos #}
+            <div class="col-12 col-lg-4" id="containerPlotAtenuacion">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Datos Observados vs Atenuación</h5>
+                    </div>
+                    <div class="card-body p-2">
+                        <div id="plotAtenuacion" style="width: 100%; height: 500px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            {# Gráfico 3: Duración del Movimiento #}
+            <div class="col-12 col-lg-4" id="containerPlotDuracion">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Duración de Movimiento Significativo por Estación</h5>
+                    </div>
+                    <div class="card-body p-2">
+                        <div id="plotDuracion" style="width: 100%; height: 500px;">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <div class="spinner-border text-primary" role="status"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div> {# <- Cierre del container-fluid #}
+
+
+
+    <!-- MODAL PARA LAS WAVEFORMS-->
+    <div id="graphModal" class="modal fade" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Waveform - Estación <span id="modalStationTitle"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <ul class="nav nav-tabs" id="waveTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tab-z-tab" data-bs-toggle="tab" data-bs-target="#tab-z" type="button" role="tab" aria-controls="tab-z" aria-selected="true">
+                                Vertical (Z)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-n-tab" data-bs-toggle="tab" data-bs-target="#tab-n" type="button" role="tab" aria-controls="tab-n" aria-selected="false">
+                                Norte (N)
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="tab-e-tab" data-bs-toggle="tab" data-bs-target="#tab-e" type="button" role="tab" aria-controls="tab-e" aria-selected="false">
+                                Este (E)
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content border border-top-0 p-3" id="waveTabsContent">
+
+                        <div class="tab-pane fade show active" id="tab-z" role="tabpanel" aria-labelledby="tab-z-tab">
+                            <div id="plotDivZ" style="width: 100%; height: 500px;">
+                                <div class="d-flex justify-content-center align-items-center h-100">
+                                    <div class="spinner-border text-primary" role="status"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-n" role="tabpanel" aria-labelledby="tab-n-tab">
+                            <div id="plotDivN" style="width: 100%; height: 500px;"></div>
+                        </div>
+
+                        <div class="tab-pane fade" id="tab-e" role="tabpanel" aria-labelledby="tab-e-tab">
+                            <div id="plotDivE" style="width: 100%; height: 500px;"></div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-start border-top-0 pt-0">
+                    <small class="text-muted">
+                        <em>Nota: Las señales han sido procesadas con un filtro pasabanda Butterworth de 2 polos (0.05 – 25 Hz).</em>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- MODAL PARA LA LEYENDA DEL MAPA-->
+    <div class="modal fade" id="modalLeyenda" tabindex="-1" aria-labelledby="modalLeyendaLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title" id="modalLeyendaLabel">
+                        <i class="bi bi-info-circle-fill me-2"></i><span id="textoTituloModal">Descripción de la Escala</span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body bg-light" id="modalLeyendaCuerpo">
+                </div>
+                <div class="modal-footer py-1">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block scriptspie %}
+    {{ parent() }}
+{% endblock %}
+
+{% block endscrips %}
+    {{ parent() }}
+
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+
+    <script>
+        // --- CONFIGURACIÓN MANUAL DE ESCALAS ---
+        // Aquí puedes modificar los umbrales (thresholds) y colores para cada mapa
+        const configuracionEscalas = {
+            'pga': {
+                titulo: 'PGA (cm/s²)',
+                unidad: 'cm/s²',
+                sufijoJson: '',
+                thresholds: [500, 200, 100, 50, 10, 2],
+                colores: ['#cc0000', '#cc5200', '#cc8b00', '#ccaa00', '#88cc00', '#00cc03', '#0058cc'],
+                labels: ['> 500', '200 – 500', '100 – 200', '50 – 100', '10 – 50', '2 – 10', '≤ 2']
+            },
+            'pgv': {
+                titulo: 'PGV (cm/s)',
+                unidad: 'cm/s',
+                sufijoJson: '_VEL',
+                thresholds: [60, 30, 10, 3, 1, 0.3], // Ejemplo de escala diferente
+                colores: ['#cc0000', '#cc5200', '#cc8b00', '#ccaa00', '#88cc00', '#00cc03', '#0058cc'],
+                labels: ['> 60', '30 – 60', '10 – 30', '3 – 10', '1 – 3', '0.3 – 1', '≤ 0.3']
+            },
+            'pgd': {
+                titulo: 'PGD (cm)',
+                unidad: 'cm',
+                sufijoJson: '_DISP',
+                thresholds: [40, 15, 5, 1, 0.2, 0.05], // Ejemplo de escala diferente
+                colores: ['#cc0000', '#cc5200', '#cc8b00', '#ccaa00', '#88cc00', '#00cc03', '#0058cc'],
+                labels: ['> 40', '15 – 40', '5 – 15', '1 – 5', '0.2 – 1', '0.05 – 0.2', '≤ 0.05']
+            }
+        };
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Variables globales del mapa
+            var map;
+            var layerEstaciones = L.layerGroup(); // Grupo para limpiar marcadores fácilmente
+            var legendControl;
+
+            // --- INICIALIZACIÓN DE DATATABLES ---
+            let dtOptions = {
+                autoWidth: false,
+                columnDefs: [{ targets: '_all', className: 'dt-head-center dt-body-center' }],
+                responsive: false, paging: true, ordering: true, order: [[4, "desc"]],
+                lengthChange: false, pageLength: 15,
+                language: { search: "Buscar:", paginate: { previous: "Anterior", next: "Siguiente" } }
+            };
+
+            $('#tabla_pga, #tabla_pgv, #tabla_pgd').DataTable(dtOptions);
+
+            // --- ICONOS ---
+            function triangleIcon(color, sizePx = 20) {
+                const s = sizePx;
+                const points = `${s/2},2 ${s-2},${s-2} 2,${s-2}`;
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}">
+                                <polygon points="${points}" fill="${color}" fill-opacity="0.6" stroke="#333" stroke-width="2" />
+                             </svg>`;
+                return L.divIcon({ html: svg, className: 'triangle-icon', iconSize: [s, s], iconAnchor: [s/2, s/2] });
+            }
+
+            const starIcon = L.divIcon({
+                html: '<img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" style="width:40px; height:40px;">',
+                className: '', iconSize: [40, 40], iconAnchor: [20, 20]
+            });
+
+            // --- PREPARACIÓN DE DATOS (TWIG TO JS) ---
+            const datosMapa = {
+                'pga': [
+                    {% for dato in datos %}
+                    { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo|default(0) }}, est: '{{ dato.estacion }}', graf: '{{ asset('assets/waves/' ~ dato.grafica ~ '.json') }}' }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                'pgv': [
+                    {% for dato in datosPgv %}
+                    { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo|default(0) }}, est: '{{ dato.estacion }}', graf: '{{ asset('assets/waves/' ~ dato.grafica ~ '_VEL.json') }}' }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                'pgd': [
+                    {% for dato in datosPgd %}
+                    { lat: {{ dato.latitud }}, lng: {{ dato.longitud }}, max: {{ dato.maximo|default(0) }}, est: '{{ dato.estacion }}', graf: '{{ asset('assets/waves/' ~ dato.grafica ~ '_DISP.json') }}' }{% if not loop.last %},{% endif %}
+                    {% endfor %}
+                ]
+            };
+
+            // --- FUNCIONES DE LÓGICA DE COLOR ---
+            function obtenerColorYIndex(valor, tipo) {
+                const escala = configuracionEscalas[tipo];
+                for (let i = 0; i < escala.thresholds.length; i++) {
+                    if (valor > escala.thresholds[i]) {
+                        return { color: escala.colores[i], zIndex: (escala.thresholds.length - i) * 1000 };
+                    }
+                }
+                return { color: escala.colores[escala.colores.length - 1], zIndex: 0 };
+            }
+
+            // --- RENDERIZADO DINÁMICO DEL MAPA ---
+            function actualizarMapa(tipo) {
+                if (!map) return;
+
+                // 1. Limpiar estaciones anteriores
+                layerEstaciones.clearLayers();
+
+                // 2. Dibujar nuevas estaciones
+                const puntos = datosMapa[tipo];
+                const escala = configuracionEscalas[tipo];
+
+                puntos.forEach(p => {
+                    const style = obtenerColorYIndex(p.max, tipo);
+                    const icono = triangleIcon(style.color, 18);
+
+                    const popupContenido = `
+                        <b>Estación:</b> ${p.est}<br>
+                        <b>Máximo:</b> ${p.max.toFixed(2)} ${escala.unidad}<br>
+                        <button class="btn btn-primary btn-sm mt-2" onclick="cargarGrafica('${p.graf}', '${p.est}', '${tipo}')">Ver Onda</button>
+                    `;
+
+                    L.marker([p.lat, p.lng], { icon: icono, zIndexOffset: style.zIndex })
+                        .bindPopup(popupContenido)
+                        .addTo(layerEstaciones);
+                });
+
+                layerEstaciones.addTo(map);
+
+                // 3. Actualizar Leyenda
+                actualizarLeyenda(tipo);
+            }
+
+            function actualizarLeyenda(tipo) {
+                if (legendControl) map.removeControl(legendControl);
+
+                const escala = configuracionEscalas[tipo];
+                legendControl = L.control({ position: 'topright' });
+
+                legendControl.onAdd = function() {
+                    const div = L.DomUtil.create('div', 'info legend');
+                    div.style.backgroundColor = 'white';
+                    div.style.padding = '10px';
+                    div.style.border = '1px solid #ccc';
+                    div.style.cursor = 'pointer'; // Cambia el cursor a la "manito"
+                    div.title = 'Haz clic para ver la descripción detallada'; // Tooltip nativo al pasar el mouse
+
+                    let html = `<div style="font-weight:bold; margin-bottom:5px;">${escala.titulo}</div>`;
+                    escala.labels.forEach((label, i) => {
+                        const color = escala.colores[i];
+                        html += `<div><i style="background:${color}; width:12px; height:12px; display:inline-block; margin-right:5px; opacity:0.6; border:1px solid #333;"></i> ${label}</div>`;
+                    });
+                    div.innerHTML = html;
+
+                    // IMPORTANTE: Evitar que el clic interactúe con el mapa debajo
+                    L.DomEvent.disableClickPropagation(div);
+
+                    // 4. Agregar el evento clic
+                    div.addEventListener('click', function() {
+
+                        // Referencias a las partes del modal que vamos a modificar
+                        const tituloModal = document.getElementById('textoTituloModal');
+                        const cuerpoModal = document.getElementById('modalLeyendaCuerpo');
+
+                        let htmlCuerpo = '';
+                        let textoTitulo = '';
+
+                        // Construir el contenido HTML según el "tipo"
+                        switch(tipo) {
+                            case 'pga':
+                                textoTitulo = 'Escala Aceleración (cm/s²)';
+                                htmlCuerpo = `
+                        <table class="table table-sm table-striped table-borderless mb-0">
+                            <tbody>
+                                <tr><td class="fw-bold text-nowrap" style="color:#0058cc;">&lt; 2</td><td>Imperceptible </td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#00cc03;">2 – 10</td><td>Perceptible </td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#88cc00;">10 – 50</td><td>Movimiento claramente apreciable</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#ccaa00;">50 – 100</td><td>Movimiento fuerte</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc8b00;">100 – 200</td><td>Posibles daños no estructurales</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc5200;">200 – 500</td><td>Posibles daños estructurales moderados</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc0000;">&gt; 500</td><td>Daño severo esperado</td></tr>
+                            </tbody>
+                        </table>
+                    `;
+                                break;
+                            case 'pgv':
+                                textoTitulo = 'Escala Velocidad (cm/s)';
+                                htmlCuerpo = `
+                        <table class="table table-sm table-striped table-borderless mb-0">
+                            <tbody>
+                                <tr><td class="fw-bold text-nowrap" style="color:#0058cc;">&lt; 0.3</td><td>Imperceptible o apenas perceptible</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#00cc03;">0.3 – 1</td><td>Perceptible por personas sensibles</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#88cc00;">1 – 3</td><td>Claramente sentido por la mayoría</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#ccaa00;">3 – 10</td><td>Movimiento fuerte, caída ocasional de objetos</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc8b00;">10 – 30</td><td>Posible daño leve en estructuras vulnerables</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc5200;">30 – 60</td><td>Daño moderado en edificaciones</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc0000;">&gt; 60</td><td>Daño importante y potencialmente severo</td></tr>
+                            </tbody>
+                        </table>
+                    `;
+                                break;
+                            case 'pgd': // o el nombre que le des a Intensidad
+                                textoTitulo = 'Escala Desplazamiento (cm)';
+                                htmlCuerpo = `
+                        <table class="table table-sm table-striped table-borderless mb-0">
+                            <tbody>
+                                <tr><td class="fw-bold text-nowrap" style="color:#0058cc;">&lt; 0.05</td><td>Imperceptible</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#00cc03;">0.05 – 0.2</td><td>Perceptible</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#88cc00;">0.2 – 1</td><td>Movimiento claramente apreciable</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#ccaa00;">1 – 5</td><td>Movimiento fuerte</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc8b00;">5 – 15</td><td>Posibles daños no estructurales</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc5200;">15 – 40</td><td>Posibles daños estructurales moderados</td></tr>
+                                <tr><td class="fw-bold text-nowrap" style="color:#cc0000;">&gt; 40</td><td>Daño severo esperado</td></tr>
+                            </tbody>
+                        </table>
+                    `;
+                                break;
+                            default:
+                                textoTitulo = 'Información de la Escala';
+                                htmlCuerpo = `<p class="mb-0">No hay información adicional disponible.</p>`;
+                        }
+
+                        // Inyectar los datos en el modal
+                        tituloModal.textContent = textoTitulo;
+                        cuerpoModal.innerHTML = htmlCuerpo;
+
+                        // Instanciar y mostrar el modal usando el JS de Bootstrap 5
+                        const modalElement = document.getElementById('modalLeyenda');
+                        const modalInstancia = bootstrap.Modal.getOrCreateInstance(modalElement);
+                        modalInstancia.show();
+                    });
+
+                    return div;
+                };
+                legendControl.addTo(map);
+            }
+
+            // --- INICIALIZACIÓN DEL MAPA ---
+            const isDesktopUp = window.matchMedia('(min-width: 768px)').matches;
+            if (isDesktopUp) {
+                map = L.map('map').setView([9.9, -84], 8);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}').addTo(map);
+
+                // Epicentro (Fijo)
+                L.marker([{{ epi_lat }}, {{ epi_long }}], { icon: starIcon, zIndexOffset: 9999 })
+                    .addTo(map)
+                    .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1) }}');
+
+                // Carga inicial (PGA)
+                actualizarMapa('pga');
+
+                // Ajustar límites
+                let bounds = L.latLngBounds([7.5, -86], [11.5, -82.5]);
+                map.fitBounds(bounds);
+            }
+
+            // --- LISTENER DE CAMBIO DE TABS (Bootstrap) ---
+            const tabBotones = document.querySelectorAll('#tablasDatos button[data-bs-toggle="tab"]');
+            tabBotones.forEach(btn => {
+                btn.addEventListener('shown.bs.tab', function(event) {
+                    const id = event.target.id; // pga-tab, pgv-tab o pgd-tab
+                    const tipo = id.split('-')[0]; // pga, pgv o pgd
+
+                    actualizarMapa(tipo);
+
+                    // Ajustar DataTables para evitar problemas de ancho
+                    $(`#tabla_${tipo}`).DataTable().columns.adjust();
+                });
+            });
+        });
+
+        const graphModal = new bootstrap.Modal(document.getElementById('graphModal'));
+
+        const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+        tabEls.forEach(tabEl => {
+            tabEl.addEventListener('shown.bs.tab', event => {
+                if ($.fn.DataTable.isDataTable('#tabla_pga')) {
+                    $('#tabla_pga').DataTable().columns.adjust();
+                    $('#tabla_pgv').DataTable().columns.adjust();
+                    $('#tabla_pgd').DataTable().columns.adjust();
+                }
+
+                Plotly.Plots.resize('plotDivZ');
+                Plotly.Plots.resize('plotDivN');
+                Plotly.Plots.resize('plotDivE');
+            });
+        });
+
+        // Añadido parámetro 'tipo' a la función encargada de inicializar la petición
+        function cargarGrafica(url, estacion, tipo) {
+            document.getElementById('modalStationTitle').innerText = estacion;
+            document.getElementById('plotDivZ').innerHTML = '<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-border text-primary" role="status"></div></div>';
+            document.getElementById('plotDivN').innerHTML = '';
+            document.getElementById('plotDivE').innerHTML = '';
+
+            const firstTabEl = document.querySelector('#waveTabs button[data-bs-target="#tab-z"]');
+            const tabInstance = bootstrap.Tab.getOrCreateInstance(firstTabEl);
+            tabInstance.show();
+
+            graphModal.show();
+
+            fetch(url)
+                .then(res => {
+                    if (res.status === 404) throw new Error("EN_PROCESO");
+                    if (!res.ok) throw new Error("ERROR_SERVIDOR");
+                    return res.json();
+                })
+                .then(data => dibujarPlotlyTabs(data, tipo))
+                .catch(err => {
+                    const divZ = document.getElementById('plotDivZ');
+                    if (err.message === "EN_PROCESO") {
+                        divZ.innerHTML = `
+                    <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center p-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="#adb5bd" class="mb-3" viewBox="0 0 16 16">
+                          <path d="M0 0h1v15h15v1H0V0Zm10 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V4.9l-3.613 4.417a.5.5 0 0 1-.74.037L7.06 6.767l-3.656 5.027a.5.5 0 0 1-.808-.588l4-5.5a.5.5 0 0 1 .758-.06l2.609 2.61L13.445 4H10.5a.5.5 0 0 1-.5-.5Z"/>
+                        </svg>
+                        <h5 class="text-secondary fw-normal">Generando datos detallados</h5>
+                        <p class="text-muted small mb-0" style="max-width: 320px;">
+                            Las series de tiempo para la estación <b>${estacion}</b> aún se están calculando en el servidor. <br><br> Por favor, cierra esta ventana e intenta abrirla en un momento.
+                        </p>
+                    </div>`;
+                    } else {
+                        divZ.innerHTML = `
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div class="alert alert-light border text-center text-muted">
+                            <span class="fs-4 d-block mb-2">⚠️</span>
+                            No se pudo cargar la gráfica en este momento.
+                        </div>
+                    </div>`;
+                    }
+                });
+        }
+
+        function dibujarPlotlyTabs(json, tipo) {
+            let startTime;
+            try {
+                const rawTime = json.meta.start_time;
+                const isoTime = rawTime.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}).*$/, '$1-$2-$3T$4:$5:$6');
+                startTime = new Date(isoTime).getTime();
+            } catch (e) {
+                console.error("Error parseando tiempo", e);
+                startTime = new Date().getTime();
+            }
+
+            const dt = 1000 / json.meta.sample_rate;
+
+            // Procesamiento condicional según el tipo de magnitudes solicitado
+            const processData = (rawData) => {
+                if (!rawData || rawData.length === 0) return { main: [], alt: [] };
+
+                if (tipo === 'pga') {
+                    const cmData = rawData.map(val => val * 100);
+                    const gData = rawData.map(val => ((val * 100) / 980) * 100);
+                    return { main: cmData, alt: gData };
+                } else {
+                    // Para velocidad y desplazamiento no se escala ni multiplica el vector
+                    return { main: rawData, alt: [] };
+                }
+            };
+
+            const hnzProcessed = processData(json.data.HNZ);
+            const hnnProcessed = processData(json.data.HNN);
+            const hneProcessed = processData(json.data.HNE);
+
+            const nPts = hnzProcessed.main.length || hneProcessed.main.length;
+            const xValues = new Array(nPts);
+            for (let i = 0; i < nPts; i++) {
+                xValues[i] = new Date(startTime + (i * dt)).toISOString();
+            }
+
+            // Construcción del Layout dinámico con asignación de unidades
+            const createLayout = (title, dataMain, dataAlt) => {
+                let yAxisTitle = 'Aceleración (cm/s²)';
+                if (tipo === 'pgv') yAxisTitle = 'Velocidad (cm/s)';
+                if (tipo === 'pgd') yAxisTitle = 'Desplazamiento (cm)';
+
+                let layout = {
+                    height: 500,
+                    margin: { t: 40, b: 40, l: 60, r: 20 },
+                    showlegend: false,
+                    title: title,
+                    xaxis: { title: 'Tiempo (UTC)' },
+                    yaxis: { title: yAxisTitle }
+                };
+
+                // El menú de intercambio 'cm/s²' / 'g' sólo se inyecta en el flujo de aceleración (pga)
+                if (tipo === 'pga') {
+                    layout.updatemenus = [{
+                        type: 'buttons',
+                        direction: 'left',
+                        pad: { 'r': 10, 't': 10 },
+                        showactive: true,
+                        x: 0.0,
+                        xanchor: 'left',
+                        y: 1.15,
+                        yanchor: 'top',
+                        buttons: [
+                            {
+                                label: 'cm/s²',
+                                method: 'update',
+                                args: [
+                                    { y: [dataMain] },
+                                    { 'yaxis.title': 'Aceleración (cm/s²)' }
+                                ]
+                            },
+                            {
+                                label: 'g',
+                                method: 'update',
+                                args: [
+                                    { y: [dataAlt] },
+                                    { 'yaxis.title': 'Aceleración (%g)' }
+                                ]
+                            }
+                        ]
+                    }];
+                }
+
+                return layout;
+            };
+
+            const config = {
+                responsive: true,
+                locale: 'es',
+                displayModeBar: true,
+                modeBarButtonsToRemove: ['lasso2d', 'select2d']
+            };
+
+            const layoutZ = createLayout('Componente Vertical (HNZ)', hnzProcessed.main, hnzProcessed.alt);
+            const traceZ = { x: xValues, y: hnzProcessed.main, type: 'scatter', line: { width: 1, color: 'black' } };
+            Plotly.newPlot('plotDivZ', [traceZ], layoutZ, config);
+
+            const layoutN = createLayout('Componente Norte (HNN)', hnnProcessed.main, hnnProcessed.alt);
+            const traceN = { x: xValues, y: hnnProcessed.main, type: 'scatter', line: { width: 1, color: 'blue' } };
+            Plotly.newPlot('plotDivN', [traceN], layoutN, config);
+
+            const layoutE = createLayout('Componente Este (HNE)', hneProcessed.main, hneProcessed.alt);
+            const traceE = { x: xValues, y: hneProcessed.main, type: 'scatter', line: { width: 1, color: 'red' } };
+            Plotly.newPlot('plotDivE', [traceE], layoutE, config);
+        }
+
+        // --- Gráfico Plotly para el Top 20 de Estaciones Cercanas ---
+        {% if top20_cercanas is defined and top20_cercanas is not empty %}
+        // Preparación de los arreglos de datos desde Twig
+        const nombresEstaciones = [
+            {% for est in top20_cercanas %}
+            '{{ est.estacion }} ({{ est.distancia|round(1) }} km)'{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        ];
+
+        const valoresAceleracion = [
+            {% for est in top20_cercanas %}
+            {{ est.aceleracion_maxima|default(0)|round(2) }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        ];
+
+        const traceTop20 = {
+            x: nombresEstaciones,
+            y: valoresAceleracion,
+            type: 'bar',
+            marker: {
+                color: 'rgba(220, 53, 69, 0.75)', // Rojo sutil combinando con los badges de magnitud
+                line: {
+                    color: 'rgb(220, 53, 69)',
+                    width: 1.5
+                }
+            },
+            hovertemplate: '<b>Estación:</b> %{x}<br><b>PGA:</b> %{y:.2f} cm/s²<extra></extra>'
+        };
+
+        const layoutTop20 = {
+            title: {
+                text: 'Aceleraciones 20 Estaciones más cercanas al Epicentro',
+                font: { size: 14, color: '#495057', weight: 'bold' }
+            },
+            margin: { l: 50, r: 20, t: 50, b: 100 },
+            xaxis: {
+                title: 'Estación (Ordenadas por distancia)',
+                tickangle: -45,
+                automargin: true
+            },
+            yaxis: {
+                title: 'Aceleración Máxima (cm/s²)',
+                zeroline: true,
+                gridcolor: '#f0f0f0'
+            },
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            paper_bgcolor: 'rgba(0,0,0,0)'
+        };
+
+        const configTop20 = {
+            responsive: true,
+            locale: 'es',
+            displayModeBar: false // Ocultar barra de herramientas para mantener la interfaz limpia
+        };
+
+        // Renderizar el gráfico en el contenedor correspondiente
+        Plotly.newPlot('plotTop20', [traceTop20], layoutTop20, configTop20);
+        {% endif %}
+
+
+        // --- Gráfico de Dispersión PGA vs Distancia (Log-Log) ---
+        {% if todas_estaciones is defined and todas_estaciones is not empty %}
+
+        // Filtramos y preparamos los datos observados
+        const traceObservados = {
+            x: [
+                {% for est in todas_estaciones %}
+                // Aseguramos la distancia (X)
+                {{ est.distancia|round(1) }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            ],
+            y: [
+                {% for est in todas_estaciones %}
+                // En escalas logarítmicas, el valor no puede ser 0.
+                // Usamos un valor minúsculo por defecto si no hay dato para que no falle el renderizado.
+                {{ est.maximo|default(0.01)|round(2) }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            ],
+            text: [
+                {% for est in todas_estaciones %}
+                '{{ est.estacion }}'{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            ],
+            mode: 'markers',
+            type: 'scatter',
+            name: 'Estaciones',
+            marker: {
+                size: 9,
+                color: 'rgba(52, 152, 219, 0.75)', // Azul visible y profesional
+                line: { color: '#2980b9', width: 1.5 }
+            },
+            hovertemplate: '<b>%{text}</b><br>Distancia: %{x} km<br>PGA: %{y:.2f} cm/s²<extra></extra>'
+        };
+
+        // Configuración del Layout con ambos ejes en Log
+        const layoutAtenuacion = {
+            title: {
+                text: 'Aceleración Máxima vs. Distancia',
+                font: { size: 15, color: '#495057', weight: 'bold' }
+            },
+            margin: { l: 60, r: 30, t: 50, b: 60 },
+            xaxis: {
+                title: 'Distancia Epicentral (km)',
+                type: 'log', // Activa la escala logarítmica
+                autorange: true,
+                gridcolor: '#e2e8f0',
+                zeroline: false
+            },
+            yaxis: {
+                title: 'Aceleración Máxima (cm/s²)',
+                type: 'log', // Activa la escala logarítmica
+                autorange: true,
+                gridcolor: '#e2e8f0',
+                zeroline: false
+            },
+            showlegend: false, // Ocultamos la leyenda ya que solo hay un grupo de datos
+            plot_bgcolor: '#f8f9fa',
+            paper_bgcolor: 'rgba(0,0,0,0)'
+        };
+
+        const configAtenuacion = {
+            responsive: true,
+            locale: 'es',
+            displayModeBar: false,
+            modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d']
+        };
+
+        // Renderizamos el gráfico enviando solo nuestro arreglo de puntos reales
+        Plotly.newPlot('plotAtenuacion', [traceObservados], layoutAtenuacion, configAtenuacion);
+
+        {% endif %}
+
+        // =========================================================
+        // LÓGICA PARA EL GRÁFICO DE DURACIÓN DEL MOVIMIENTO (JSON)
+        // =========================================================
+
+        // Aquí usamos Twig para inyectar dinámicamente el idEvento.
+        // Si tu variable se llama diferente en el backend (ej. evento.id), ajústala.
+        // Para la ruta de assets, asumo que guardas los JSON en la carpeta de waveforms o similar.
+        const idEvento = '{{ id | default("PJCO") }}';
+        const urlMovimiento = `{{ asset('assets/waves/'~ id ~ '/') }}grafico_mov.json`;
+
+        fetch(urlMovimiento)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Archivo de duración no encontrado');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Si no hay datos, ocultamos el contenedor y expandimos los otros gráficos
+                if (!data || data.length === 0) {
+                    document.getElementById('containerPlotDuracion').style.display = 'none';
+                    document.getElementById('containerPlotTop20').className = 'col-12 col-lg-6';
+                    document.getElementById('containerPlotAtenuacion').className = 'col-12 col-lg-6';
+                    return;
+                }
+
+                // Limpiamos el spinner
+                document.getElementById('plotDuracion').innerHTML = '';
+
+                // Extraer datos para Plotly
+                const estaciones = data.map(item => item.estacion);
+                const duraciones = data.map(item => item.duracion_s);
+                const pgas = data.map(item => item.pga_3d_cm_s2);
+
+                const traza = {
+                    x: estaciones,
+                    y: duraciones,
+                    type: 'bar',
+                    marker: {
+                        color: '#0d6efd', // Azul Bootstrap
+                        opacity: 0.85,
+                        line: {
+                            color: '#0a58ca',
+                            width: 1.5
+                        }
+                    },
+                    // El texto personalizado para el tooltip
+                    customdata: pgas,
+                    hovertemplate:
+                        '<b>Estación: %{x}</b><br>' +
+                        'Duración: %{y:.1f} s<br>' +
+                        '<extra></extra>' // El extra vacio quita la caja secundaria al lado del cursor
+                };
+
+                const layout = {
+                    title: {
+                        text: 'Duración del Sismo (Umbral > 0.05 cm/s²)',
+                        font: { size: 15, color: '#495057', weight: 'bold' }
+                    },
+                    margin: { l: 60, r: 30, t: 50, b: 60 },
+                    xaxis: {
+                        title: 'Estación',
+                        tickangle: -45, // Inclinamos las etiquetas para que se lean bien si son muchas
+                        gridcolor: '#e2e8f0'
+                    },
+                    yaxis: {
+                        title: 'Duración (segundos)',
+                        gridcolor: '#e2e8f0',
+                        zeroline: false
+                    },
+                    plot_bgcolor: '#f8f9fa',
+                    paper_bgcolor: 'rgba(0,0,0,0)'
+                };
+
+                const config = {
+                    responsive: true,
+                    locale: 'es',
+                    displayModeBar: false
+                };
+
+                Plotly.newPlot('plotDuracion', [traza], layout, config);
+            })
+            .catch(error => {
+                console.warn("No se pudo cargar el gráfico de duración:", error);
+                // Ocultar el contenedor y expandir los otros en caso de error (archivo no encontrado)
+                const containerDuracion = document.getElementById('containerPlotDuracion');
+                if (containerDuracion) {
+                    containerDuracion.style.display = 'none';
+                    document.getElementById('containerPlotTop20').className = 'col-12 col-lg-6';
+                    document.getElementById('containerPlotAtenuacion').className = 'col-12 col-lg-6';
+                }
+            });
+
+
+
+    </script>
+    <style>
+        /* Estilo para la leyenda del mapa */
+        .legend i { border-radius: 50%; }
+        .info.legend { line-height: 18px; color: #555; }
+    </style>
+{% endblock %}

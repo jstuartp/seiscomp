@@ -1,0 +1,312 @@
+{% extends 'base_movil.html.twig' %}
+
+{% block page_title %}Espectros - M {{ magnitud|round(1) }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <style>
+        /* Ajustes para mejorar la visualización en pantallas pequeñas */
+        .tabla-movil {
+            font-size: 11px;
+        }
+        .tabla-movil th {
+            font-size: 12px;
+        }
+        .btn-carrusel {
+            padding: 4px 8px;
+            font-size: 12px;
+        }
+        /* Fondo oscuro para el modal en móviles, resalta la imagen blanca */
+        .modal-movil-dark {
+            background-color: rgba(0,0,0,0.9);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid p-2" style="max-width: 600px; margin: 0 auto;">
+
+        <div class="text-center mb-3 mt-2">
+            <h4 class="mb-1 fw-bold">Sismo M {{ magnitud|round(1) }}</h4>
+            <div class="text-muted small">{{ fecha|date("d-m-Y H:i:s") }} UTC</div>
+            <div class="mt-2 small fw-semibold text-primary">{{ epi }}</div>
+            <div class="text-muted small mt-1">Profundidad: {{ profundidad|round(1) }} km</div>
+        </div>
+
+        <div class="card shadow-sm mb-3 border-0">
+            <div id="map" style="width: 100%; height: 350px; border-radius: 8px; z-index: 1;"></div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header bg-dark text-white py-2">
+                <h6 class="mb-0 text-center"><i class="bi bi-graph-up-arrow"></i> 7 Aceleraciones (SA) M&aacute;ximas</h6>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped table-bordered mb-0 text-center tabla-movil">
+                        <thead class="table-light">
+                        <tr>
+                            <th style="width: 25%;" class="align-middle">Estación</th>
+                            <th style="width: 55%;" class="align-middle">Datos Espectrales</th>
+                            <th style="width: 20%;" class="align-middle">Imágenes</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {# Utilizamos slice(0, 7) para limitar la cantidad de filas #}
+                        {% for dato in datos|slice(0, 7) %}
+                            <tr>
+                                <td class="align-middle fw-bold">
+                                    {{ dato.estacion }}<br>
+                                    <span class="text-muted fw-normal" style="font-size: 9px;">{{ dato.suelo }} / {{ dato.zona }}</span>
+                                </td>
+
+                                <td class="align-middle text-start" id="celda-accel-{{ dato.estacion }}">
+                                    <div class="text-center text-muted fst-italic">Cargando...</div>
+                                </td>
+
+                                <td class="align-middle">
+                                    <button type="button" class="btn btn-outline-info btn-carrusel shadow-sm"
+                                            onclick='openCarouselModal([
+                                                    "{{ asset("assets/waves/" ~ id ~ "/espectros_acc/" ~ dato.grafica ~ "_RotD100_loglog_CSCR.png") }}",
+                                                    "{{ asset("assets/waves/" ~ id ~ "/espectros_acc/" ~ dato.grafica ~ "_RotD100_loglog.png") }}",
+                                                    "{{ asset("assets/waves/" ~ id ~ "/espectros_acc/" ~ dato.grafica ~ "_vel.png") }}",
+                                                    "{{ asset("assets/waves/" ~ id ~ "/espectros_acc/" ~ dato.grafica ~ "_disp.png") }}"
+                                                    ])'>
+                                        <i class="bi bi-images"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-4">
+            <a href="{{ path('homepage') }}" class="btn btn-secondary btn-sm w-50 shadow-sm">Volver al Inicio</a>
+        </div>
+
+    </div>
+
+    <div class="modal fade" id="carouselImageModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+            <div class="modal-content modal-movil-dark border-0 position-relative">
+
+                <button type="button" data-bs-dismiss="modal" aria-label="Close"
+                        style="position: absolute; top: 15px; right: 15px; z-index: 9999;
+                           width: 40px; height: 40px; background-color: rgba(0,0,0,0.7);
+                           border: 2px solid white; border-radius: 50%; color: white;
+                           font-size: 20px; font-weight: bold; display: flex;
+                           align-items: center; justify-content: center;
+                           padding: 0; box-shadow: 0 4px 10px rgba(0,0,0,0.5);">
+                    &#10005; </button>
+
+                <div class="modal-body p-0 d-flex align-items-center justify-content-center">
+                    <div id="espectrosCarousel" class="carousel slide w-100" data-bs-theme="dark">
+                        <div class="carousel-indicators" id="carousel-indicators-container" style="bottom: -30px;"></div>
+                        <div class="carousel-inner" id="carousel-inner-container"></div>
+
+                        <button class="carousel-control-prev" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon bg-dark rounded-circle p-2" aria-hidden="true"></span>
+                            <span class="visually-hidden">Anterior</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#espectrosCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon bg-dark rounded-circle p-2" aria-hidden="true"></span>
+                            <span class="visually-hidden">Siguiente</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+
+            // ==========================================
+            // 1. Inicialización del Mapa Leaflet
+            // ==========================================
+            // Desactivamos el zoomControl y limitamos interacciones molestas en móvil
+            var map = L.map('map', {
+                zoomControl: false,
+                dragging: false,
+                touchZoom: false,
+                scrollWheelZoom: false,
+                doubleClickZoom: false,
+                boxZoom: false,
+                keyboard: false
+            }).setView([0, 0], 2);
+
+            let bounds = L.latLngBounds([8.03, -85.95], [11.22, -82.55]);
+            map.fitBounds(bounds);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap'
+            }).addTo(map);
+
+            // Función para determinar el color del marcador según SA Máxima
+            function getSaColor(sa) {
+                return sa >= 100 ? '#cc0000' :
+                    sa > 70  ? '#cc5200' :
+                        sa > 50  ? '#cc8b00' :
+                            sa > 30  ? '#ccaa00' :
+                                sa > 10   ? '#88cc00' :
+                                    sa > 1   ? '#00cc03' :
+                                        '#0058cc';
+            }
+
+            function geojsonMarkerOptions(feature) {
+                return {
+                    radius: 7,
+                    fillColor: getSaColor(feature.properties.porcentaje_max),
+                    color: "#000",
+                    weight: 1,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                };
+            }
+
+            const starIcon = L.divIcon({
+                html: '<img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" alt="Estrella" style="width:30px;">',
+                className: '',
+                iconSize: [30, 30],
+                iconAnchor: [15, 15]
+            });
+
+            L.marker([{{ epi_lat }}, {{ epi_long }}], {icon: starIcon, zIndexOffset:900000}).addTo(map);
+
+            // Definición de rangos en el mismo orden que el getColor
+            const legendItems = [
+                { label: '>= 100%',  color: '#cc0000' },
+                { label: '70% - 99%', color: '#cc5200' },
+                { label: '50% – 69%', color: '#cc8b00' },
+                { label: '30% – 49%', color: '#ccaa00' },
+                { label: '10% – 29%', color: '#88cc00' },
+                { label: '1 – 9%', color: '#00cc03' },
+                { label: '≤ 0.9', color: '#0058cc' },
+            ];
+
+            // Control de Leaflet para la leyenda
+            const legend = L.control({ position: 'bottomleft' });
+            legend.onAdd = function () {
+                // Si estás usando Bootstrap, puedes agregar clases al div principal: 'info legend bg-white p-2 shadow rounded'
+                const div = L.DomUtil.create('div', 'info legend');
+
+                // Estilos del contenedor (puedes omitirlos si ya los manejas en tu CSS)
+                div.style.backgroundColor = 'white';
+                div.style.padding = '6px 8px';
+                div.style.borderRadius = '5px';
+                div.style.boxShadow = '0 0 15px rgba(0,0,0,0.2)';
+                div.style.cursor = 'pointer'; // Cambia el cursor a la "manito"
+                div.title = 'Haz clic para ver la descripción detallada'; // Tooltip nativo al pasar el mouse
+
+                div.innerHTML = '<div class="legend-title" style="font-weight:bold; margin-bottom:5px; font-size:11px; line-height:1.2;">SA / CSCR</div>';
+
+                legendItems.forEach(item => {
+                    // Se reemplazó legendTriangle() por un elemento <i> con border-radius: 50%
+                    div.innerHTML += `<div class="legend-item" style="display: flex; align-items: center; margin-bottom: 2px; font-size: 10px;">
+                                        <i style="background: ${item.color}; width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; border: 1px solid #333; opacity: 0.8;"></i>
+                                         <span>${item.label}</span>
+                                        </div>`;
+                });
+                return div;
+            };
+
+            legend.addTo(map);
+
+            function onEachFeature(feature, layer) {
+                if (feature.properties) {
+                    var props = feature.properties;
+                    var popupContent = `
+                        <div class="text-center" style="min-width: 120px;">
+                            <h6 class="fw-bold mb-1 border-bottom pb-1">${props.estacion}</h6>
+                            <div style="font-size: 11px;">
+                                <b>SA Max:</b> ${props.sa_max_cm_s2}<br>
+                                <b>T Max:</b> ${props.periodo_max_s}s
+                            </div>
+                        </div>
+                    `;
+                    layer.bindPopup(popupContent);
+                }
+            }
+
+            // ==========================================
+            // 2. Fetch de GeoJSON y Llenado de Tabla
+            // ==========================================
+            var basePath = "{{ asset('assets/waves/' ~ id ~ '/espectros_acc/') }}";
+            var geojsonUrl = basePath + "datos_espectrales.geojson";
+
+            fetch(geojsonUrl)
+                .then(response => {
+                    if (!response.ok) throw new Error('GeoJSON no encontrado');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data && data.features) {
+                        // Pintamos los puntos de menor a mayor
+                        data.features.sort((a, b) => a.properties.sa_max_cm_s2 - b.properties.sa_max_cm_s2);
+
+                        // Llenar las celdas de la tabla
+                        data.features.forEach(feature => {
+                            const props = feature.properties;
+                            const celda = document.getElementById('celda-accel-' + props.estacion);
+
+                            if (celda) {
+                                celda.innerHTML = `
+                                    <div class="text-start" style="line-height: 1.2;">
+                                        <b>Max:</b> ${props.sa_max_cm_s2} cm/s² <span class="text-muted">(${props.periodo_max_s}s)</span><br>
+                                        <b>0.2s:</b> ${props.sa_02_cm_s2} | <b>1.0s:</b> ${props.sa_10_cm_s2}
+                                    </div>
+                                `;
+                            }
+                        });
+                    }
+
+                    L.geoJSON(data, {
+                        pointToLayer: function (feature, latlng) {
+                            return L.circleMarker(latlng, geojsonMarkerOptions(feature));
+                        },
+                        onEachFeature: onEachFeature
+                    }).addTo(map);
+                })
+                .catch(error => {
+                    console.warn('No se pudo cargar el mapa:', error);
+                });
+        });
+
+        // ==========================================
+        // 3. Lógica del Carrusel Móvil
+        // ==========================================
+        function openCarouselModal(imagesArray) {
+            const innerContainer = document.getElementById('carousel-inner-container');
+            const indicatorsContainer = document.getElementById('carousel-indicators-container');
+
+            innerContainer.innerHTML = '';
+            indicatorsContainer.innerHTML = '';
+
+            imagesArray.forEach((src, index) => {
+                const activeClass = index === 0 ? 'active' : '';
+
+                indicatorsContainer.innerHTML += `
+                    <button type="button" data-bs-target="#espectrosCarousel" data-bs-slide-to="${index}" class="${activeClass}" aria-label="Slide ${index + 1}"></button>
+                `;
+
+                innerContainer.innerHTML += `
+                    <div class="carousel-item ${activeClass}">
+                        <img src="${src}" class="d-block w-100 bg-white" style="max-height: 80vh; object-fit: contain; border-radius: 8px;" alt="Espectro ${index + 1}">
+                    </div>
+                `;
+            });
+
+            const modalInstance = new bootstrap.Modal(document.getElementById('carouselImageModal'));
+            modalInstance.show();
+        }
+    </script>
+{% endblock %}
