@@ -39,6 +39,7 @@
 {% endblock %}
 {% block endscrips %}
     {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
@@ -75,15 +76,40 @@
                 .addTo(map)
                 .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1) }}');
 
-            // 3. CAPA SHAKEMAP (GeoJSON inyectado desde el Controller)
-            // Se agrega primero para que quede debajo de los marcadores
+            // 3. CAPA SHAKEMAP Y RECORTE GEOGRÁFICO
             const shakeMapData = {{ shakemap_json|raw }};
+            // Asumiendo que pasas el JSON de CR desde el Controller bajo esta variable:
+            const costaRicaData = {{ costa_rica_json|raw }};
 
-            L.geoJson(shakeMapData, {
+            // Extraemos el Feature principal (MultiPolygon) del GeoJSON de Costa Rica
+            const costaRicaFeature = costaRicaData.features[0];
+            const clippedFeatures = [];
+
+            // Iteramos sobre cada celda/polígono del ShakeMap
+            shakeMapData.features.forEach(feature => {
+                try {
+                    // Calculamos la intersección. Devuelve null si no se superponen.
+                    const intersection = turf.intersect(feature, costaRicaFeature);
+
+                    if (intersection) {
+                        // Restauramos las propiedades (como el PGA) para que la función getColor siga funcionando
+                        intersection.properties = feature.properties;
+                        clippedFeatures.push(intersection);
+                    }
+                } catch (e) {
+                    console.error("Error calculando intersección: ", e);
+                }
+            });
+
+            // Creamos un nuevo GeoJSON solo con las geometrías recortadas
+            const clippedShakeMapData = turf.featureCollection(clippedFeatures);
+
+            // Dibujamos la nueva capa en lugar de la original
+            L.geoJson(clippedShakeMapData, {
                 style: function(feature) {
                     return {
                         fillColor: getColor(feature.properties.pga),
-                        weight: 0.001, // Borde muy fino para los rectángulos de la malla
+                        weight: 0.0001, // Borde muy fino para los rectángulos de la malla
                         opacity: 1,
                         color: 'white',
                         fillOpacity: 0.4 // Transparencia para ver el mapa base

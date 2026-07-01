@@ -764,6 +764,12 @@ class mainController extends AbstractController
             $epi = $request->request->get('epi');
         }else{echo "NO HAY NADA";}
 
+        $rutaProyecto = $this->getParameter('kernel.project_dir');
+        $rutaJsonCostaRica = $rutaProyecto . '/public/CostaRicaS.json';
+
+        // 2. Leer el contenido del archivo
+        $costaRicaJson = file_get_contents($rutaJsonCostaRica);
+
         // 1. Obtener la información del evento y de las estaciones (Misma lógica que en pga)
         //$todosSismos = $doctrine->getRepository(\App\Entity\TodosSismos::class)->find($id_evento);
         $jmaData = $doctrine->getRepository(\App\Entity\Jma::class)->findBy(['idEvento' => $evento]);
@@ -790,6 +796,7 @@ class mainController extends AbstractController
 
         // 4. Renderizar la nueva vista
         return $this->render('shakemaps.html.twig', [
+            'costa_rica_json' => $costaRicaJson,
             'epi_lat' => $epi_lat,
             'epi_long' => $epi_long,
             'magnitud' => $magnitud,
@@ -810,7 +817,7 @@ class mainController extends AbstractController
         $minLat = $epiLat - $margin; $maxLat = $epiLat + $margin;
         $minLng = $epiLong - $margin; $maxLng = $epiLong + $margin;
 
-        $paso = 0.05; // Resolución de la malla (0.05 grados). Si es muy lento, súbelo a 0.1
+        $paso = 0.1; // Resolución de la malla (0.05 grados). Si es muy lento, súbelo a 0.1
         $features = [];
 
         for ($lat = $minLat; $lat <= $maxLat; $lat += $paso) {
