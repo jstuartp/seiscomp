@@ -1,5 +1,79 @@
 {% extends '/base.html.twig' %}
+ {% block scripts %}
+    {{ parent() }}
+<style>
 
+    .leyenda-jma {
+        background-color: rgba(220, 225, 228, 0.9); /* Fondo gris claro semitransparente */
+        padding: 8px 12px;
+        border-radius: 4px;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+        font-family: Arial, sans-serif;
+        color: #333;
+        width: 250px;
+        line-height: 1.2;
+    }
+
+    .leyenda-jma-titulo {
+        font-weight: bold;
+        font-size: 11px;
+        text-align: center;
+        margin-bottom: 5px;
+        letter-spacing: 0.3px;
+        color: #222;
+    }
+
+    .leyenda-jma-barra {
+        height: 12px;
+        width: 100%;
+        border: 1px solid #333;
+        /* Los mismos 8 colores exactos usados en tu script de Python */
+        background: linear-gradient(to right,
+        #ffffff 0%,
+        #d2d2d2 11.1%,
+        #0032ff 22.2%,
+        #00faff 33.3%,
+        #0bc200 44.4%,
+        #ffff00 55.5%,
+        #f77a00 66.6%,
+        #f40001 77.7%,
+        #a90000 88.8%,
+        #640064 100%
+        );
+    }
+
+    .leyenda-jma-ticks {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        margin-top: 0px;
+    }
+
+    /* Crea las pequeñas líneas verticales sobre cada número */
+    .leyenda-jma-ticks span {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 10px;
+    }
+
+    .leyenda-jma-ticks span::before {
+        content: '';
+        height: 4px;
+        width: 1px;
+        background-color: #333;
+        margin-bottom: 2px;
+    }
+
+    .leyenda-jma-etiquetas {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        margin-top: 4px;
+        padding: 0 15px; /* Ajusta la posición de los textos Débil, Moderado, Fuerte */
+    }
+</style>
+{% endblock %}
 {% block body %}
     <div class="container-fluid">
         <div class="row">
@@ -11,7 +85,7 @@
             <div class="col-sm-8">
                 <h2 class="mb-4">
                     {% block page_title %}
-                        ShakeMap: Sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(UTC)
+                        JMA Interpolado: Sismo del <strong>{{ fecha|date("d-m-Y H:i:s ") }} </strong>(UTC)
                         <span class="badge bg-danger">M {{ magnitud |round(1)}} </span>
                     {% endblock %}
                 </h2>
@@ -26,7 +100,7 @@
             <div class="col-12">
                 <div class="card bg-light">
                     <div class="card-body">
-                        <div id="map" style="width: 100%; height: 75vh; border: 1px solid #ccc;"></div>
+                        <div id="visor_sismico" style="width: 100%; height: 700px; border: 1px solid #ccc;"></div>
                     </div>
                 </div>
             </div>
@@ -43,6 +117,43 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
 
+
+
+
+
+
+
+
+            // 1. Definimos EXACTAMENTE las mismas coordenadas que usamos en Python
+            var limitesCostaRica = [[7.99, -86.1], [11.29, -82.5]];
+
+// 2. Inicializar el mapa con restricciones
+            var mapa = L.map('visor_sismico', {
+                zoomControl: true,           // Muestra los botones de +/-
+                minZoom: 7,                  // Evita que el usuario aleje demasiado la vista
+                maxBounds: limitesCostaRica, // "Encierra" la navegación en este cuadro
+                maxBoundsViscosity: 1.0      // Efecto rebote si intentan arrastrar fuera de Costa Rica
+            });
+
+// 3. Mapa base recomendado (CartoDB Positron - Escala de grises clara)
+// Este mapa hace que los colores de la escala JMA resalten muchísimo más
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(mapa);
+
+// 4. Agregar tu ShakeMap
+            var urlImagen = "{{ asset('assets/waves/' ~ id_evento ~ '/'~ id_evento ~'_interpolado.png') }}";
+
+            var capaShakeMap = L.imageOverlay(urlImagen, limitesCostaRica, {
+                opacity: 0.75,      // 75% es ideal para ver los nombres de ciudades debajo del color
+                interactive: false  // Permite hacer clic "a través" de la imagen
+            }).addTo(mapa);
+
+// 5. Forzar al mapa a encuadrar la imagen completa al cargar
+            mapa.fitBounds(limitesCostaRica);
+
             const starIcon = L.divIcon({
                 html: ' <img src="{{ asset('assets/imagenes/Estrella_roja.png')}}" alt="Estrella" style="width:50%;"> ',
                 className: '',
@@ -50,145 +161,37 @@
                 iconAnchor: [30, 30]
             });
 
-            // 1. Inicialización del Mapa
-            var map = L.map('map').setView([{{ epi_lat }}, {{ epi_long }}], 8);
-
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
-            }).addTo(map);
-
-            // 2. Función de Colores para el PGA (Mantenemos tu lógica original)
-            function getColor(d) {
-                return d > 6.5  ? '#a90000' :
-                    d > 6.0  ? '#f40001' :
-                        d > 5.5  ? '#f77a00' :
-                            d > 5.0  ? '#ffff00' :
-                                d > 4.5   ? '#0bc200' :
-                                    d > 3.5   ? '#00faff' :
-                                        d > 2.5   ? '#0032ff' :
-                                            d > 1.5   ? '#d2d2d2' :
-                                                d > 0.5   ? 'rgba(255,255,255,0)' :
-                                        'rgba(255,255,255,0)';
-            }
-
             // Agregar el marcador con estrella
             L.marker([ {{ epi_lat }}, {{ epi_long }}], {icon: starIcon})
-                .addTo(map)
+                .addTo(mapa)
                 .bindPopup('Epicentro<br> Mag: {{ magnitud | round(1) }}');
 
-            // 3. CAPA SHAKEMAP Y RECORTE GEOGRÁFICO
-            const shakeMapData = {{ shakemap_json|raw }};
-            // Asumiendo que pasas el JSON de CR desde el Controller bajo esta variable:
-            const costaRicaData = {{ costa_rica_json|raw }};
+// 1. Crear el control personalizado anclado abajo a la izquierda
+            var leyendaJMA = L.control({ position: 'bottomleft' });
 
-            // Extraemos el Feature principal (MultiPolygon) del GeoJSON de Costa Rica
-            const costaRicaFeature = costaRicaData.features[0];
-            const clippedFeatures = [];
+// 2. Definir la estructura HTML que irá dentro de ese control
+            leyendaJMA.onAdd = function (map) {
+                var div = L.DomUtil.create('div', 'leyenda-jma');
 
-            // Iteramos sobre cada celda/polígono del ShakeMap
-            shakeMapData.features.forEach(feature => {
-                try {
-                    // Calculamos la intersección. Devuelve null si no se superponen.
-                    const intersection = turf.intersect(feature, costaRicaFeature);
-
-                    if (intersection) {
-                        // Restauramos las propiedades (como el PGA) para que la función getColor siga funcionando
-                        intersection.properties = feature.properties;
-                        clippedFeatures.push(intersection);
-                    }
-                } catch (e) {
-                    console.error("Error calculando intersección: ", e);
-                }
-            });
-
-            // Creamos un nuevo GeoJSON solo con las geometrías recortadas
-            const clippedShakeMapData = turf.featureCollection(clippedFeatures);
-
-            // Dibujamos la nueva capa en lugar de la original
-            L.geoJson(clippedShakeMapData, {
-                style: function(feature) {
-                    return {
-                        fillColor: getColor(feature.properties.pga),
-                        weight: 0.0001, // Borde muy fino para los rectángulos de la malla
-                        opacity: 1,
-                        color: 'white',
-                        fillOpacity: 0.4 // Transparencia para ver el mapa base
-                    };
-                }
-            }).addTo(map);
-
-            // 4. Marcador del Epicentro (Estrella)
-
-
-            // 5. Marcadores de las Estaciones (Triángulos)
-            {% for item in pgaData %}
-            var stationLat = parseFloat('{{ item.lat }}');
-            var stationLon = parseFloat('{{ item.lon }}');
-            var pgaValue = parseFloat('{{ item.jma }}');
-            var stationName = '{{ item.estacion }}';
-            var colorMarker = getColor(pgaValue);
-
-            var svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 100 100">
-                    <polygon points="50,15 90,85 10,85" style="fill:${colorMarker};stroke:black;stroke-width:3" />
-                </svg>`;
-            //var customIcon = triangleIcon(color, /* tamaño px */ 18, /* fillOpacity */ 0.5, /* stroke */ '#333', /* strokeWidth */ 2);
-
-            var customIcon = L.divIcon({
-                className: 'custom-div-icon',
-                html: svgIcon,
-                iconSize: [10, 10],
-                iconAnchor: [5, 5]
-            });
-
-           // L.marker([stationLat, stationLon], { icon: customIcon }).addTo(map)
-           //     .bindPopup("<b>Estación: " + stationName + "</b><br>PGA: " + pgaValue + " cm/s²");
-            {% endfor %}
-
-            // Nueva función para dibujar rectángulos en lugar de triángulos
-            function legendRectangle(color) {
-                const s = 16;
-                // Usamos x="1" y="1" y restamos 2 al ancho/alto para que el borde (stroke) no se corte
-                return `
-        <svg xmlns="http://www.w3.org/2000/svg" width="${s}" height="${s}" viewBox="0 0 ${s} ${s}"
-             style="vertical-align: middle; margin-right: 6px;">
-          <rect x="1" y="1" width="${s-2}" height="${s-2}"
-                fill="${color}" fill-opacity="0.5"
-                stroke="#333" stroke-width="1.5"/>
-        </svg>`;
-            }
-
-// Definición de rangos en el mismo orden que el getColor (Escala JMA)
-            const legendItems = [
-                { label: '7',  color: '#640064' },
-                { label: '6+', color: '#a90000' },
-                { label: '6-', color: '#f40001' },
-                { label: '5+', color: '#f77a00' },
-                { label: '5-', color: '#ffff00' },
-                { label: '4',  color: '#0bc200' },
-                { label: '3',  color: '#00faff' },
-                { label: '2',  color: '#0032ff' },
-                { label: '1',  color: '#d2d2d2' },
-            ];
-
-// Control de Leaflet para la leyenda
-            const legend = L.control({ position: 'topright' });
-
-            legend.onAdd = function () {
-                const div = L.DomUtil.create('div', 'info legend');
-                div.innerHTML = '<div class="legend-title" style="margin-bottom: 5px;"><strong>Escala JMA</strong></div>';
-
-                legendItems.forEach(item => {
-                    div.innerHTML += `
-            <div class="legend-item" style="margin-bottom: 3px;">
-                ${legendRectangle(item.color)}<span>${item.label}</span>
-            </div>`;
-                });
+                div.innerHTML = `
+        <div class="leyenda-jma-titulo">INTENSIDAD SISMICA ESCALA JMA</div>
+        <div class="leyenda-jma-barra"></div>
+        <div class="leyenda-jma-ticks">
+            <span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span>
+        </div>
+        <div class="leyenda-jma-etiquetas">
+            <span style="margin-left: 5px;">Débil</span>
+            <span style="margin-left: 5px;">Moderado</span>
+            <span style="margin-right: 5px;">Fuerte</span>
+        </div>
+    `;
 
                 return div;
             };
 
+// 3. Agregar la leyenda al mapa (Asegúrate de que 'mapa' sea el nombre de tu variable)
+            leyendaJMA.addTo(mapa);
 
-            legend.addTo(map);
         });
     </script>
 {% endblock %}

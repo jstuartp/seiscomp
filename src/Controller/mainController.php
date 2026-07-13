@@ -756,13 +756,27 @@ class mainController extends AbstractController
     {
         //Chequeo los datos que llegan por post del ID y la Fecha
         if ($request->isMethod('POST')) {
-            $evento = $request->request->get('id');
-            $fecha = $request->request->get('fecha');
-            $magnitud = $request->request->get('mag');
-            $epi_lat = $request->request->get('lat');
-            $epi_long = $request->request->get('long');
-            $epi = $request->request->get('epi');
-        }else{echo "NO HAY NADA";}
+            $datosEvento = [
+                'idEvento'    =>  $request->request->get('id'),
+                'fecha'       => $request->request->get('fecha'),
+                'magnitud'    => $request->request->get('mag'),
+                'latitud'     => (float)$request->request->get('lat'),
+                'longitud'    => (float)$request->request->get('long'),
+                'lugar'       =>    $request->request->get('epi')];
+        }elseif ($request->isMethod('GET')){
+            $evento = $request->query->get('id');
+            //Activo el repositorio para traer todos los datos del evento buscado
+            $MyEvento = $this->historicoSismosRepository->findOneByIdEvento($evento);
+            // Formateamos la respuesta usando los getters de la entidad
+            $datosEvento = [
+                'idEvento'    => $MyEvento->getIdEvento(),
+                'fecha'       => $MyEvento->getFechaEvento()->format('Y-m-d H:i:s'),
+                'latitud'     => $MyEvento->getLatitudEvento(),
+                'longitud'    => $MyEvento->getLongitudEvento(),
+                'magnitud'    => $MyEvento->getMagnitudEvento(),
+                'lugar'       => $this->CalculaEpicentro($MyEvento->getLatitudEvento(),$MyEvento->getLongitudEvento()),
+            ];
+        }
 
         $rutaProyecto = $this->getParameter('kernel.project_dir');
         $rutaJsonCostaRica = $rutaProyecto . '/public/CostaRicaS.json';
@@ -772,7 +786,7 @@ class mainController extends AbstractController
 
         // 1. Obtener la información del evento y de las estaciones (Misma lógica que en pga)
         //$todosSismos = $doctrine->getRepository(\App\Entity\TodosSismos::class)->find($id_evento);
-        $jmaData = $doctrine->getRepository(\App\Entity\Jma::class)->findBy(['idEvento' => $evento]);
+        $jmaData = $doctrine->getRepository(\App\Entity\Jma::class)->findBy(['idEvento' => $datosEvento['idEvento']]);
         //$pgaData =$this->repository->findPgaByEventoconNombre($evento);
 /*
         $epi_lat = $todosSismos->getLatitud();
@@ -792,18 +806,18 @@ class mainController extends AbstractController
         }
 
         // 3. Generar el archivo GeoJSON (malla de interpolación)
-        $shakeMapGeoJson = $this->generateShakeMapData($estaciones, (float)$epi_lat, (float)$epi_long);
+        $shakeMapGeoJson = $this->generateShakeMapData($estaciones, (float)$datosEvento['latitud'], (float)$datosEvento['longitud']);
 
         // 4. Renderizar la nueva vista
         return $this->render('shakemaps.html.twig', [
             'costa_rica_json' => $costaRicaJson,
-            'epi_lat' => $epi_lat,
-            'epi_long' => $epi_long,
-            'magnitud' => $magnitud,
-            'fecha' => $fecha,
+            'epi_lat' => $datosEvento['latitud'],
+            'epi_long' => $datosEvento['longitud'],
+            'magnitud' => $datosEvento['magnitud'],
+            'fecha' => $datosEvento['fecha'],
             'pgaData' => $jmaData, // Pasamos las estaciones para dibujar los triángulos
             'shakemap_json' => json_encode($shakeMapGeoJson), // Pasamos el GeoJSON generado
-            'id_evento' => $evento
+            'id_evento' => $datosEvento['idEvento']
         ]);
     }
 
