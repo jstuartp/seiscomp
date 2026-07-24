@@ -911,61 +911,79 @@
     // Si tu variable se llama diferente en el backend (ej. evento.id), ajústala.
     // Para la ruta de assets, asumo que guardas los JSON en la carpeta de waveforms o similar.
     const idEvento = '{{ id | default("PJCO") }}';
-    const urlMovimiento = `{{ asset('assets/waves/'~ id ~ '/') }}grafico_mov.json`;
+    const urlMovimiento1 = `{{ asset('assets/waves/'~ id ~ '/') }}_0_05_grafico_mov.json`;
+    const urlMovimiento2 = `{{ asset('assets/waves/'~ id ~ '/') }}10_grafico_mov.json`;
 
-    fetch(urlMovimiento)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Archivo de duración no encontrado');
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Si no hay datos, ocultamos el contenedor y expandimos los otros gráficos
-            if (!data || data.length === 0) {
+
+
+    // Función auxiliar para construir la traza de Plotly estandarizada
+    const crearTraza = (data, colorTraza) => {
+        return {
+            x: data.map(item => item.estacion),
+            y: data.map(item => item.duracion_s),
+            type: 'bar',
+            marker: {
+                color: colorTraza,
+                opacity: 0.85,
+                line: {
+                    color: '#0a58ca',
+                    width: 1.5
+                }
+            },
+            customdata: data.map(item => item.pga_3d_cm_s2),
+            hovertemplate:
+                '<b>Estación: %{x}</b><br>' +
+                'Duración: %{y:.1f} s<br>' +
+                '<extra></extra>'
+        };
+    };
+
+    // Función auxiliar para capturar de forma segura si el archivo falta (404)
+    const fetchSeguro = (url) => {
+        return fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error('Archivo no disponible');
+                return res.json();
+            })
+            .catch(() => null);
+    };
+
+    // Cargamos ambas URLs en paralelo
+    Promise.all([fetchSeguro(urlMovimiento1), fetchSeguro(urlMovimiento2)])
+        .then(([data1, data2]) => {
+            const tieneData1 = data1 && data1.length > 0;
+            const tieneData2 = data2 && data2.length > 0;
+
+            // 1. Si ninguno existe, ocultamos el contenedor y expandimos los otros gráficos
+            if (!tieneData1 && !tieneData2) {
                 document.getElementById('containerPlotDuracion').style.display = 'none';
-                document.getElementById('containerPlotTop20').className = 'col-12 col-lg-6';
-                document.getElementById('containerPlotAtenuacion').className = 'col-12 col-lg-6';
+
+                // Centramos el contenido dentro de la fila padre (Row)
+                document.getElementById('graficos').classList.add('justify-content-center');
+
+                // Redimensionamos a tamaño 5 (5+5 = 10 columnas, dejando 2 columnas libres de margen)
+                document.getElementById('containerPlotTop20').className = 'col-12 col-lg-5';
+                document.getElementById('containerPlotAtenuacion').className = 'col-12 col-lg-5';
+
+                // Le indicamos a Plotly que redibuje los canvas para que se ajusten al nuevo ancho
+                setTimeout(() => window.dispatchEvent(new Event('resize')), 100);
+
                 return;
             }
 
-            // Limpiamos el spinner
+            // 2. Limpiamos el spinner
             document.getElementById('plotDuracion').innerHTML = '';
 
-            // Extraer datos para Plotly
-            const estaciones = data.map(item => item.estacion);
-            const duraciones = data.map(item => item.duracion_s);
-            const pgas = data.map(item => item.pga_3d_cm_s2);
-
-            const traza = {
-                x: estaciones,
-                y: duraciones,
-                type: 'bar',
-                marker: {
-                    color: '#0d6efd', // Azul Bootstrap
-                    opacity: 0.85,
-                    line: {
-                        color: '#0a58ca',
-                        width: 1.5
-                    }
-                },
-                // El texto personalizado para el tooltip
-                customdata: pgas,
-                hovertemplate:
-                    '<b>Estación: %{x}</b><br>' +
-                    'Duración: %{y:.1f} s<br>' +
-                    '<extra></extra>' // El extra vacio quita la caja secundaria al lado del cursor
-            };
-
+            // Layout base sin el título (se asignará dinámicamente)
             const layout = {
                 title: {
-                    text: 'Duración del Sismo (Umbral > 0.05 cm/s²)',
+                    text: '', // Se llena más adelante
                     font: { size: 15, color: '#495057', weight: 'bold' }
                 },
                 margin: { l: 60, r: 30, t: 50, b: 60 },
                 xaxis: {
                     title: 'Estación',
-                    tickangle: -45, // Inclinamos las etiquetas para que se lean bien si son muchas
+                    tickangle: -45,
                     gridcolor: '#e2e8f0'
                 },
                 yaxis: {
@@ -983,16 +1001,59 @@
                 displayModeBar: false
             };
 
-            Plotly.newPlot('plotDuracion', [traza], layout, config);
-        })
-        .catch(error => {
-            console.warn("No se pudo cargar el gráfico de duración:", error);
-            // Ocultar el contenedor y expandir los otros en caso de error (archivo no encontrado)
-            const containerDuracion = document.getElementById('containerPlotDuracion');
-            if (containerDuracion) {
-                containerDuracion.style.display = 'none';
-                document.getElementById('containerPlotTop20').className = 'col-12 col-lg-6';
-                document.getElementById('containerPlotAtenuacion').className = 'col-12 col-lg-6';
+            // 3. Si ambos archivos están disponibles, inyectamos las viñetas
+            if (tieneData1 && tieneData2) {
+                const header = document.querySelector('#containerPlotDuracion .card-header');
+
+                header.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0 small text-uppercase fw-bold text-muted">Duración de Movimiento</h5>
+                        <ul class="nav nav-pills nav-sm" style="font-size: 0.8rem;">
+                            <li class="nav-item">
+                                <button class="nav-link active py-1 px-2" id="btn-graf-1" style="cursor: pointer;">0.05</button>
+                            </li>
+                            <li class="nav-item ms-1">
+                                <button class="nav-link py-1 px-2" id="btn-graf-2" style="cursor: pointer;">10</button>
+                            </li>
+                        </ul>
+                    </div>
+                `;
+
+                // Render inicial (Umbral 0.05)
+                layout.title.text = 'Duración del Sismo (Umbral > 0.05 cm/s²)';
+                Plotly.newPlot('plotDuracion', [crearTraza(data1, '#0d6efd')], layout, config);
+
+                const btn1 = document.getElementById('btn-graf-1');
+                const btn2 = document.getElementById('btn-graf-2');
+
+                // Lógica de cambio al hacer clic
+                btn1.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    btn1.classList.add('active');
+                    btn2.classList.remove('active');
+                    layout.title.text = 'Duración del Sismo (Umbral > 0.05 cm/s²)';
+                    Plotly.react('plotDuracion', [crearTraza(data1, '#0d6efd')], layout, config);
+                });
+
+                btn2.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    btn2.classList.add('active');
+                    btn1.classList.remove('active');
+                    layout.title.text = 'Duración del Sismo (Umbral > 10 cm/s²)';
+                    Plotly.react('plotDuracion', [crearTraza(data2, '#198754')], layout, config);
+                });
+
+            }
+            // 4. Si solo uno de los archivos fue encontrado, renderizamos sin pestañas
+            else {
+                if (tieneData1) {
+                    layout.title.text = 'Duración del Sismo (Umbral > 0.05 cm/s²)';
+                    Plotly.newPlot('plotDuracion', [crearTraza(data1, '#0d6efd')], layout, config);
+                } else {
+                    layout.title.text = 'Duración del Sismo (Umbral > 10 cm/s²)';
+                    // Usamos el mismo color por defecto si solo hay uno
+                    Plotly.newPlot('plotDuracion', [crearTraza(data2, '#0d6efd')], layout, config);
+                }
             }
         });
 

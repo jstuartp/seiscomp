@@ -435,6 +435,40 @@ class mainController extends AbstractController
         $top5Pga = array_slice($datosPgaFiltrados, 0, 5);
 
 
+        $estacionesConDistancia = [];
+
+        foreach ($datosPgaFiltrados as $estacion) {
+            // Se calcula la distancia asegurando que los valores se pasen como float
+            $distancia = $this->calcularDistanciaHaversine(
+                (float) $datosEvento['latitud'],
+                (float) $datosEvento['longitud'],
+                (float) $estacion['latitud'],
+                (float) $estacion['longitud']
+            );
+
+            // Se guarda la estación completa y se le añade la nueva llave de distancia
+            $estacion['distancia'] = $distancia;
+            $estacionesConDistancia[] = $estacion;
+        }
+
+        // Ordenar el arreglo resultante por la distancia (de menor a mayor) usando usort
+        usort($estacionesConDistancia, function ($a, $b) {
+            return $a['distancia'] <=> $b['distancia'];
+        });
+
+        // Extraer únicamente las primeras 20 posiciones (las más cercanas)
+        $top20Estaciones = array_slice($estacionesConDistancia, 0, 20);
+
+        // Crear un arreglo simplificado solo con los datos requeridos (estacion, distancia y maximo)
+        $resumenTop20 = array_map(function($estacion) {
+            return [
+                'estacion' => $estacion['estacion'],
+                'distancia' => round($estacion['distancia'], 2), // Redondeado a 2 decimales para mejor lectura
+                'aceleracion_maxima' => $estacion['maximo'] ?? null // Asegúrate que 'maximo' sea la llave correcta
+            ];
+        }, $top20Estaciones);
+
+
         return $this->render('pga_movil.html.twig', [
             'id' => $datosEvento['idEvento'],
             'fecha' => $datosEvento['fecha'],
@@ -443,7 +477,9 @@ class mainController extends AbstractController
             'epi_long' => $datosEvento['longitud'],
             'epi' => $datosEvento['lugar'],
             'datos' => $datosPgaFiltrados, // Todos los datos para mapear
-            'top5' => $top5Pga             // Solo 5 para el listado
+            'top5' => $top5Pga,             // Solo 5 para el listado
+            'top20_cercanas' => $resumenTop20,
+            'todas_estaciones' => $estacionesConDistancia
         ]);
     }
 

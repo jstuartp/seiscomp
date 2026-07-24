@@ -18,7 +18,7 @@
         </div>
 
         <!-- Top 5 Aceleraciones -->
-        <div class="card shadow-sm border-0">
+        <div class="card shadow-sm border-0 mb-4">
             <div class="card-header bg-dark text-white py-2">
                 <h6 class="mb-0 text-center"><i class="bi bi-graph-up-arrow"></i> 5 Aceleraciones Máximas</h6>
             </div>
@@ -62,6 +62,49 @@
             </div>
         </div>
 
+        <!-- Gráficos de Análisis Móvil -->
+        <div id="graficos" class="row mb-4 g-3">
+            {# Gráfico 1: Top 20 #}
+            <div class="col-12" id="containerPlotTop20">
+                <div class="card shadow-sm h-100 border-0">
+                    <div class="card-header bg-dark text-white py-2">
+                        <h6 class="mb-0 text-center small text-uppercase fw-bold"><i class="bi bi-bar-chart-fill"></i> Atenuación: Top 20</h6>
+                    </div>
+                    <div class="card-body p-1">
+                        <div id="plotTop20" style="width: 100%; height: 350px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            {# Gráfico 2: Datos Observados vs Modelos #}
+            <div class="col-12" id="containerPlotAtenuacion">
+                <div class="card shadow-sm h-100 border-0">
+                    <div class="card-header bg-dark text-white py-2">
+                        <h6 class="mb-0 text-center small text-uppercase fw-bold"><i class="bi bi-scatter-chart"></i> Observados vs Atenuación</h6>
+                    </div>
+                    <div class="card-body p-1">
+                        <div id="plotAtenuacion" style="width: 100%; height: 350px;"></div>
+                    </div>
+                </div>
+            </div>
+
+            {# Gráfico 3: Duración del Movimiento #}
+            <div class="col-12" id="containerPlotDuracion">
+                <div class="card shadow-sm h-100 border-0">
+                    <div class="card-header bg-dark text-white py-2" id="headerDuracion">
+                        <h6 class="mb-0 text-center small text-uppercase fw-bold"><i class="bi bi-stopwatch"></i> Duración de Movimiento</h6>
+                    </div>
+                    <div class="card-body p-1">
+                        <div id="plotDuracion" style="width: 100%; height: 350px;">
+                            <div class="d-flex justify-content-center align-items-center h-100">
+                                <div class="spinner-border text-primary" role="status"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="text-center mt-3 mb-4">
             <a href="{{ path('jma_movil', {'id': id}) }}" class="btn btn-outline-primary btn-sm">Ver Datos JMA</a>
         </div>
@@ -78,6 +121,9 @@
 
 {% block endscrips %}
     {{ parent() }}
+
+    <!-- Se agrega la librería Plotly -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -151,6 +197,122 @@
             puntos.forEach(function (punto) {
                 L.marker([punto.lat, punto.lng], {icon: triangleIcon(getColor(punto.max)), zIndexOffset: getIndex(punto.max)}).addTo(map);
             });
+
+            // --- Gráfico Plotly para el Top 20 (Estático para móvil) ---
+            {% if top20_cercanas is defined and top20_cercanas is not empty %}
+            const nombresEstaciones = [
+                {% for est in top20_cercanas %}
+                '{{ est.estacion }} ({{ est.distancia|round(1) }} km)'{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            ];
+
+            const valoresAceleracion = [
+                {% for est in top20_cercanas %}
+                {{ est.aceleracion_maxima|default(0)|round(2) }}{% if not loop.last %}, {% endif %}
+                {% endfor %}
+            ];
+
+            const traceTop20 = {
+                x: nombresEstaciones,
+                y: valoresAceleracion,
+                type: 'bar',
+                marker: { color: 'rgba(220, 53, 69, 0.8)' }
+            };
+
+            const layoutTop20 = {
+                margin: { l: 40, r: 10, t: 30, b: 80 },
+                xaxis: { title: '', tickangle: -45, tickfont: {size: 10} },
+                yaxis: { title: 'PGA (cm/s²)', titlefont: {size: 11}, tickfont: {size: 10} },
+                plot_bgcolor: 'rgba(0,0,0,0)',
+                paper_bgcolor: 'rgba(0,0,0,0)'
+            };
+
+            const configEstatico = {
+                responsive: true,
+                staticPlot: true, // ESTO HACE EL GRÁFICO TOTALMENTE ESTÁTICO EN MÓVIL
+                displayModeBar: false
+            };
+
+            Plotly.newPlot('plotTop20', [traceTop20], layoutTop20, configEstatico);
+            {% endif %}
+
+            // --- Gráfico de Dispersión PGA vs Distancia (Estático para móvil) ---
+            {% if todas_estaciones is defined and todas_estaciones is not empty %}
+            const traceObservados = {
+                x: [ {% for est in todas_estaciones %}{{ est.distancia|round(1) }}{% if not loop.last %}, {% endif %}{% endfor %} ],
+                y: [ {% for est in todas_estaciones %}{{ est.maximo|default(0.01)|round(2) }}{% if not loop.last %}, {% endif %}{% endfor %} ],
+                mode: 'markers',
+                type: 'scatter',
+                marker: { size: 6, color: 'rgba(52, 152, 219, 0.8)' }
+            };
+
+            const layoutAtenuacion = {
+                margin: { l: 40, r: 10, t: 30, b: 40 },
+                xaxis: { title: 'Distancia (km)', type: 'log', titlefont: {size: 11}, tickfont: {size: 10} },
+                yaxis: { title: 'PGA (cm/s²)', type: 'log', titlefont: {size: 11}, tickfont: {size: 10} },
+                showlegend: false,
+                plot_bgcolor: '#f8f9fa',
+                paper_bgcolor: 'rgba(0,0,0,0)'
+            };
+
+            Plotly.newPlot('plotAtenuacion', [traceObservados], layoutAtenuacion, { responsive: true, staticPlot: true, displayModeBar: false });
+            {% endif %}
+
+            // --- Gráfico de Duración (Estático para móvil) ---
+            const idEvento = '{{ id | default("PJCO") }}';
+            const urlMovimiento1 = `{{ asset('assets/waves/'~ id ~ '/') }}_0_05_grafico_mov.json`;
+            const urlMovimiento2 = `{{ asset('assets/waves/'~ id ~ '/') }}10_grafico_mov.json`;
+
+            const crearTraza = (data, colorTraza) => {
+                return {
+                    x: data.map(item => item.estacion),
+                    y: data.map(item => item.duracion_s),
+                    type: 'bar',
+                    marker: { color: colorTraza, opacity: 0.85 }
+                };
+            };
+
+            const fetchSeguro = (url) => {
+                return fetch(url)
+                    .then(res => {
+                        if (!res.ok) throw new Error('Archivo no disponible');
+                        return res.json();
+                    })
+                    .catch(() => null);
+            };
+
+            Promise.all([fetchSeguro(urlMovimiento1), fetchSeguro(urlMovimiento2)])
+                .then(([data1, data2]) => {
+                    const tieneData1 = data1 && data1.length > 0;
+                    const tieneData2 = data2 && data2.length > 0;
+
+                    if (!tieneData1 && !tieneData2) {
+                        document.getElementById('containerPlotDuracion').style.display = 'none';
+                        return;
+                    }
+
+                    document.getElementById('plotDuracion').innerHTML = '';
+
+                    const layoutDuracion = {
+                        title: { text: '', font: { size: 12 } },
+                        margin: { l: 40, r: 10, t: 30, b: 60 },
+                        xaxis: { tickangle: -45, tickfont: {size: 10} },
+                        yaxis: { title: 'Duración (s)', titlefont: {size: 11}, tickfont: {size: 10} },
+                        plot_bgcolor: '#f8f9fa',
+                        paper_bgcolor: 'rgba(0,0,0,0)'
+                    };
+
+                    const configEstatico = { responsive: true, staticPlot: true, displayModeBar: false };
+
+                    // En móvil por espacio, simplemente renderizamos el primero que esté disponible y lo dejamos estático
+                    if (tieneData2) {
+                        layoutDuracion.title.text = 'Umbral > 10 cm/s²';
+                        Plotly.newPlot('plotDuracion', [crearTraza(data2, '#198754')], layoutDuracion, configEstatico);
+                    } else if (tieneData1) {
+                        layoutDuracion.title.text = 'Umbral > 0.05 cm/s²';
+                        Plotly.newPlot('plotDuracion', [crearTraza(data1, '#0d6efd')], layoutDuracion, configEstatico);
+                    }
+                });
         });
     </script>
 {% endblock %}
