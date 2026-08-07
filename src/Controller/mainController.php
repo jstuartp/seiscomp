@@ -594,9 +594,13 @@ class mainController extends AbstractController
         $datosJma = $this->jmaRepository->findJmaWithNameByEvent($evento);
 
 
-        // Filtra los elementos cuyo campo 'estacion' NO termine en 'h' eliminando la CCSS
-        $datosJmaFiltrados = array_filter($datosJma, function ($item) {
-            return !str_ends_with($item['estacion'], 'H');
+        // Listado SMHR a excluir de la lista
+        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
+            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
+
+        $datosJmaFiltrados = array_filter($datosJma, function ($item) use ($estacionesExcluir) {
+            // Se excluyen únicamente las estaciones en la lista,
+            return !in_array($item['estacion'], $estacionesExcluir, true);
         });
 
 
