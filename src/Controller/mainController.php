@@ -16,6 +16,13 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class mainController extends AbstractController
 {
+    //Arreglo para excluir estaciones con problemas
+    private const ESTACIONES_EXCLUIR = [
+        'AALA', 'ACLH', 'AGRH', 'ACOY', 'CTEC', 'CTUH', 'GCNS', 'GLIH',
+        'LLIH', 'LVES', 'PJMH', 'PQSH', 'PRCH', 'SASR', 'SCOH',
+        'SISD', 'SISH', 'SMSO', 'SPCH', 'STRN', 'TB05', 'TB11', 'TBS2'
+    ];
+
     private pgaRepository $repository;  //Variable para inyectar el repositorio se usa PGA pero se puede hacer general
     private HistoricoSismosRepository $historicoSismosRepository;  //Variable para inyectar el repositorio se usa PGA pero se puede hacer general
     private TodosSismosRepository $todoSismoRepository;  //Variable para inyectar el repositorio se usa PGA pero se puede hacer general
@@ -218,24 +225,22 @@ class mainController extends AbstractController
         //Activo el repositorio para traer los datos de PGD segun el evento
         $datosPgd = $this->repository->findPgdByEventoConNombre($evento);
 
-        // Listado SMHR a excluir de la lista
-        $estacionesExcluir = ['AALA','ACLH','AGRH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
-            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
 
-        $datosPgaFiltrados = array_filter($datosPga, function ($item) use ($estacionesExcluir) {
+
+        $datosPgaFiltrados = array_filter($datosPga, function ($item)  {
             // Se excluyen únicamente las estaciones en la lista,
-            return !in_array($item['estacion'], $estacionesExcluir, true);
+            return !in_array($item['estacion'], self::ESTACIONES_EXCLUIR, true);
         });
 
 
-        $datosPgvFiltrados = array_filter($datosPgv, function ($item) use ($estacionesExcluir) {
+        $datosPgvFiltrados = array_filter($datosPgv, function ($item)  {
             // Se excluyen únicamente las estaciones en la lista,
-            return !in_array($item['estacion'], $estacionesExcluir, true);
+            return !in_array($item['estacion'], self::ESTACIONES_EXCLUIR, true);
         });
 
-        $datosPgdFiltrados = array_filter($datosPgd, function ($item) use ($estacionesExcluir) {
+        $datosPgdFiltrados = array_filter($datosPgd, function ($item)  {
             // Se excluyen únicamente las estaciones en la lista,
-            return !in_array($item['estacion'], $estacionesExcluir, true);
+            return !in_array($item['estacion'], self::ESTACIONES_EXCLUIR, true);
         });
 
         $estacionesConDistancia = [];
@@ -324,13 +329,11 @@ class mainController extends AbstractController
         }
         unset($dato);
 
-        // Listado SMHR a excluir de la lista
-        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
-            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
 
-        $datosFiltrados = array_filter($datosEspectros, function ($item) use ($estacionesExcluir) {
+
+        $datosFiltrados = array_filter($datosEspectros, function ($item)  {
             // Se excluyen únicamente las estaciones en la lista,
-            return !in_array($item['estacion'], $estacionesExcluir, true);
+            return !in_array($item['estacion'], self::ESTACIONES_EXCLUIR, true);
         });
         return $this->render('espectros.html.twig',
             ['fecha' => $datosEvento['fecha'],'datos'=>$datosFiltrados,'id'=>$datosEvento['idEvento'],'magnitud'=>$datosEvento['magnitud'],'epi_lat'=>$datosEvento['latitud'],
@@ -373,13 +376,11 @@ class mainController extends AbstractController
         }
         unset($dato);
 
-        // Listado SMHR a excluir de la lista
-        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
-            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
 
-        $datosFiltrados = array_filter($datosEspectros, function ($item) use ($estacionesExcluir) {
+
+        $datosFiltrados = array_filter($datosEspectros, function ($item)  {
             // Se excluyen únicamente las estaciones en la lista,
-            return !in_array($item['estacion'], $estacionesExcluir, true);
+            return !in_array($item['estacion'], self::ESTACIONES_EXCLUIR, true);
         });
 
         // 3. Ordenar de mayor a menor PGA y extraer el TOP 5
@@ -420,12 +421,11 @@ class mainController extends AbstractController
         $datosPga = $this->repository->findPgaByEventoconNombre($evento);
 
         // Listado SMHR a excluir de la lista
-        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
-            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
 
-        $datosPgaFiltrados = array_filter($datosPga, function ($item) use ($estacionesExcluir) {
+
+        $datosPgaFiltrados = array_filter($datosPga, function ($item)  {
             // Se excluyen únicamente las estaciones en la lista,
-            return !in_array($item['estacion'], $estacionesExcluir, true);
+            return !in_array($item['estacion'], self::ESTACIONES_EXCLUIR, true);
         });
 
         // 3. Ordenar de mayor a menor PGA y extraer el TOP 5
@@ -512,13 +512,11 @@ class mainController extends AbstractController
         //Activo el repositorio para traer los datos de PGA segun el evento
         $datosJma = $this->jmaRepository->findJmaWithNameByEvent($evento);
 
-        // Listado SMHR a excluir de la lista
-        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
-            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
 
-        $datosJmaFiltrados = array_filter($datosJma, function ($item) use ($estacionesExcluir) {
+
+        $datosJmaFiltrados = array_filter($datosJma, function ($item) {
             // Se excluyen únicamente las estaciones en la lista,
-            return !in_array($item['estacion'], $estacionesExcluir, true);
+            return !in_array($item['estacion'], self::ESTACIONES_EXCLUIR, true);
         });
 
         // Ordenar de mayor a menor JMA y extraer el TOP 5
@@ -595,12 +593,11 @@ class mainController extends AbstractController
 
 
         // Listado SMHR a excluir de la lista
-        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
-            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
 
-        $datosJmaFiltrados = array_filter($datosJma, function ($item) use ($estacionesExcluir) {
+
+        $datosJmaFiltrados = array_filter($datosJma, function ($item) {
             // Se excluyen únicamente las estaciones en la lista,
-            return !in_array($item['estacion'], $estacionesExcluir, true);
+            return !in_array($item['estacion'], self::ESTACIONES_EXCLUIR, true);
         });
 
 
@@ -659,13 +656,11 @@ class mainController extends AbstractController
         //Activo el repositorio para traer los datos de PGA segun el evento
         $datosPga = $this->repository->findPgaByEventoconNombre($datosEvento['idEvento']);
 
-        // Listado SMHR a excluir de la lista
-        $estacionesExcluir = ['AALA','ACLH','ACOY','CTEC','CTUH','GCNS','GLIH','LLIH','LVES','PJMH','PQSH','PRCH','SASR',
-            'SCNE','SCOH','SISD','SISH','SMSO','SPCH','STRN','TB05','TB11','TBS2'];
 
-        $datosPgaFiltrados = array_filter($datosPga, function ($item) use ($estacionesExcluir) {
+
+        $datosPgaFiltrados = array_filter($datosPga, function ($item)  {
             // Se excluyen únicamente las estaciones en la lista,
-            return !in_array($item['estacion'], $estacionesExcluir, true);
+            return !in_array($item['estacion'], self::ESTACIONES_EXCLUIR, true);
         });
 
         return $this->render('informe.html.twig',
@@ -785,6 +780,110 @@ class mainController extends AbstractController
             'ciudades_importantes' => $ciudadesImportantes   // Array para Pestaña 2
         ]);
     }
+
+
+    /**
+     * @Route("/movil/", name="epicentro_movil")
+     */
+    #[Route('/movil/epicentro/', name:'epicentro_movil', methods: ['POST','GET','PUT'])]
+    public function epicentroMovilAction(Request $request, EntityManagerInterface $em): Response
+    {
+        // Inicializamos variables por defecto para evitar errores si entran por GET
+        //$evento = $fecha = $mag = $epi = "";
+        //$lat = 0.0;
+        //$long = 0.0;
+
+        // Chequeo los datos que llegan por POST del ID y la Fecha
+        if ($request->isMethod('POST')) {
+            $datosEvento = [
+                'idEvento'    =>  $request->request->get('id'),
+                'fecha'       => $request->request->get('fecha'),
+                'magnitud'    => $request->request->get('mag'),
+                'latitud'     => (float)$request->request->get('lat'),
+                'longitud'    => (float)$request->request->get('long'),
+                'lugar'       =>    $request->request->get('epi')];
+        }elseif ($request->isMethod('GET')){
+            $evento = $request->query->get('id');
+            //Activo el repositorio para traer todos los datos del evento buscado
+            $MyEvento = $this->historicoSismosRepository->findOneByIdEvento($evento);
+            // Formateamos la respuesta usando los getters de la entidad
+            $datosEvento = [
+                'idEvento'    => $MyEvento->getIdEvento(),
+                'fecha'       => $MyEvento->getFechaEvento()->format('Y-m-d H:i:s'),
+                'latitud'     => $MyEvento->getLatitudEvento(),
+                'longitud'    => $MyEvento->getLongitudEvento(),
+                'magnitud'    => $MyEvento->getMagnitudEvento(),
+                'lugar'       => $this->CalculaEpicentro($MyEvento->getLatitudEvento(),$MyEvento->getLongitudEvento()),
+            ];
+        }
+
+        // --- Función para calcular distancia Haversine en PHP ---
+        $calcularDistanciaHaversine = function($lat1, $lon1, $lat2, $lon2) {
+            $R = 6371; // Radio de la Tierra en km
+            $dLat = deg2rad($lat2 - $lat1);
+            $dLon = deg2rad($lon2 - $lon1);
+            $a = sin($dLat / 2) * sin($dLat / 2) +
+                cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
+                sin($dLon / 2) * sin($dLon / 2);
+            $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+            return $R * $c;
+        };
+
+        $todasLasCiudades = [];
+        $ciudadesImportantes = [];
+
+        // Leer el archivo de distritos y calcular el epicentro
+        if (($handle = fopen("distritos.csv", "r")) !== FALSE) {
+            while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                // Asumimos: 0 = lon, 1 = lat, 2 = nombre, 3 = importante (1 o 0)
+                $ciudadLat = (float)$data[1];
+                $ciudadLon = (float)$data[0];
+                $distancia = $calcularDistanciaHaversine($datosEvento['latitud'], $datosEvento['longitud'], $ciudadLat, $ciudadLon);
+
+                // Verificamos si existe la columna de "importante", por defecto 0
+                $esImportante = isset($data[3]) ? (int)$data[3] : 0;
+
+                $ciudad = [
+                    "nombre"    => $data[2],
+                    "lat"       => $ciudadLat,
+                    "lon"       => $ciudadLon,
+                    "distancia" => $distancia,
+                    "importante"=> $esImportante
+                ];
+
+                $todasLasCiudades[] = $ciudad;
+
+                if ($esImportante === 1) {
+                    $ciudadesImportantes[] = $ciudad;
+                }
+            }
+            fclose($handle);
+        }
+
+        // Ordenar arreglos por distancia ascendente
+        usort($todasLasCiudades, function($a, $b) {
+            return $a['distancia'] <=> $b['distancia'];
+        });
+        usort($ciudadesImportantes, function($a, $b) {
+            return $a['distancia'] <=> $b['distancia'];
+        });
+
+        // Retornar solo las 20 más cercanas de la lista general
+        $ciudadesCercanas = array_slice($todasLasCiudades, 0, 20);
+
+        return $this->render('epicentro_movil.html.twig', [
+            'title'                => "Ciudades cercanas al Epicentro: ",
+            'fecha'                => $datosEvento['fecha'],
+            'magnitud'             => $datosEvento['magnitud'],
+            'id'                   => $datosEvento['idEvento'],
+            'lat'                  => $datosEvento['latitud'],
+            'long'                 => $datosEvento['longitud'],
+            'epi'                  => $datosEvento['lugar'],
+            'ciudades_cercanas'    => $ciudadesCercanas,     // Array para Pestaña 1
+            'ciudades_importantes' => $ciudadesImportantes   // Array para Pestaña 2
+        ]);
+    }
+
 
 
     // =========================================================================

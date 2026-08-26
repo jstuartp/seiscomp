@@ -1,0 +1,138 @@
+{% extends 'base_movil.html.twig' %}
+
+{% block page_title %}Epicentro - M {{ magnitud|round(1) }}{% endblock %}
+
+{% block body %}
+<style>
+    /* Animación de ondas concéntricas para el epicentro */
+    .onda-sismica {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border: 2px solid rgba(220, 53, 69, 0.8);
+        border-radius: 50%;
+        animation: propagacion 2s infinite cubic-bezier(0.36, 0.11, 0.89, 0.32);
+        pointer-events: none; /* Para que no interfiera con nada */
+    }
+
+    .onda-sismica:nth-child(2) {
+        animation-delay: 1s;
+    }
+
+    @keyframes propagacion {
+        0% { width: 30px; height: 30px; opacity: 1; }
+        100% { width: 120px; height: 120px; opacity: 0; }
+    }
+</style>
+
+<div class="container-fluid p-2" style="max-width: 600px; margin: 0 auto;">
+
+    <!-- Encabezado Resumido -->
+    <div class="text-center mb-3 mt-2">
+        <h4 class="mb-1 fw-bold">Epicentro del Sismo M {{ magnitud|round(1) }}</h4>
+        <div class="text-muted small">{{ fecha|date("d-m-Y H:i:s") }} UTC</div>
+        <div class="mt-2 small fw-semibold text-primary">{{ epi }}</div>
+    </div>
+
+    <!-- Mapa Estático -->
+    <div class="card shadow-sm mb-3 border-0">
+        <div id="map" style="width: 100%; height: 350px; border-radius: 8px;"></div>
+    </div>
+
+    <!-- Top 7 Ciudades Más Cercanas -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-dark text-white py-2">
+            <h6 class="mb-0 text-center"><i class="bi bi-geo-alt-fill"></i> 7 Ciudades Más Cercanas</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped mb-0 text-center" style="font-size: 13px;">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Ciudad</th>
+                        <th>Distancia (km)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for ciudad in ciudades_cercanas|slice(0, 7) %}
+                    <tr>
+                        <td class="fw-bold">{{ loop.index }}</td>
+                        <td>{{ ciudad.nombre }}</td>
+                        <td>{{ ciudad.distancia|number_format(2, '.', ',') }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botones de Navegación -->
+    <div class="text-center mt-3 mb-4">
+        <a href="{{ path('homepage') }}" class="btn btn-outline-secondary btn-sm">Inicio</a>
+        <a href="{{ path('informe', {'id': id|default(''), 'fecha': fecha, 'mag': magnitud, 'lat': lat, 'long': long, 'informe': 1}) }}" class="btn btn-outline-primary btn-sm">Ver Informe Completo Interactivo</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block endscrips %}
+{{ parent() }}
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const latReferencia = {{ lat }};
+        const lonReferencia = {{ long }};
+        const ciudadesCercanas = {{ ciudades_cercanas|slice(0, 7)|json_encode|raw }};
+
+        // Se deshabilitan interacciones para que actúe como una imagen estática
+        var map = L.map('map', {
+            zoomControl: false,
+            dragging: false,
+            touchZoom: false,
+            scrollWheelZoom: false,
+            doubleClickZoom: false,
+            boxZoom: false,
+            keyboard: false
+        }).setView([0, 0], 2); // Vista inicial por defecto
+
+        // Límites para abarcar toda Costa Rica, igual que en la vista de aceleraciones
+        let bounds = L.latLngBounds([8.03, -85.95], [11.22, -82.55]);
+        map.fitBounds(bounds);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'LIS-UCR'
+        }).addTo(map);
+
+        // Icono del Epicentro con animación concéntrica inyectada
+        const starIcon = L.divIcon({
+            html: '<div style="position: relative; width: 30px; height: 30px;">' +
+                '<div class="onda-sismica"></div>' +
+                '<div class="onda-sismica"></div>' +
+                '<img src="{{ asset('assets/imagenes/Estrella_roja.png') }}" alt="Estrella" style="position: relative; width: 100%; height: 100%; z-index: 10;">' +
+        '</div>',
+            className: '',
+            iconSize: [30, 30],
+            iconAnchor: [15, 15] // Centro exacto del div
+    });
+
+        // Icono para las Ciudades
+        const cuadradoIcon = L.divIcon({
+            html: '<div style="width: 10px; height: 10px; background-color: blue; border: 2px solid black; border-radius: 2px;"></div>',
+            className: '',
+            iconSize: [10, 10],
+            iconAnchor: [5, 5]
+        });
+
+        // Agregar marcador del Epicentro
+        L.marker([latReferencia, lonReferencia], {icon: starIcon, zIndexOffset: 900000}).addTo(map);
+
+        // Agregar los marcadores de las 7 ciudades principales
+        ciudadesCercanas.forEach(ciudad => {
+            L.marker([ciudad.lat, ciudad.lon], {icon: cuadradoIcon}).addTo(map);
+        });
+
+    });
+</script>
+{% endblock %}
