@@ -42,7 +42,7 @@ class EstructurasRepository extends ServiceEntityRepository
     public function findMaxPgaFromEvent($evento): ?array
     {
         $conn = $this->getEntityManager()->getConnection();
-        $sql ="select idpga,estacion,maximo From Pga_estructuras Where nombre_evento = '".$evento."'";
+        $sql ="select idpga,estacion,maximo From Pga_estructuras Where nombre_evento = '".$evento."' and tipo_estacion = 2";
         try {
             $datos= $conn->executeQuery($sql);
             return $datos->fetchAllAssociative();
@@ -59,7 +59,7 @@ class EstructurasRepository extends ServiceEntityRepository
     public function findGraficaFromEvent($evento): ?array
     {
         $conn = $this->getEntityManager()->getConnection();
-        $sql ="select idpga,estacion,rutaWaveform as grafica From Pga_estructuras Where nombre_evento = '".$evento."'";
+        $sql ="select idpga,estacion,rutaWaveform as grafica From Pga_estructuras Where nombre_evento = '".$evento."' and tipo_estacion =2 ";
         try {
             $datos= $conn->executeQuery($sql);
             return $datos->fetchAllAssociative();
@@ -78,7 +78,7 @@ class EstructurasRepository extends ServiceEntityRepository
     {
         $conn = $this->getEntityManager()->getConnection();
         $sql ="select idpga,rutaWaveform as grafica From Pga_estructuras 
-                Where nombre_evento = '".$evento."' and estacion = '".$estacion."'";
+                Where nombre_evento = '".$evento."' and estacion = '".$estacion."' and tipo_estacion =2 ";
         try {
             $datos= $conn->executeQuery($sql);
             return $datos->fetchAllAssociative();
