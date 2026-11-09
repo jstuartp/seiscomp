@@ -554,10 +554,10 @@ class mainController extends AbstractController
     private function filtrarPorCR_BBox(array $datos): array {
         // Margen amplio alrededor de Costa Rica
         $bbox = [
-            'minLat' => 7.8,
-            'maxLat' => 11.5,
-            'minLon' => -86.9,
-            'maxLon' => -81.6,
+            'minLat' => 6.5,
+            'maxLat' => 12.5,
+            'minLon' => -86.5,
+            'maxLon' => -80.00,
         ];
 
         return array_values(array_filter($datos, function ($item) use ($bbox) {

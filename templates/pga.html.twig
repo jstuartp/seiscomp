@@ -668,8 +668,13 @@
             let startTime;
             try {
                 const rawTime = json.meta.start_time;
-                const isoTime = rawTime.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}).*$/, '$1-$2-$3T$4:$5:$6');
-                startTime = new Date(isoTime).getTime();
+                const isoTime = rawTime.replace(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2}).*$/, '$1-$2-$3T$4:$5:$6Z');
+                // Obtener la hora exacta del evento (start_time) en milisegundos
+                const eventTime = new Date(isoTime).getTime();
+
+                // Definir el inicio de la gráfica 3 minutos antes (180,000 ms)
+                startTime = eventTime - (3 * 60 * 1000);
+                //startTime = new Date(isoTime).getTime();
             } catch (e) {
                 console.error("Error parseando tiempo", e);
                 startTime = new Date().getTime();
